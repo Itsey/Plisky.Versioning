@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="BugData\B464_AsmInfo_Source.txt" />
+    <None Remove="TestFileStructure\DoesNotChange\AssemblyInfo.txt" />
+    <None Remove="TestFileStructure\JustAssemblyVersion.txt" />
+    <None Remove="TestFileStructure\JustFileVersion.txt" />
+    <None Remove="TestFileStructure\JustInformationalVersion.txt" />
+    <None Remove="TestFileStructure\Nuget\sample1.nuspec" />
+    <None Remove="TestFileStructure\Nuget\sample2.nuspec" />
+    <None Remove="TestFileStructure\Properties\AssemblyInfo.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="BugData\B464_AsmInfo_Source.txt" />
+    <EmbeddedResource Include="TestFileStructure\DoesNotChange\AssemblyInfo.txt" />
+    <EmbeddedResource Include="TestFileStructure\JustAssemblyVersion.txt" />
+    <EmbeddedResource Include="TestFileStructure\JustFileVersion.txt" />
+    <EmbeddedResource Include="TestFileStructure\JustInformationalVersion.txt" />
+    <EmbeddedResource Include="TestFileStructure\Nuget\sample1.nuspec" />
+    <EmbeddedResource Include="TestFileStructure\Nuget\sample2.nuspec" />
+    <EmbeddedResource Include="TestFileStructure\Properties\AssemblyInfo.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="TestFileStructure\StdCSProj\MultipleVersNetStd.csproj" />
+  </ItemGroup>
+
+</Project>

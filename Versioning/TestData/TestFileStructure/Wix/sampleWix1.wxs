@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="4dc3a663-01de-4608-b89a-e35afd0de653" Name="TFS Developer Desktop Pack [XXX_VERSION_XXX]" Language="1033" Version="3.0.17.0" Manufacturer="DDP_Installer" UpgradeCode="d3427c8e-65c1-4b15-95c8-10b66da79b17">
+
+    <Package InstallerVersion="200" Compressed="yes" />
+    <!-- Get the VS2008 installation location from the registry -->
+    <Property Id="VISUALSTUDIO2008INSTALLDIR">
+      <RegistrySearch Id="VS2008LocationRegistry" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\9.0" Name="InstallDir" />
+    </Property>
+    <!--Find tfpt 2008 -->
+    <Property Id="TFSPOWERTOOLS2008INSTALLED">
+      <RegistrySearch Id="TFSPowerTools2008Lookup" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\9.0\TeamFoundation\SourceControl\Checkin Policies" Name="Microsoft.TeamFoundation.PowerTools.CheckinPolicies.WorkItemQueryPolicy" Type="file" />
+    </Property>
+    <!-- Get the VS2010 installation location from the registry -->
+    <Property Id="VISUALSTUDIO2010INSTALLDIR">
+      <RegistrySearch Id="VS2010LocationRegistry" Type="raw" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\10.0" Name="ShellFolder" />
+    </Property>
+    <!--Find the tfpt 2008 location-->
+    <Property Id="TFSPOWERTOOLS2010FOLDER">
+      <RegistrySearch Id="TFSPowerTools2010FolderLookup" Root="HKLM" Key="SYSTEM\CurrentControlSet\Control\Session Manager\Environment" Name="TFSPowerToolDir" Type="directory" />
+    </Property>
+    <!-- Installation Conditions that must be met -->
+    <Condition Message="ERROR: You must have Visual Studio 2010 installed to proceed with this installation.">VISUALSTUDIO2010INSTALLDIR</Condition>
+    <Condition Message="ERROR: You must have Microsoft Team Foundation Server 2010 Power Tools installed to proceed with this installation.">TFSPOWERTOOLS2010FOLDER</Condition>
+    <Condition Message="ERROR: The Developer Desktop Pack requires Windows 2000 or later">VersionNT &gt;= 500</Condition>
+    <Condition Message="ERROR: You need to be an administrator to install this product.">Privileged</Condition>
+    <Media Id="1" Cabinet="DevDesktopPack.cab" EmbedCab="yes" />
+    <!-- The system wide Microsoft application data location -->
+    <Property Id="GLOBALMSFTAPPDATADIR">
+      <DirectorySearch Depth="0" Id="GlobalMsftAppDataDir" Path="[CommonAppDataFolder]\Microsoft\" />
+    </Property>
+    <Property Id="MSVSSHAREDFOLDER">
+      <DirectorySearch Depth="10" Id="MsVsSharedFolder" Path="[ProgramFilesFolder]\Common Files\Microsoft Shared\MSEnv"></DirectorySearch>
+    </Property>
+    <!-- Define directory structure and pack level contents -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="VISUALSTUDIO2008INSTALLDIR">
+        <Component Id="compVSTrustedCommand" Guid="B06394DC-6C38-4561-B603-5EBAE70F5984" SharedDllRefCount="no" KeyPath="yes" NeverOverwrite="yes" Permanent="yes" Location="either">
+          <File Id="fileSrcSrv.ini" Name="srcsrv.ini" Source="$(var.SolutionDir)_Dependencies\DDPAdditionalFiles\" DiskId="1" Vital="yes"></File>
+        </Component>
+      </Directory>
+      <Directory Id="VISUALSTUDIO2010INSTALLDIR"></Directory>
+      <!-- Permanent  so the uninstall will not delete them. -->
+      <Directory Id="GLOBALMSFTAPPDATADIR" Name="AppData">
+        <Directory Id="MSEnvSharedDir" Name="MSEnvShared">
+          <Component Id="compMSEnvShared" Guid="91C6C592-71FF-4436-94ED-908A02EAA1B4" SharedDllRefCount="no" KeyPath="yes" NeverOverwrite="yes" Permanent="yes" Location="either">
+            <CreateFolder />
+          </Component>
+          <!-- The directory for addins. -->
+          <Directory Id="ADDINSDIR" Name="AddIns" />
+          <Component Id="compAddIns" Guid="5A09BA83-7AD3-45F2-936C-3F7A6F0EC56F" SharedDllRefCount="no" KeyPath="yes" NeverOverwrite="yes" Permanent="yes" Location="either">
+            <CreateFolder />
+          </Component>
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLDIR" Name="TFS Toolset">
+          <Component Id="componentInstallLocationRegKey" Guid="6A5ED214-4CD3-48A0-91D0-3F3E39717906">
+            <!-- Place the location in which the setup was installed to into a registry key so that the installed elements can find
+            their data files simply.  This is mostly used for the Macros currently. -->
+            <RegistryKey Id="registryRootKeyForPath" Action="createAndRemoveOnUninstall" Root="HKLM" Key="Software\COMPANY\SUBCOMP">
+              <RegistryValue Id="registryDDPLocation" Action="write" KeyPath="yes" Name="DDPToolsPath" Type="string" Value="[INSTALLDIR]"></RegistryValue>
+            </RegistryKey>
+          </Component>
+          <Component Id="componentInstallation2008ProxyConfig" Guid="8392A05B-EDDB-46F9-88D9-C4C335BA1666">
+            <Condition>VISUALSTUDIO2008INSTALLDIR</Condition>
+            <!-- Place the location in which the setup was installed to into a registry key so that the installed elements can find
+            their data files simply.  This is mostly used for the Macros currently. -->
+            <RegistryKey Id="registry2008ProxyKey" Action="createAndRemoveOnUninstall" Root="HKCU" Key="Software\Microsoft\VisualStudio\9.0\TeamFoundation\SourceControl\Proxy">
+              <RegistryValue Id="registryProxy2008URL" Action="write" Name="Url" Type="string" Value="[TFSPROXYVALUE]"></RegistryValue>
+              <RegistryValue Id="registryEnable2008Proxy" Action="write" Name="Enabled" Type="string" Value="[TFSPROXYENABLE]"></RegistryValue>
+            </RegistryKey>
+            <RegistryKey Id="registryVS2008SymbolPaths" Action="createAndRemoveOnUninstall" Root="HKCU" Key="Software\Microsoft\VisualStudio\9.0\Debugger">
+              <RegistryValue Id="registryVS2008SymbolPath" Action="write" Name="SymbolPath" Type="string" Value="[SYMBOLAPPVARIABLE]"></RegistryValue>
+              <RegistryValue Id="registryVS2008SymbolCache" Action="write" Name="SymbolCacheDir" Type="string" Value="c:\temp\symbols\"></RegistryValue>
+              <RegistryValue Id="registryVS2008SymbolPathState" Action="write" Name="SymbolPathState" Type="string" Value="1"></RegistryValue>
+              <RegistryValue Id="registryEnable2008SourceServer" Action="write" Name="UseSourceServer" Type="integer" Value="1"></RegistryValue>
+            </RegistryKey>
+          </Component>
+          <Component Id="componentInstallation2010ProxyConfig" Guid="703A0552-89EB-4DE5-B401-747B0EE06F8F">
+            <!-- Place the location in which the setup was installed to into a registry key so that the installed elements can find
+            their data files simply.  This is mostly used for the Macros currently. -->
+            <RegistryKey Id="registryProxyKey" Action="createAndRemoveOnUninstall" Root="HKCU" Key="Software\Microsoft\VisualStudio\10.0\TeamFoundation\SourceControl\Proxy">
+              <RegistryValue Id="registryProxyURL" Action="write" Name="Url" Type="string" Value="[TFSPROXYVALUE]"></RegistryValue>
+              <RegistryValue Id="registryEnableProxy" Action="write" Name="Enabled" Type="string" Value="[TFSPROXYENABLE]"></RegistryValue>
+            </RegistryKey>
+            <RegistryKey Id="registryVSSymbolPaths" Action="createAndRemoveOnUninstall" Root="HKCU" Key="Software\Microsoft\VisualStudio\10.0\Debugger">
+              <RegistryValue Id="registryVSSymbolPath" Action="write" Name="SymbolPath" Type="string" Value="[SYMBOLAPPVARIABLE]"></RegistryValue>
+              <RegistryValue Id="registryVSSymbolCache" Action="write" Name="SymbolCacheDir" Type="string" Value="c:\temp\symbols\"></RegistryValue>
+              <RegistryValue Id="registryVSSymbolPathState" Action="write" Name="SymbolPathState" Type="string" Value="1"></RegistryValue>
+              <RegistryValue Id="registryEnableSourceServer" Action="write" Name="UseSourceServer" Type="integer" Value="1"></RegistryValue>
+            </RegistryKey>
+            <Environment Id="environmentSymbolPath" Action="create" Name="_NT_SYMBOL_PATH" Value="[SYMBOLPATHVARIABLE]" Permanent="yes" System="yes" />
+          </Component>
+          <Component Id="TFSWebAccessLinkComponent" Guid="b2278394-7bc7-47c0-ac31-030ba6d108d4">
+            <File Id="TFSWebAccess.url" Name="TFSWebAccess.url" Source="$(var.SolutionDir)_Dependencies\DDPAdditionalFiles\Shortcuts\" DiskId="1" Vital="yes">
+              <Shortcut Id="TFSWebAccessSM" Directory="ProgramMenuDir" Advertise="no" Name="TFS Web Access" WorkingDirectory="INSTALLDIR" />
+            </File>
+            <Registry Root="HKCU" Key="SOFTWARE\COMPANY\SUBCOMP\Shortcut1" KeyPath="yes" Id="Reg1" Type="string" Name="Reg11" Value="32" />
+            <RemoveFolder Id="DeleteShortcutFolder" On="uninstall" Directory="ProgramMenuDir" />
+          </Component>
+          <Component Id="ProcessToolsetDocLinkComponent" Guid="30e892b2-6a2d-4e73-9388-2b071db51652">
+            <File Id="ProcessToolsetDocumentation.url" Name="ProcessToolsetDocumentation.url" Source="$(var.SolutionDir)_Dependencies\DDPAdditionalFiles\Shortcuts\" DiskId="1" Vital="yes">
+              <Shortcut Id="ProcessToolsetDocSM" Directory="ProgramMenuDir" Advertise="no" Name="TFS Toolset Documentation" WorkingDirectory="INSTALLDIR" />
+            </File>
+            <Registry Root="HKCU" Key="SOFTWARE\COMPANY\SUBCOMP\Shortcut1" KeyPath="yes" Id="Reg2" Type="string" Name="Reg11" Value="32" />
+            <RemoveFolder Id="DeleteShortcutFolder2" On="uninstall" Directory="ProgramMenuDir" />
+          </Component>
+          <Component Id="EDSShortcutComponent" Guid="2E130B74-1700-4b2a-AFA7-CE7B3379AF6C">
+            <File Id="EnvironmentDataSite.url" Name="EnvironmentDataSite.url" Source="$(var.SolutionDir)_Dependencies\DDPAdditionalFiles\Shortcuts\" DiskId="1" Vital="yes">
+              <Shortcut Id="EDSShortcut" Directory="ProgramMenuDir" Advertise="no" Name="Environment Data Site" WorkingDirectory="INSTALLDIR" />
+            </File>
+            <Registry Root="HKCU" Key="SOFTWARE\COMPANY\SUBCOMP\Shortcut1" KeyPath="yes" Id="Reg3" Type="string" Name="Reg11" Value="32" />
+            <RemoveFolder Id="DeleteShortcutFolder3" On="uninstall" Directory="ProgramMenuDir" />
+          </Component>
+        </Directory>
+      </Directory>
+      <!-- Define Start Menu folder for the Pack -->
+      <Directory Id="ProgramMenuFolder" Name="Programs">
+        <Directory Id="ProgramMenuDir" Name="TFS Toolset" />
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop" />
+    </Directory>
+    <!-- Add strongnaming supression to allow debugging -->
+    <Binary Id="SN.exe" SourceFile="$(var.SolutionDir)_Dependencies\FileReferences\sn.exe" />
+    <CustomAction Id="strongNaming" BinaryKey="SN.exe" ExeCommand="-Vr *,*"></CustomAction>
+    <InstallExecuteSequence>
+      <Custom Action="strongNaming" After="StartServices">NOT installed</Custom>
+    </InstallExecuteSequence>
+    <!-- Define Pack Specific Features - Documentation & TFS Web Access links -->
+    <Feature Id="WebLinksFeature" Title="TFS Toolset Documentation" Description="Link to TFS Toolset Documentation" Level="1" ConfigurableDirectory="INSTALLDIR" AllowAdvertise="no" TypicalDefault="install" Absent="disallow">
+      <ComponentRef Id="ProcessToolsetDocLinkComponent" />
+    </Feature>
+    <Feature Id="WebAccessLinkFeature" Title="TFS Web Access" Description="Link to the TFS Toolset Team Foundation Server Web Access Portal" Level="1" ConfigurableDirectory="INSTALLDIR" AllowAdvertise="no" TypicalDefault="install" Absent="disallow">
+      <!-- TODO: Remove the comments around this ComponentRef element and the Component above in order to add resources to this installer. -->
+      <!--<MergeRef Id="MM1"/>-->
+      <ComponentRef Id="TFSWebAccessLinkComponent" />
+    </Feature>
+    <Feature Id="EDSLinkFeature" Title="Environment Data Site" Description="Link to the TFS Toolset Environment Data Site" Level="1" ConfigurableDirectory="INSTALLDIR" AllowAdvertise="no" TypicalDefault="install" Absent="disallow">
+      <ComponentRef Id="EDSShortcutComponent" />
+    </Feature>
+    <Feature Id="featureBaseInstall" Title="Basic Installation" Description="Basic Installation Features" Level="1" ConfigurableDirectory="INSTALLDIR" AllowAdvertise="no" TypicalDefault="install" Absent="disallow">
+      <!-- But the basic features in.-->
+      <ComponentRef Id="componentInstallLocationRegKey" />
+      <ComponentRef Id="componentInstallation2008ProxyConfig" />
+      <ComponentRef Id="componentInstallation2010ProxyConfig" />
+      <ComponentRef Id="compVSTrustedCommand" />
+      <ComponentRef Id="ConfigurationUninstallKey" />
+    </Feature>
+    <!-- Reference the other feature sets within the Pack -->
+    <FeatureRef Id="BugPromoterToolFeature" />
+    <FeatureRef Id="ToolsetBuildHelperFeature" />
+    <FeatureRef Id="featureCARulesFeature" />
+    <FeatureRef Id="featureCARuleSetsFeature" />
+    <FeatureRef Id="featureCertBuildTool" />
+    <FeatureRef Id="CheckInPolicies2008Feature" />
+    <FeatureRef Id="CheckInPolicies2010Feature" />
+    <FeatureRef Id="ConfigEditorFeature" />
+    <FeatureRef Id="DropzoneToolFeature" />
+    <FeatureRef Id="KeroseneFeature" />
+    <FeatureRef Id="TexMexFeature" />
+    <!-- Reference the nice fluffy UI -->
+    <UIRef Id="WixUI_FeatureTree" />
+    <Binary Id="binaryVBSForProxyConfig" src="$(var.SolutionDir)_Dependencies\DDPAdditionalFiles\configureTFSProxy.vbs" />
+    <CustomAction Id="customactionConfigureTFSProxy" BinaryKey="binaryVBSForProxyConfig" VBScriptCall="Main" Execute="immediate" Return="check" />
+    <Property Id="TFSPROXYVALUE" Value="XXXINVALIDXXX"></Property>
+    <Property Id="TFSPROXYENABLE" Value="XXXINVALIDXXX"></Property>
+    <Property Id="SYMBOLPATHVARIABLE" Value="XXXINVALIDXXX"></Property>
+    <Property Id="SYMBOLAPPVARIABLE" Value="XXXINVALIDXXX"></Property>
+    <InstallExecuteSequence>
+      <Custom Action="customactionConfigureTFSProxy" After="LaunchConditions"></Custom>
+    </InstallExecuteSequence>
+  </Product>
+</Wix>
