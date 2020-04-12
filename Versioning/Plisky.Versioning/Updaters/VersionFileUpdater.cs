@@ -42,7 +42,9 @@ namespace Plisky.CodeCraft {
             if (!File.Exists(fl)) {
                 throw new FileNotFoundException($"Filename must be present for version update {fl}");
             }
-            string versonToWrite = cv.GetVersionString(cv.GetDisplayType(fut,dt));
+
+            var dtx = cv.GetDisplayType(fut, dt);
+            string versonToWrite = cv.GetVersionString(dtx);
             switch (fut) {
                 case FileUpdateType.Assembly:
                     UpdateCSFileWithAttribute(fl, ASMFILE_VER_TAG, versonToWrite);

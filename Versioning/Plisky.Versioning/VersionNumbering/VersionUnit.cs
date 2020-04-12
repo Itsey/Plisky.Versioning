@@ -1,10 +1,14 @@
 ﻿using Plisky.Plumbing;
 using System;
 using Plisky.Diagnostics;
+using System.Collections.Generic;
 
 namespace Plisky.CodeCraft {
     public class VersionUnit {
-        private Bilge b = new Bilge();
+    
+
+        public DigitIncremementBehaviour Behaviour { get; set; }
+        private Bilge b = new Bilge("Plisky-VersionUnit");
         const int DAYS_IN_A_WEEK = 7;
 
         private string actualValue = null;
@@ -15,9 +19,22 @@ namespace Plisky.CodeCraft {
             set { actualValue = value; ValidateForBehaviour(); }
         }
         public string PreFix { get; set; }
-        public DigitIncremementBehaviour Behaviour { get; set; }
 
 
+
+        public VersionUnit() : this(string.Empty, string.Empty, DigitIncremementBehaviour.Fixed) {
+        }
+
+        public VersionUnit(string v) : this(v, String.Empty) {
+        }
+
+        public VersionUnit(string versionValue, string versionPrefix, DigitIncremementBehaviour beh = DigitIncremementBehaviour.Fixed) {
+            this.Value = versionValue;
+            this.PreFix = versionPrefix;
+            SetBehaviour(beh);
+        }
+
+        
         /// <summary>
         /// Modifies the versioning digit using the behaviours rule and information as to whether the next most significant digit 
         /// has changed.  
@@ -132,18 +149,7 @@ namespace Plisky.CodeCraft {
 
         }
 
-        public VersionUnit():this(string.Empty,string.Empty) {
-
-        }
-
-        public VersionUnit(string v) : this(v, String.Empty) {
-        }
-
-        public VersionUnit(string versionValue, string versionPrefix, DigitIncremementBehaviour beh = DigitIncremementBehaviour.Fixed) {
-            this.Value = versionValue;
-            this.PreFix = versionPrefix;
-            this.Behaviour = beh;
-        }
+      
 
        
 

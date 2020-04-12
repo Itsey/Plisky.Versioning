@@ -43,6 +43,7 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="SupportingFiles\UpdateDiags.cmd" />
     <None Include="SupportingFiles\testing.cmd" />
     <None Include="versioningrules.json" />
     <None Include="SupportingFiles\releaseversioner.cmd" />

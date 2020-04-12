@@ -273,21 +273,29 @@ namespace Plisky.CodeCraft.Test {
                 new VersionUnit("1", ".", DigitIncremementBehaviour.ContinualIncrement),
                 new VersionUnit("1", ".", DigitIncremementBehaviour.ContinualIncrement),
                 new VersionUnit("1", ".", DigitIncremementBehaviour.ContinualIncrement));
+
             // None of the defaults are no display, therefore this should set all to a new value
             cv.SetDisplayTypeForVersion(FileUpdateType.Assembly, DisplayType.NoDisplay);
             cv.SetDisplayTypeForVersion(FileUpdateType.AssemblyFile, DisplayType.NoDisplay);
             cv.SetDisplayTypeForVersion(FileUpdateType.AssemblyInformational, DisplayType.NoDisplay);
             cv.SetDisplayTypeForVersion(FileUpdateType.Wix, DisplayType.NoDisplay);
-
+            cv.SetDisplayTypeForVersion(FileUpdateType.NetStdAssembly, DisplayType.NoDisplay);
+            cv.SetDisplayTypeForVersion(FileUpdateType.NetStdFile, DisplayType.NoDisplay);
+            cv.SetDisplayTypeForVersion(FileUpdateType.NetStdInformational, DisplayType.NoDisplay);
+            cv.SetDisplayTypeForVersion(FileUpdateType.Nuspec, DisplayType.NoDisplay);
 
             sut.Persist(cv);
             var cv2 = sut.GetVersion();
 
-            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.Assembly)); //,"The file update type assembly was not returned correctly");
-            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.AssemblyFile)); //, "The file update type AssemblyFile was not returned correctly");
-            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.AssemblyInformational)); //, "The file update type AssemblyInformational was not returned correctly");
-            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.Wix)); //, "The file update type assembly was not returned correctly");
-
+            // Check that all of the display types come back as epxected
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.Assembly)); 
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.AssemblyFile)); 
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.AssemblyInformational)); 
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.Wix)); 
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.NetStdAssembly));
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.NetStdFile));
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.NetStdInformational));
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.Nuspec));
         }
 
     }

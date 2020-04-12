@@ -6,7 +6,8 @@ pushd C:\Files\Code\git\PliskyVersioning\Versioning\PliskyTool\bin\Debug\netcore
 :: Test no version store
 ::dotnet PliskyTool.dll UpdateFiles -DryRun -Root=c:\files\code\git\pliskyversioning\versioning\testdata -VS=c:\temp\toolver.ver -Increment
 
-dotnet PliskyTool.dll UpdateFiles -Root=D:\Temp\__Delworking\VersioingTestCodeDelete\ -VS=c:\temp\toolver.ver -Increment -mm=**\\properties\\assemblyinfo.cs,**\\versions\\CommonAssemblyInfo.cs,**\\*.nuspec,**\Plisky.DiagnosticsStd2\*.csproj
+dotnet PliskyTool.dll Override -VS=c:\temp\toolver.ver -Q=.+.Alpha.0 
+::-DryRun
 
 popd
 

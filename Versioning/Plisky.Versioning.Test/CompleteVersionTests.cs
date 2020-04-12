@@ -1,7 +1,9 @@
 using Plisky.Diagnostics;
 
+
 namespace Plisky.CodeCraft.Test {
     using System;
+    using Plisky.CodeCraft;
     using Plisky.Test;
     using Xunit;
 
@@ -26,6 +28,72 @@ namespace Plisky.CodeCraft.Test {
         }
 
 
+
+        [Theory(DisplayName = (nameof(DisplayTypes_WorkCorrectly)))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        [InlineData("1.1.1.1", "1.1.1.1", DisplayType.Full)]
+        [InlineData("1.9.0.0", "1.9.0.0", DisplayType.Full)]
+        [InlineData("1.0", "1.0", DisplayType.Full)]
+        [InlineData("1000.1000.1000.1000", "1000.1000.1000.1000", DisplayType.Full)]
+        [InlineData("1.1.1.1", "1.1", DisplayType.Short)]
+        [InlineData("1.9.0.0", "1.9", DisplayType.Short)]
+        [InlineData("1.0", "1.0", DisplayType.Short)]
+        [InlineData("1000.1000.1000.1000", "1000.1000", DisplayType.Short)]
+        [InlineData("1.1.1.1", "1.1.1", DisplayType.ThreeDigit)]
+        [InlineData("1.9.0.0", "1.9.0", DisplayType.ThreeDigit)]
+        [InlineData("1.0", "1.0", DisplayType.ThreeDigit)]
+        [InlineData("1000.1000.1000.1000", "1000.1000.1000", DisplayType.ThreeDigit)]
+        public void DisplayTypes_WorkCorrectly(string version, string expectedDisplay, DisplayType dtype) {
+            b.Info.Flow();
+
+            CompleteVersion cv = new CompleteVersion(version);
+            string output = cv.GetVersionString(dtype);
+
+            Assert.Equal(expectedDisplay, output);
+        }
+
+
+        [Theory(DisplayName = nameof(PendingIncrementPatterns_Work))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        [InlineData("1.0.0.0", "+.0.0.0", "2.0.0.0")]
+        [InlineData("1.0.0.0", "0.0.0.0", "0.0.0.0")]
+        [InlineData("1.0.0.0", "+.+.+.+", "2.1.1.1")]
+        [InlineData("2.2.2.2", "-.-.-.-", "1.1.1.1")]
+        [InlineData("2.2.2.2", "-..-.-", "1.2.1.1")]
+        [InlineData("2.2.2.2", "...", "2.2.2.2")]
+        [InlineData("2.2.2.2", "..Bealzebub.-", "2.2.Bealzebub.1")]
+        [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear", "Unicorn.Peach.Applie.Pear")]
+        public void PendingIncrementPatterns_Work(string startVer, string pattern, string endVer) {
+            b.Info.Flow();
+
+            CompleteVersion cv = new CompleteVersion(startVer);
+            
+            cv.ApplyPendingVersion(pattern);
+            cv.Increment();
+
+            Assert.Equal(endVer, cv.ToString());
+        }
+
+        [Theory(DisplayName ="ManipulateVersionTests")]
+        [InlineData("1","+","2")]
+        [InlineData("1", "-", "0")]
+        [InlineData("1", "1", "1")]
+        [InlineData("1", "2", "2")]
+        [InlineData("1", "alpha", "alpha")]
+        [InlineData("1", "brav+o", "brav+o")]
+        [InlineData("3", "+", "4")]
+        [InlineData("9", "", "9")]
+        [InlineData("9", "6", "6")]
+        [InlineData("bannana", "pEEl", "pEEl")]
+        public void ManipulateVersionTests(string value, string pattern, string result) {
+            var sut = new CompleteVersionMock();
+            
+            var res = sut.Mock.ManipulateVerisonBasedOnPattern(pattern, value);
+
+            Assert.Equal(result, res);
+        }
 
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
@@ -146,7 +214,7 @@ namespace Plisky.CodeCraft.Test {
             var sut = new CompleteVersion(vu);
             sut.Increment();
 
-            Assert.Equal("5", sut.GetVersionString(DisplayType.Full)); 
+            Assert.Equal("5", sut.GetVersionString(DisplayType.Full));
         }
 
         [Fact]
@@ -181,7 +249,7 @@ namespace Plisky.CodeCraft.Test {
         [Trait(Traits.Style, Traits.Unit)]
         public void ToString_Equals_GetVersionString() {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-            Assert.Equal(sut.ToString(), sut.GetVersionString(DisplayType.Full)); 
+            Assert.Equal(sut.ToString(), sut.GetVersionString(DisplayType.Full));
         }
 
         [Fact]
@@ -190,7 +258,7 @@ namespace Plisky.CodeCraft.Test {
         public void GetVersionString_Short_ShowsCorrect() {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
             var dt = DisplayType.Short;
-            Assert.Equal("1.0", sut.GetVersionString(dt)); 
+            Assert.Equal("1.0", sut.GetVersionString(dt));
         }
 
         [Fact]
@@ -199,7 +267,7 @@ namespace Plisky.CodeCraft.Test {
         public void GetVersionString_Short_EvenWhenMoreDigits() {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."), new VersionUnit("1", "."));
             var dt = DisplayType.Short;
-            Assert.Equal("1.0", sut.GetVersionString(dt)); 
+            Assert.Equal("1.0", sut.GetVersionString(dt));
         }
 
         [Fact]
@@ -207,7 +275,7 @@ namespace Plisky.CodeCraft.Test {
         [Trait(Traits.Style, Traits.Unit)]
         public void GetString_Respects_AlternativeFormatter() {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "-"), new VersionUnit("1", "-"));
-            Assert.Equal("1-0-1", sut.ToString()); 
+            Assert.Equal("1-0-1", sut.ToString());
         }
 
         [Fact]
@@ -215,7 +283,7 @@ namespace Plisky.CodeCraft.Test {
         [Trait(Traits.Style, Traits.Unit)]
         public void BasicTwoDigitToString_ReturnsCorrectly() {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-            Assert.True(sut.ToString() == "1.0"); 
+            Assert.True(sut.ToString() == "1.0");
         }
     }
 }

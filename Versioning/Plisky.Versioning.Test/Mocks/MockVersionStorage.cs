@@ -21,10 +21,10 @@ namespace Plisky.CodeCraft.Test {
             }
 
             public void SetBehaviours(DigitIncremementBehaviour dig1, DigitIncremementBehaviour dig2, DigitIncremementBehaviour dig3, DigitIncremementBehaviour dig4) {
-                parent.loadedVersion.Digits[0].Behaviour = dig1;
-                parent.loadedVersion.Digits[1].Behaviour = dig2;
-                parent.loadedVersion.Digits[2].Behaviour = dig3;
-                parent.loadedVersion.Digits[3].Behaviour = dig4;
+                parent.loadedVersion.Digits[0].SetBehaviour(dig1);
+                parent.loadedVersion.Digits[1].SetBehaviour(dig2);
+                parent.loadedVersion.Digits[2].SetBehaviour(dig3);
+                parent.loadedVersion.Digits[3].SetBehaviour(dig4);
             }
         }
         #endregion

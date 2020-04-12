@@ -45,6 +45,9 @@ namespace PliskyTool {
                 case "CreateVersion":
                     CreateNewVersionStore();
                     return true;
+                case "Override":
+                    CreateNewPendingIncrement();
+                    return true;
                 case "UpdateFiles":
                     ApplyVersionIncrement();
                     return true;
@@ -52,6 +55,27 @@ namespace PliskyTool {
                     return false;
             }
 
+        }
+
+        private static void CreateNewPendingIncrement() {
+            
+
+            var per = new JsonVersionPersister(Program.Options.VersionPersistanceValue);
+            Versioning ver = new Versioning(per);
+
+            string verPendPattern = Options.QuickValue;
+
+            Console.WriteLine($"Apply Delayed Incremenet. [{ver.ToString()}] using [{verPendPattern}]");
+            ver.Version.ApplyPendingVersion(verPendPattern);
+
+            if (!Options.TestMode) {                                
+                per.Persist(ver.Version);
+                ver.Increment();
+                Console.WriteLine($"Saving Overriden Version [{ver.GetVersion()}]");
+            } else {
+                ver.Version.Increment();
+                Console.WriteLine($"Would Save "+ver.Version.ToString());
+            }
         }
 
         private static void ApplyVersionIncrement() {
