@@ -1,11 +1,6 @@
-﻿using Plisky.Plumbing;
+﻿using Plisky.Diagnostics;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Plisky.Diagnostics;
 
 namespace Plisky.CodeCraft {
 
@@ -38,8 +33,6 @@ namespace Plisky.CodeCraft {
             set { behaviour = value; }
         }
 
-
-
         /// <summary>
         /// Gets or Sets the override value.  This value will be used in place of any other during the execute phase
         /// effectivly setting the specified digit to this value.
@@ -51,20 +44,20 @@ namespace Plisky.CodeCraft {
                 if (value >= 0) {
                     this.overrideValue = value;
                 } else {
-                    this.overrideValue = null; 
+                    this.overrideValue = null;
                 }
             }
         }
 
         /// <summary>
-        /// Gets or sets the prompt value.  Used 
+        /// Gets or sets the prompt value.  Used
         /// when prompts are used for version numbers to reflect the prompt request without popping the dialig up
         /// more than once.
         /// </summary>
         internal string PromptValueDuringIncrement {
             get { return overrideValue.ToString(); }
             set {
-               // b.Assert.True(this.Behaviour == DigitIncremementBehaviour.Prompt, "Invalid operation when the behaviour is not prompt");
+                // b.Assert.True(this.Behaviour == DigitIncremementBehaviour.Prompt, "Invalid operation when the behaviour is not prompt");
 
                 this.overrideValue = int.Parse(value, CultureInfo.CurrentUICulture);
 
@@ -73,7 +66,6 @@ namespace Plisky.CodeCraft {
                 }
             }
         }
-
 
         public override string ToString() {
             return this.currentValue.ToString(CultureInfo.CurrentUICulture);
@@ -102,10 +94,9 @@ namespace Plisky.CodeCraft {
             this.DigitValue = startValue;
         }
 
-
         /// <summary>
-        /// Modifies the versioning digit using the behaviours rule and information as to whether the next most significant digit 
-        /// has changed.  
+        /// Modifies the versioning digit using the behaviours rule and information as to whether the next most significant digit
+        /// has changed.
         /// </summary>
         /// <param name="higherDigitChanged">Wether or not the next significant digit is changed (required for some behaviours)</param>
         /// <param name="anyHigherDigitChanged">Whether any of the more significant digits have changed</param>
@@ -115,15 +106,16 @@ namespace Plisky.CodeCraft {
         internal bool PerformIncrement(bool higherDigitChanged, bool anyHigherDigitChanged, DateTime lastBuildDate, DateTime baseDate) {
 
             #region entry code
+
             if (higherDigitChanged) { b.Assert.True(anyHigherDigitChanged, "Logic error on changed digits"); }
-            #endregion
+
+            #endregion entry code
 
             const int DAYS_IN_A_WEEK = 7;
 
-
             b.Verbose.Log("VersioningSupport, Applying version change to " + position.ToString() + " using " + behaviour.ToString());
 
-            int verStash = currentValue;  // remember initial value to determine whether a change was made.     
+            int verStash = currentValue;  // remember initial value to determine whether a change was made.
             TimeSpan ts;              // Used for those that need to know the time since the base date has elaspsed
 
             if (overrideValue >= 0) {
@@ -136,9 +128,7 @@ namespace Plisky.CodeCraft {
                 // Removed try/catch as the code is not checked then no exception is thrown when these methods overflow.  Added unchecked
                 // keyword so that this is now explicit.
                 unchecked {
-
                     switch (behaviour) {
-
                         // This will incremement by one each time its run on a specific day.
                         case DigitIncremementBehaviour.DailyAutoIncrement:
                             if (DateTime.Today == lastBuildDate) {
@@ -159,8 +149,6 @@ namespace Plisky.CodeCraft {
                             currentValue = (int)(ts.TotalDays / DAYS_IN_A_WEEK);
                             break;
 
-
-
                         case DigitIncremementBehaviour.AutoIncrementWithReset:
                             if (higherDigitChanged) {
                                 currentValue = 0;
@@ -176,18 +164,17 @@ namespace Plisky.CodeCraft {
                                 currentValue++;
                             }
                             break;
+
                         case DigitIncremementBehaviour.ContinualIncrement:
                             currentValue++;
                             break;
                     }
                 }
-
             }
             // Since we changed from Uints an overflow now creates a -ve version. Changed this to force it back
             // to zero.  As the code is unchecked we end up with -ve not a thrown exception.
             if (currentValue < 0) { currentValue = 0; }
             return (currentValue != verStash);  // Returns true if the value has changed.
         }
-
     }
 }

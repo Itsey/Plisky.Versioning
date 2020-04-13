@@ -1,14 +1,21 @@
 using Plisky.Diagnostics;
 
-
 namespace Plisky.CodeCraft.Test {
-    using System;
+
     using Plisky.CodeCraft;
     using Plisky.Test;
+    using System.IO;
     using Xunit;
 
     public class CompleteVersionTests {
         private Bilge b = new Bilge();
+        private UnitTestHelper uth;
+        private TestSupport ts;
+
+        public CompleteVersionTests() {
+            uth = new UnitTestHelper();
+            ts = new TestSupport(uth);
+        }
 
         [Theory(DisplayName = nameof(CompletedVersion_ConstructorStringParser_Works))]
         [Trait(Traits.Age, Traits.Fresh)]
@@ -26,8 +33,6 @@ namespace Plisky.CodeCraft.Test {
 
             Assert.Equal(expectedDigits, cv.Digits.Length);
         }
-
-
 
         [Theory(DisplayName = (nameof(DisplayTypes_WorkCorrectly)))]
         [Trait(Traits.Age, Traits.Fresh)]
@@ -53,7 +58,6 @@ namespace Plisky.CodeCraft.Test {
             Assert.Equal(expectedDisplay, output);
         }
 
-
         [Theory(DisplayName = nameof(PendingIncrementPatterns_Work))]
         [Trait(Traits.Age, Traits.Fresh)]
         [Trait(Traits.Style, Traits.Unit)]
@@ -69,15 +73,30 @@ namespace Plisky.CodeCraft.Test {
             b.Info.Flow();
 
             CompleteVersion cv = new CompleteVersion(startVer);
-            
+
             cv.ApplyPendingVersion(pattern);
             cv.Increment();
 
             Assert.Equal(endVer, cv.ToString());
         }
 
-        [Theory(DisplayName ="ManipulateVersionTests")]
-        [InlineData("1","+","2")]
+        [Fact(DisplayName = nameof(VersioningFile_Missing_ThrowsException))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void VersioningFile_Missing_ThrowsException() {
+            b.Info.Flow();
+
+            MockVersionStorage mva = new MockVersionStorage("");
+
+            MockVersioning v = new MockVersioning(mva);
+
+            Assert.Throws<FileNotFoundException>(() => {
+                v.LoadVersioningMinmatchersFromSourceFile(@"C:\doesnotexist\afilethatdontexist.azdyt");
+            });
+        }
+
+        [Theory(DisplayName = "ManipulateVersionTests")]
+        [InlineData("1", "+", "2")]
         [InlineData("1", "-", "0")]
         [InlineData("1", "1", "1")]
         [InlineData("1", "2", "2")]
@@ -89,7 +108,7 @@ namespace Plisky.CodeCraft.Test {
         [InlineData("bannana", "pEEl", "pEEl")]
         public void ManipulateVersionTests(string value, string pattern, string result) {
             var sut = new CompleteVersionMock();
-            
+
             var res = sut.Mock.ManipulateVerisonBasedOnPattern(pattern, value);
 
             Assert.Equal(result, res);
@@ -127,7 +146,6 @@ namespace Plisky.CodeCraft.Test {
             Assert.Equal("2.0.1.0", sut.GetVersionString(DisplayType.Full)); //, "The reset should prevent the last digit from incrementing");
         }
 
-
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
@@ -139,7 +157,6 @@ namespace Plisky.CodeCraft.Test {
                new VersionUnit("0", ".", DigitIncremementBehaviour.AutoIncrementWithResetAny));
             Assert.Equal(sut.GetVersionString(DisplayType.Full), sut.GetVersionString()); //, "The default should be to display as full");
         }
-
 
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
@@ -242,7 +259,6 @@ namespace Plisky.CodeCraft.Test {
 
             Assert.Equal("Fish", sut.GetVersionString(DisplayType.Full));
         }
-
 
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]

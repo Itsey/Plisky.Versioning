@@ -1,9 +1,10 @@
-﻿using System;
+﻿namespace Plisky.CodeCraft {
 
-namespace Plisky.CodeCraft {
     public abstract class VersionStorage {
         protected string InitValue = null;
+
         protected abstract void ActualPersist(CompleteVersion cv);
+
         protected abstract CompleteVersion ActualLoad();
 
         /// <summary>
@@ -35,7 +36,5 @@ namespace Plisky.CodeCraft {
             }
             return loaded;
         }
-
-     
     }
 }

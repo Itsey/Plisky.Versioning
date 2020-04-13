@@ -1,9 +1,8 @@
-﻿
-using Plisky.Plumbing;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Plisky.CodeCraft {
+
     public class CompleteVersion {
 
         /// <summary>
@@ -22,45 +21,39 @@ namespace Plisky.CodeCraft {
             };
         }
 
-
         public VersionUnit[] Digits;
-        public DisplayType[] displayTypes;
+
+        public Dictionary<FileUpdateType, DisplayType> DisplayTypes = new Dictionary<FileUpdateType, DisplayType>();
 
         public CompleteVersion() {
-            
-            
-
-            displayTypes = new DisplayType[8];
-            displayTypes[(int)FileUpdateType.Assembly] = DisplayType.Short;
-            displayTypes[(int)FileUpdateType.AssemblyFile] = DisplayType.Full;
-            displayTypes[(int)FileUpdateType.AssemblyInformational] = DisplayType.Full;
-            displayTypes[(int)FileUpdateType.Wix] = DisplayType.Full;
-            displayTypes[(int)FileUpdateType.Nuspec] = DisplayType.ThreeDigit;
-            displayTypes[(int)FileUpdateType.NetStdAssembly] = DisplayType.Short;
-            displayTypes[(int)FileUpdateType.NetStdFile] = DisplayType.Full;
-            displayTypes[(int)FileUpdateType.NetStdInformational] = DisplayType.Full;
+            DisplayTypes.Add(FileUpdateType.NetAssembly, DisplayType.Short);
+            DisplayTypes.Add(FileUpdateType.NetFile, DisplayType.Full);
+            DisplayTypes.Add(FileUpdateType.NetInformational, DisplayType.Full);
+            DisplayTypes.Add(FileUpdateType.Wix, DisplayType.Full);
+            DisplayTypes.Add(FileUpdateType.Nuspec, DisplayType.ThreeDigit);
+            DisplayTypes.Add(FileUpdateType.StdAssembly, DisplayType.Short);
+            DisplayTypes.Add(FileUpdateType.StdFile, DisplayType.Full);
+            DisplayTypes.Add(FileUpdateType.StdInformational, DisplayType.Full);
         }
 
         public bool IsDefault { get; set; }
 
         public void SetDisplayTypeForVersion(FileUpdateType fut, DisplayType dt) {
-            displayTypes[(int)fut] = dt;
+            DisplayTypes[fut] = dt;
         }
 
-        public DisplayType GetDisplayType(FileUpdateType fut, DisplayType dt= DisplayType.Default) {
-            if (dt != DisplayType.Default) { return dt;  }
-            return displayTypes[(int)fut];
+        public DisplayType GetDisplayType(FileUpdateType fut, DisplayType dt = DisplayType.Default) {
+            if (dt != DisplayType.Default) { return dt; }
+            return DisplayTypes[fut];
         }
 
         public CompleteVersion(params VersionUnit[] versionDigits) : this() {
             Digits = versionDigits;
         }
 
- 
-
         public CompleteVersion(string initialValue) : this() {
             if (initialValue.Contains(".")) {
-                string[] parse = initialValue.Split(new char[] { '.'},StringSplitOptions.RemoveEmptyEntries);
+                string[] parse = initialValue.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
                 var vd = new List<VersionUnit>();
                 string prefix = "";
                 foreach (var f in parse) {
@@ -83,22 +76,19 @@ namespace Plisky.CodeCraft {
         /// <param name="pendingPattern">Pattern [val].[val].[val].[val]</param>
         public void ApplyPendingVersion(string pendingPattern) {
             string[] changes = pendingPattern.Split('.');
-            for(int i=0; i<changes.Length; i++) {
-
+            for (int i = 0; i < changes.Length; i++) {
                 if (Digits.Length > i) {
                     string cval = Digits[i].Value;
                     var nv = ManipulateValueBasedOnPattern(changes[i], cval);
-                    if (nv!=null) {
+                    if (nv != null) {
                         Digits[i].IncrementOverride = nv;
-                    }                    
+                    }
                 }
             }
-
-            
         }
 
         protected string ManipulateValueBasedOnPattern(string pattern, string currentValue) {
-            if (string.IsNullOrEmpty(pattern)) { return null; }
+            if (string.IsNullOrEmpty(pattern)) { return currentValue; }
 
             if (int.TryParse(currentValue, out int currentInteger)) {
                 if (pattern == "+") {
@@ -109,7 +99,7 @@ namespace Plisky.CodeCraft {
             } else {
                 if (int.TryParse(pattern, out int patternAsInt)) {
                     return patternAsInt.ToString();
-                } 
+                }
             }
 
             // Fallthrough - pattern is a version name.
@@ -122,14 +112,12 @@ namespace Plisky.CodeCraft {
             if ((dt == DisplayType.Short) && (Digits.Length > 2)) {
                 stopPoint = 2;
             }
-            if ((dt == DisplayType.ThreeDigit) && (Digits.Length> 3)) {
+            if ((dt == DisplayType.ThreeDigit) && (Digits.Length > 3)) {
                 stopPoint = 3;
             }
 
             for (int i = 0; i < stopPoint; i++) {
-
                 result += Digits[i].ToString();
-
             }
             return result;
         }
@@ -142,14 +130,11 @@ namespace Plisky.CodeCraft {
             bool lastChanged = false;
             bool anyChanged = false;
             DateTime t1 = DateTime.Now;
-            
+
             foreach (var un in Digits) {
                 lastChanged = un.PerformIncrement(lastChanged, anyChanged, t1, t1);
                 if (lastChanged) { anyChanged = true; }
             }
         }
-
-
-
     }
 }

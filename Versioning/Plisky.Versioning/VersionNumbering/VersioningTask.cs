@@ -1,11 +1,11 @@
 ﻿using Minimatch;
-using Plisky.Plumbing;
+using Plisky.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Plisky.Diagnostics;
 
 namespace Plisky.CodeCraft {
+
     public class VersioningTask {
         private Bilge b = new Bilge();
         protected Dictionary<string, List<FileUpdateType>> pendingUpdates = new Dictionary<string, List<FileUpdateType>>();
@@ -13,25 +13,30 @@ namespace Plisky.CodeCraft {
         protected List<string> messageLog = new List<string>();
 
         public delegate void LogEventHandler(object sender, LogEventArgs e);
-        public event LogEventHandler Logger=null;
+
+        public event LogEventHandler Logger = null;
+
         public string[] LogMessages {
             get {
                 return messageLog.ToArray();
-            } }
+            }
+        }
+
         private string Test(string thisone) {
             int idx = thisone.IndexOf("]}#");
             string write = thisone.Substring(idx + 7);
-            if (Logger!=null) {
+            if (Logger != null) {
                 //Console.WriteLine("Calling logger 3");
                 Logger(this, new LogEventArgs() {
                     Severity = "INFO",
-                    Text = "LOGGER"+write
+                    Text = "LOGGER" + write
                 });
             }
-            Console.WriteLine("CW "+write);
+            Console.WriteLine("CW " + write);
             //messageLog.Add("LG " + write);
             return thisone;
         }
+
         public VersioningTask() {
         }
 
@@ -47,8 +52,6 @@ namespace Plisky.CodeCraft {
             pendingUpdates[minmatchPattern].Add(updateToPerform);
         }
 
-      
-
         public void SetAllVersioningItems(string verItemsSimple) {
             b.Info.Log("SetAllVersioningITems");
             if (verItemsSimple.Contains(Environment.NewLine)) {
@@ -56,24 +59,24 @@ namespace Plisky.CodeCraft {
                 // so replacing them with \n to make the two consistant.
                 verItemsSimple = verItemsSimple.Replace(Environment.NewLine, "\n");
             }
-            string[] allLines = verItemsSimple.Split(new string[] { "\n" },StringSplitOptions.RemoveEmptyEntries);
-            foreach(var ln in allLines) {
+            string[] allLines = verItemsSimple.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var ln in allLines) {
                 string[] parts = ln.Split('!');
-                if (parts.Length!=2) {
+                if (parts.Length != 2) {
                     throw new InvalidOperationException($"The versioning item string was in the wrong format [{ln}] ");
                 }
-                FileUpdateType ft =  GetFileTypeFromString(parts[1]);
+                FileUpdateType ft = GetFileTypeFromString(parts[1]);
                 AddUpdateType(parts[0], ft);
             }
         }
 
         private FileUpdateType GetFileTypeFromString(string v) {
             switch (v) {
-                case "ASSEMBLY": return FileUpdateType.Assembly;
-                case "INFO": return FileUpdateType.AssemblyInformational;
-                case "FILE": return FileUpdateType.AssemblyFile;
+                case "ASSEMBLY": return FileUpdateType.NetAssembly;
+                case "INFO": return FileUpdateType.NetInformational;
+                case "FILE": return FileUpdateType.NetFile;
                 case "WIX": return FileUpdateType.Wix;
-                default: throw new InvalidOperationException($"The verisoning string {v} is not valid.");                    
+                default: throw new InvalidOperationException($"The verisoning string {v} is not valid.");
             }
         }
 
@@ -87,11 +90,9 @@ namespace Plisky.CodeCraft {
             SaveVersioningComponent();
             b.Verbose.Log($"Searching {BaseSearchDir} there are {pendingUpdates.Count} pends.");
 
-
             var enumer = Directory.EnumerateFiles(BaseSearchDir, "*.*", SearchOption.AllDirectories).GetEnumerator();
             bool shouldContinue = true;
             while (shouldContinue) {
-
                 try {
                     shouldContinue = enumer.MoveNext();
                     if (shouldContinue) {
@@ -109,19 +110,16 @@ namespace Plisky.CodeCraft {
                                     b.Verbose.Log($"Perform update {v}");
                                     sut.PerformUpdate(v, updateType);
                                 }
-
                             }
                         }
                     }
-
                 } catch (System.UnauthorizedAccessException) {
                     // If you run through all the filles in a directory you can hit areas of the filesystem
                     // that you dont have access to - this skips those files and then continues.
                     b.Verbose.Log("Unauthorised area of the filesystem, skipping");
                 }
-
             }
-            
+
             VersionString = ver.GetVersionString();
         }
 
@@ -131,7 +129,7 @@ namespace Plisky.CodeCraft {
         }
 
         private void ValidateForUpdate() {
-            if ((String.IsNullOrEmpty(BaseSearchDir))||(!Directory.Exists(BaseSearchDir))) {
+            if ((String.IsNullOrEmpty(BaseSearchDir)) || (!Directory.Exists(BaseSearchDir))) {
                 throw new DirectoryNotFoundException("The BaseSearchDirectory has to be specified");
             }
         }

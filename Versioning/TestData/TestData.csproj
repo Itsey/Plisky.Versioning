@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <None Remove="BugData\B464_AsmInfo_Source.txt" />
+    <None Remove="FeatureData\mmTypes.txt" />
     <None Remove="TestFileStructure\DoesNotChange\AssemblyInfo.txt" />
     <None Remove="TestFileStructure\JustAssemblyVersion.txt" />
     <None Remove="TestFileStructure\JustFileVersion.txt" />
@@ -17,6 +18,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="BugData\B464_AsmInfo_Source.txt" />
+    <EmbeddedResource Include="FeatureData\mmTypes.txt" />
     <EmbeddedResource Include="TestFileStructure\DoesNotChange\AssemblyInfo.txt" />
     <EmbeddedResource Include="TestFileStructure\JustAssemblyVersion.txt" />
     <EmbeddedResource Include="TestFileStructure\JustFileVersion.txt" />

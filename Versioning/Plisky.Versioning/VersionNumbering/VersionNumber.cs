@@ -6,7 +6,6 @@ namespace Plisky.CodeCraft {
     /// Responsible for managing a series of four digits as a verison number.
     /// </summary>
     public class VersionNumber {
-
         private VersionableDigit[] digits = new VersionableDigit[4];
 
         public int Major {
@@ -45,9 +44,8 @@ namespace Plisky.CodeCraft {
             }
         }
 
-
         private void SetDigitValue(DigitName digitPosition, int value) {
-            if (value<0) {
+            if (value < 0) {
                 throw new ArgumentOutOfRangeException(nameof(value), "The versioned digit can not be less than zero");
             }
             digits[(int)digitPosition].DigitValue = value;
@@ -57,11 +55,11 @@ namespace Plisky.CodeCraft {
             if (string.IsNullOrEmpty(parseTxt)) {
                 throw new ArgumentOutOfRangeException(nameof(parseTxt), "The text to parse for a version number must be present");
             }
-            if (parseTxt.IndexOf('.')<0) {
+            if (parseTxt.IndexOf('.') < 0) {
                 throw new ArgumentOutOfRangeException(nameof(parseTxt), "The text for the verison number must be digits separated by periods");
             }
             string[] values = parseTxt.Split('.');
-            
+
             if (values.Length != 4) {
                 throw new ArgumentException("The current verison must be in the format n.n.n.n where n is a digit.", "current");
             }
@@ -71,7 +69,7 @@ namespace Plisky.CodeCraft {
                 throw new ArgumentOutOfRangeException(nameof(parseTxt), ox);
             } catch (FormatException fx) {
                 throw new ArgumentException(nameof(parseTxt), fx);
-            }            
+            }
         }
 
         /// <summary>
@@ -88,9 +86,8 @@ namespace Plisky.CodeCraft {
             SetDigitValue(DigitName.Revision, rev);
         }
 
-
         public override string ToString() {
-            return string.Format("{0}.{1}.{2}.{3}",this.Major,this.Minor,this.Build,this.Revision);
+            return string.Format("{0}.{1}.{2}.{3}", this.Major, this.Minor, this.Build, this.Revision);
         }
 
         public override bool Equals(object obj) {

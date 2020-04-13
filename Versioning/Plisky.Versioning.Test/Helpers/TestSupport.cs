@@ -1,29 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using Plisky.Diagnostics;
+﻿using Plisky.Diagnostics;
 using Plisky.Test;
+using System;
+using System.IO;
+using System.Xml.Linq;
 
 namespace Plisky.CodeCraft.Test {
+
     public class TestSupport {
         private Bilge b = new Bilge();
         private UnitTestHelper uth;
 
-        
         public string GetVersion(FileUpdateType fut, string srcFile) {
-            
             switch (fut) {
-
-                case FileUpdateType.Nuspec: return GetVersionFromNuspec(srcFile);                    
-                case FileUpdateType.NetStdAssembly: return GetVersionFromCSProj(srcFile, "AssemblyVersion");               
-                case FileUpdateType.NetStdInformational: return GetVersionFromCSProj(srcFile, "Version");
-                case FileUpdateType.NetStdFile: return GetVersionFromCSProj(srcFile, "FileVersion");
-
+                case FileUpdateType.Nuspec: return GetVersionFromNuspec(srcFile);
+                case FileUpdateType.StdAssembly: return GetVersionFromCSProj(srcFile, "AssemblyVersion");
+                case FileUpdateType.StdInformational: return GetVersionFromCSProj(srcFile, "Version");
+                case FileUpdateType.StdFile: return GetVersionFromCSProj(srcFile, "FileVersion");
             }
             // case FileUpdateType.Wix:
             //        break;
@@ -38,8 +30,7 @@ namespace Plisky.CodeCraft.Test {
             throw new NotImplementedException();
         }
 
-        public string GetVersionFromCSProj(string srcFile, string propName ) {
-           
+        public string GetVersionFromCSProj(string srcFile, string propName) {
             XDocument xd2 = XDocument.Load(srcFile);
             var el2 = xd2.Element("Project")?.Element("PropertyGroup")?.Element(propName);
             var after = el2.Value;
@@ -57,13 +48,14 @@ namespace Plisky.CodeCraft.Test {
         public TestSupport(UnitTestHelper newuth) {
             uth = newuth;
         }
+
         public string GetFileAsTemporary(string srcFile) {
             string fn = uth.NewTemporaryFileName(true);
             File.Copy(srcFile, fn);
             return fn;
         }
 
-        public  bool DoesFileContainThisText(string fn, string v) {
+        public bool DoesFileContainThisText(string fn, string v) {
             return File.ReadAllText(fn).Contains(v);
         }
     }

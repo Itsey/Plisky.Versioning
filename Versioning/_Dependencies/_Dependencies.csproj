@@ -49,6 +49,7 @@
     <None Include="versioningrules.json" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CDSupport\Readme.txt" />
     <Content Include="TestData\TestFileStructure\JustAssemblyVersion.txt" />
     <Content Include="TestData\TestFileStructure\JustInformationalVersion.txt" />
     <Content Include="TestData\TestFileStructure\JustFileVersion.txt" />

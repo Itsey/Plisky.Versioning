@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Plisky.Test {
+﻿namespace Plisky.Test {
 
     public enum TestResourcesReferences {
         Bug464RefContent,
@@ -11,7 +9,8 @@ namespace Plisky.Test {
         JustInformational,
         NuspecSample1,
         NuspecSample2,
-        NetStdAll3
+        NetStdAll3,
+        MMTypeData
     }
 
     public static class TestResources {
@@ -27,6 +26,7 @@ namespace Plisky.Test {
                 case TestResourcesReferences.NuspecSample1: return "sample1.nuspec";
                 case TestResourcesReferences.NuspecSample2: return "sample2.nuspec";
                 case TestResourcesReferences.NetStdAll3: return "MultipleVersNetStd.csproj";
+                case TestResourcesReferences.MMTypeData: return "mmTypes.txt";
             }
 
             return null;

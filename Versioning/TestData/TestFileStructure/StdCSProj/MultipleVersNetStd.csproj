@@ -30,5 +30,4 @@
   <ItemGroup>
     <None Include="..\..\..\..\..\..\..\Fsync\plisky_keyfile.snk" Link="plisky_keyfile.snk" />
   </ItemGroup>
-
 </Project>

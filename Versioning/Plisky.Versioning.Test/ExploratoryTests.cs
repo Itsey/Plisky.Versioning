@@ -1,25 +1,22 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Reflection;
-using Minimatch;
+﻿using Minimatch;
 using Plisky.Diagnostics;
 using Plisky.Test;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using Xunit;
 
 namespace Plisky.CodeCraft.Test {
 
     public class Exploratory {
         private Bilge b = new Bilge();
-        UnitTestHelper uth;
-        TestSupport ts;
+        private UnitTestHelper uth;
+        private TestSupport ts;
 
         public Exploratory() {
             uth = new UnitTestHelper();
             ts = new TestSupport(uth);
         }
-
-
 
         ~Exploratory() {
             uth.ClearUpTestFiles();
@@ -56,7 +53,6 @@ namespace Plisky.CodeCraft.Test {
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Developer)]
         public void Bug464_BuildVersionsNotUpdatedDuringBuild() {
-
             var ident = TestResources.GetIdentifiers(TestResourcesReferences.Bug464RefContent);
 
             string srcFile = uth.GetTestDataFile(ident);
@@ -67,19 +63,14 @@ namespace Plisky.CodeCraft.Test {
                 new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement));
             VersionFileUpdater sut = new VersionFileUpdater(cv);
 
-            sut.PerformUpdate(fn, FileUpdateType.Assembly);
-            sut.PerformUpdate(fn, FileUpdateType.AssemblyInformational);
-            sut.PerformUpdate(fn, FileUpdateType.AssemblyFile);
+            sut.PerformUpdate(fn, FileUpdateType.NetAssembly);
+            sut.PerformUpdate(fn, FileUpdateType.NetInformational);
+            sut.PerformUpdate(fn, FileUpdateType.NetFile);
 
-            Assert.False(ts.DoesFileContainThisText(fn, "AssemblyFileVersion(\"2.0.0\""),"The file version should be three digits and present");
-            Assert.True(ts.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"2.0-Unicorn.0\""),"The informational version should be present");
-            Assert.True(ts.DoesFileContainThisText(fn, "AssemblyVersion(\"2.0\")"),"the assembly version should be two digits and present.");
+            Assert.False(ts.DoesFileContainThisText(fn, "AssemblyFileVersion(\"2.0.0\""), "The file version should be three digits and present");
+            Assert.True(ts.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"2.0-Unicorn.0\""), "The informational version should be present");
+            Assert.True(ts.DoesFileContainThisText(fn, "AssemblyVersion(\"2.0\")"), "the assembly version should be two digits and present.");
         }
-
-
-
-       
-
 
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
@@ -119,9 +110,7 @@ namespace Plisky.CodeCraft.Test {
             Assert.True(sut.IsThisMinimatchIncluded("**/assemblyinfo.cs"), "The minimatch was not included");
             Assert.True(sut.IsThisMinimatchIncluded("xxMonkey"), "The second minimatch was not included");
             Assert.True(sut.IsThisMinimatchIncluded("yyzzxxbannana"), "The third minimatch was not included");
-
         }
-
 
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
@@ -138,7 +127,6 @@ namespace Plisky.CodeCraft.Test {
             sut.Increment();
             verString = sut.GetVersionString(DisplayType.Full);
             Assert.Equal("2.0-Unicorn.2", verString); //, "The second increment string is not correct");
-
         }
 
         [Fact]
@@ -161,9 +149,9 @@ namespace Plisky.CodeCraft.Test {
             string directory = Path.GetDirectoryName(tfn1);
             sut.BaseSearchDir = directory;
             sut.PersistanceValue = tfn2;
-            sut.AddUpdateType(tfn1, FileUpdateType.Assembly);
-            sut.AddUpdateType(tfn1, FileUpdateType.AssemblyFile);
-            sut.AddUpdateType(tfn1, FileUpdateType.AssemblyInformational);
+            sut.AddUpdateType(tfn1, FileUpdateType.NetAssembly);
+            sut.AddUpdateType(tfn1, FileUpdateType.NetFile);
+            sut.AddUpdateType(tfn1, FileUpdateType.NetInformational);
             sut.IncrementAndUpdateAll();
 
             Assert.Equal("1.1.1.1", sut.VersionString); //, "The version string should be set post update");
@@ -238,7 +226,6 @@ namespace Plisky.CodeCraft.Test {
             Assert.Equal(cv.GetVersionString(), cv2.GetVersionString()); //, "The loaded type was not the same as the saved one, behaviours");
         }
 
-
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
@@ -262,7 +249,6 @@ namespace Plisky.CodeCraft.Test {
             Assert.Equal(cv.GetVersionString(), cv2.GetVersionString()); //, "The two version strings should match");
         }
 
-
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
@@ -275,28 +261,27 @@ namespace Plisky.CodeCraft.Test {
                 new VersionUnit("1", ".", DigitIncremementBehaviour.ContinualIncrement));
 
             // None of the defaults are no display, therefore this should set all to a new value
-            cv.SetDisplayTypeForVersion(FileUpdateType.Assembly, DisplayType.NoDisplay);
-            cv.SetDisplayTypeForVersion(FileUpdateType.AssemblyFile, DisplayType.NoDisplay);
-            cv.SetDisplayTypeForVersion(FileUpdateType.AssemblyInformational, DisplayType.NoDisplay);
+            cv.SetDisplayTypeForVersion(FileUpdateType.NetAssembly, DisplayType.NoDisplay);
+            cv.SetDisplayTypeForVersion(FileUpdateType.NetFile, DisplayType.NoDisplay);
+            cv.SetDisplayTypeForVersion(FileUpdateType.NetInformational, DisplayType.NoDisplay);
             cv.SetDisplayTypeForVersion(FileUpdateType.Wix, DisplayType.NoDisplay);
-            cv.SetDisplayTypeForVersion(FileUpdateType.NetStdAssembly, DisplayType.NoDisplay);
-            cv.SetDisplayTypeForVersion(FileUpdateType.NetStdFile, DisplayType.NoDisplay);
-            cv.SetDisplayTypeForVersion(FileUpdateType.NetStdInformational, DisplayType.NoDisplay);
+            cv.SetDisplayTypeForVersion(FileUpdateType.StdAssembly, DisplayType.NoDisplay);
+            cv.SetDisplayTypeForVersion(FileUpdateType.StdFile, DisplayType.NoDisplay);
+            cv.SetDisplayTypeForVersion(FileUpdateType.StdInformational, DisplayType.NoDisplay);
             cv.SetDisplayTypeForVersion(FileUpdateType.Nuspec, DisplayType.NoDisplay);
 
             sut.Persist(cv);
             var cv2 = sut.GetVersion();
 
             // Check that all of the display types come back as epxected
-            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.Assembly)); 
-            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.AssemblyFile)); 
-            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.AssemblyInformational)); 
-            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.Wix)); 
-            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.NetStdAssembly));
-            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.NetStdFile));
-            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.NetStdInformational));
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.NetAssembly));
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.NetFile));
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.NetInformational));
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.Wix));
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.StdAssembly));
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.StdFile));
+            Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.StdInformational));
             Assert.Equal(DisplayType.NoDisplay, cv2.GetDisplayType(FileUpdateType.Nuspec));
         }
-
     }
 }

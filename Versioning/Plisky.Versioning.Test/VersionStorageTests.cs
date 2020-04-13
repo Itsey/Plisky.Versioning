@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using Plisky.CodeCraft;
-using Plisky.Diagnostics;
+﻿using Plisky.Diagnostics;
 using Plisky.Test;
 using Xunit;
 
 namespace Plisky.CodeCraft.Test {
+
     public class VersionStorageTests {
         private Bilge b = new Bilge();
 
@@ -20,8 +18,6 @@ namespace Plisky.CodeCraft.Test {
             vs.Persist(cv);
         }
 
-
-
         [Fact(DisplayName = nameof(VersionStorage_CreatesDefaultIfNotPresent))]
         [Trait(Traits.Age, Traits.Fresh)]
         [Trait(Traits.Style, Traits.Unit)]
@@ -34,9 +30,7 @@ namespace Plisky.CodeCraft.Test {
             Assert.True(ver.IsDefault);
             Assert.Equal(4, ver.Digits.Length);
             Assert.Equal("0.0.0.0", ver.ToString());
-
         }
-
 
         [Fact(DisplayName = nameof(VersionStorage_NotDefaultWhenPresent))]
         [Trait(Traits.Age, Traits.Fresh)]
@@ -50,7 +44,6 @@ namespace Plisky.CodeCraft.Test {
             Assert.False(ver.IsDefault);
             Assert.Equal(4, ver.Digits.Length);
             Assert.Equal("0.0.0.0", ver.ToString());
-
         }
     }
 }

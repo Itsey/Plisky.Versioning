@@ -1,14 +1,13 @@
-﻿using System;
-using Plisky.CodeCraft;
-using Plisky.Diagnostics;
+﻿namespace Plisky.CodeCraft.Test {
 
-namespace Plisky.CodeCraft.Test {
     internal class MockVersionStorage : VersionStorage {
         private string initialisationString;
         private CompleteVersion loadedVersion;
 
         #region mocking implementation
+
         public Mocking Mock;
+
         public class Mocking {
             private MockVersionStorage parent;
 
@@ -17,7 +16,6 @@ namespace Plisky.CodeCraft.Test {
             }
 
             public void Mock_MockingBird() {
-
             }
 
             public void SetBehaviours(DigitIncremementBehaviour dig1, DigitIncremementBehaviour dig2, DigitIncremementBehaviour dig3, DigitIncremementBehaviour dig4) {
@@ -27,16 +25,14 @@ namespace Plisky.CodeCraft.Test {
                 parent.loadedVersion.Digits[3].SetBehaviour(dig4);
             }
         }
-        #endregion
+
+        #endregion mocking implementation
 
         public MockVersionStorage(string initialisatioinString) : base(initialisatioinString) {
             Mock = new Mocking(this);
 
             initialisationString = initialisatioinString;
-            
         }
-
-
 
         public bool PersistWasCalled { get; private set; }
         public string VersionStringPersisted { get; private set; }

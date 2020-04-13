@@ -1,12 +1,11 @@
 ﻿using System.IO;
 
 namespace Plisky.CodeCraft.Test {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
+
     using CodeCraft;
     using Plisky.Diagnostics;
     using Plisky.Test;
+    using System;
     using Xunit;
 
     public class UseCaseTests {
@@ -26,7 +25,7 @@ namespace Plisky.CodeCraft.Test {
             ver.Increment();
             string after = ver.ToString();
 
-            Assert.Equal("0.0.0.0",before);
+            Assert.Equal("0.0.0.0", before);
             Assert.Equal("0.0.1.0", after);
         }
 
@@ -47,7 +46,6 @@ namespace Plisky.CodeCraft.Test {
         [Trait(Traits.Age, Traits.Fresh)]
         [Trait(Traits.Style, Traits.Unit)]
         public void UC_NoIncrement_NoChange() {
-
             MockVersionStorage mvs = new MockVersionStorage("0.0.0.1");
             Versioning sut = new Versioning(mvs);
 
@@ -62,17 +60,14 @@ namespace Plisky.CodeCraft.Test {
         [InlineData("3.4.0.0", "3.4.1.0")]
         [InlineData("0.0.0.9", "0.0.1.0")]
         public void UC_BehaviouralIncrement_Works(string initial, string target) {
-
-
             MockVersionStorage mvs = new MockVersionStorage(initial);
             Versioning sut = new Versioning(mvs);
 
             mvs.Mock.SetBehaviours(DigitIncremementBehaviour.Fixed, DigitIncremementBehaviour.Fixed, DigitIncremementBehaviour.AutoIncrementWithResetAny, DigitIncremementBehaviour.AutoIncrementWithResetAny);
-            
+
             sut.Increment();
             Assert.Equal(target, sut.ToString());
         }
-
 
         [Fact(DisplayName = nameof(UC_UpdateNuspecFile_Works))]
         [Trait(Traits.Age, Traits.Fresh)]
@@ -87,9 +82,7 @@ namespace Plisky.CodeCraft.Test {
             Versioning sut = new Versioning(mvs);
 
             sut.AddNugetFile(srcFile);
-
         }
-
 
         [Fact(DisplayName = nameof(AddInvalid_NugetFile_Throws))]
         [Trait(Traits.Age, Traits.Fresh)]
@@ -103,9 +96,6 @@ namespace Plisky.CodeCraft.Test {
             Assert.Throws<ArgumentNullException>(() => { sut.AddNugetFile(null); });
             Assert.Throws<FileNotFoundException>(() => { sut.AddNugetFile(""); });
             Assert.Throws<FileNotFoundException>(() => { sut.AddNugetFile("c:\\arflebarflegloop.txt"); });
-
         }
-
-
     }
 }

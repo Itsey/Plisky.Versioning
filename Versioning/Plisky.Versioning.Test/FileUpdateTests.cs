@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
-using Plisky.Diagnostics;
+﻿using Plisky.Diagnostics;
 using Plisky.Diagnostics.Listeners;
 using Plisky.Test;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Plisky.CodeCraft.Test {
+
     using CodeCraft;
 
-
     public class FileUpdateTests {
-        UnitTestHelper uth;
-        TestSupport ts;
+        private UnitTestHelper uth;
+        private TestSupport ts;
         protected static InMemoryHandler imh = new InMemoryHandler(100000);
         protected static Bilge b;
 
@@ -21,10 +21,7 @@ namespace Plisky.CodeCraft.Test {
                 b.AddHandler(imh);
             }
 
-
             uth = new UnitTestHelper();
-
-
 
             ts = new TestSupport(uth);
             b.Info.Log("UTH Online");
@@ -33,8 +30,6 @@ namespace Plisky.CodeCraft.Test {
         ~FileUpdateTests() {
             uth.ClearUpTestFiles();
         }
-
-
 
         [Fact(DisplayName = nameof(VersionFileUpdaterFindsFiles))]
         [Trait(Traits.Age, Traits.Fresh)]
@@ -46,9 +41,7 @@ namespace Plisky.CodeCraft.Test {
             VersionFileUpdater sut = (VersionFileUpdater)msut;
 
             msut.Mock.AddFilesystemFile("XX");
-
         }
-
 
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
@@ -67,8 +60,6 @@ namespace Plisky.CodeCraft.Test {
             Assert.True(rx.IsMatch("[assembly     :AssemblyVersion(\"0.0.0.0\")]"), "8 Invalid match for an assembly version");
         }
 
-
-
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
@@ -85,8 +76,6 @@ namespace Plisky.CodeCraft.Test {
             Assert.True(rx.IsMatch("[assembly:      AssemblyFileVersion     (\"0.0.0.0\"   )     ]"), "7 Invalid match for an assembly version");
             Assert.True(rx.IsMatch("[assembly     :AssemblyFileVersion(\"0.0.0.0\")]"), "8 Invalid match for an assembly version");
         }
-
-
 
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
@@ -121,13 +110,12 @@ namespace Plisky.CodeCraft.Test {
 
             VersionFileUpdater sut = new VersionFileUpdater(cv);
 
-            sut.PerformUpdate(fn, FileUpdateType.Assembly);
+            sut.PerformUpdate(fn, FileUpdateType.NetAssembly);
 
             Assert.False(ts.DoesFileContainThisText(fn, "0.0.0.0"), "No update was made to the file at all");
             Assert.True(ts.DoesFileContainThisText(fn, "1.1"), "The file does not appear to have been updated correctly.");
             Assert.True(ts.DoesFileContainThisText(fn, "AssemblyVersion(\"1.1\")"), "The file does not have the full version in it");
         }
-
 
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
@@ -143,7 +131,7 @@ namespace Plisky.CodeCraft.Test {
 
             VersionFileUpdater sut = new VersionFileUpdater(cv);
 
-            sut.PerformUpdate(fn, FileUpdateType.Assembly);
+            sut.PerformUpdate(fn, FileUpdateType.NetAssembly);
 
             Assert.False(ts.DoesFileContainThisText(fn, " AssemblyVersion(\"1.0.0.0\")"), "No update was made to the file at all");
             Assert.True(ts.DoesFileContainThisText(fn, "[assembly: AssemblyFileVersion(\"1.0.0.0\")]"), "The file does not appear to have been updated correctly.");
@@ -157,7 +145,6 @@ namespace Plisky.CodeCraft.Test {
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Update_AsmInfVer_Works() {
-
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.JustInformational);
             string srcFile = uth.GetTestDataFile(reid);
 
@@ -166,19 +153,17 @@ namespace Plisky.CodeCraft.Test {
 
             VersionFileUpdater sut = new VersionFileUpdater(cv);
 
-            sut.PerformUpdate(fn, FileUpdateType.AssemblyInformational);
+            sut.PerformUpdate(fn, FileUpdateType.NetInformational);
 
             Assert.False(ts.DoesFileContainThisText(fn, "0.0.0.0"), "No update was made to the file at all");
             Assert.True(ts.DoesFileContainThisText(fn, "1.1"), "The file does not appear to have been updated correctly.");
             Assert.True(ts.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"1.1.1.1\")"), "The file does not have the full version in it");
         }
 
-
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Update_AsmFileVer_Works() {
-
             b.Info.Flow();
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.JustFileVer);
             string srcFile = uth.GetTestDataFile(reid);
@@ -186,19 +171,17 @@ namespace Plisky.CodeCraft.Test {
             string fn = ts.GetFileAsTemporary(srcFile);
             VersionFileUpdater sut = new VersionFileUpdater(cv);
 
-            sut.PerformUpdate(fn, FileUpdateType.AssemblyFile);
+            sut.PerformUpdate(fn, FileUpdateType.NetFile);
 
             Assert.False(ts.DoesFileContainThisText(fn, "0.0.0.0"), "No update was made to the file at all");
             Assert.True(ts.DoesFileContainThisText(fn, "1.1"), "The file does not appear to have been updated correctly.");
             Assert.True(ts.DoesFileContainThisText(fn, "AssemblyFileVersion(\"1.1.1.1\")"), "The file does not have the full version in it");
         }
 
-
         [Fact(DisplayName = nameof(Update_Nuspec_Works))]
         [Trait(Traits.Age, Traits.Fresh)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Update_Nuspec_Works() {
-
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.NuspecSample1);
             string srcFile = uth.GetTestDataFile(reid);
             CompleteVersion cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
@@ -212,41 +195,37 @@ namespace Plisky.CodeCraft.Test {
             Assert.NotEqual<string>(before, after);
         }
 
-
         [Fact(DisplayName = nameof(Update_StdCSProjAsm_Works))]
         [Trait(Traits.Age, Traits.Fresh)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Update_StdCSProjAsm_Works() {
-
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdAll3);
             string srcFile = uth.GetTestDataFile(reid);  // Value is zero
             CompleteVersion cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
             VersionFileUpdater sut = new VersionFileUpdater(cv);
-            var before = ts.GetVersion(FileUpdateType.NetStdAssembly, srcFile);
+            var before = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
             Assert.NotEmpty(before);
 
-            sut.PerformUpdate(srcFile, FileUpdateType.NetStdAssembly);
+            sut.PerformUpdate(srcFile, FileUpdateType.StdAssembly);
 
-            var after = ts.GetVersion(FileUpdateType.NetStdAssembly, srcFile);
+            var after = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
             Assert.NotEqual<string>(before, after);
-
         }
 
         [Fact(DisplayName = nameof(Update_StdCSProjFile_Works))]
         [Trait(Traits.Age, Traits.Fresh)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Update_StdCSProjFile_Works() {
-
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdAll3);
             string srcFile = uth.GetTestDataFile(reid);  // Value is zero
             CompleteVersion cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
             VersionFileUpdater sut = new VersionFileUpdater(cv);
-            var before = ts.GetVersion(FileUpdateType.NetStdFile, srcFile);
+            var before = ts.GetVersion(FileUpdateType.StdFile, srcFile);
             Assert.NotEmpty(before);
 
-            sut.PerformUpdate(srcFile, FileUpdateType.NetStdFile);
+            sut.PerformUpdate(srcFile, FileUpdateType.StdFile);
 
-            var after = ts.GetVersion(FileUpdateType.NetStdFile, srcFile);
+            var after = ts.GetVersion(FileUpdateType.StdFile, srcFile);
             Assert.NotEqual<string>(before, after);
         }
 
@@ -254,18 +233,17 @@ namespace Plisky.CodeCraft.Test {
         [Trait(Traits.Age, Traits.Fresh)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Update_StdCSProjInfo_Works() {
-
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdAll3);
-            string srcFile = uth.GetTestDataFile(reid);  
+            string srcFile = uth.GetTestDataFile(reid);
             CompleteVersion cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
             VersionFileUpdater sut = new VersionFileUpdater(cv);
-            var before = ts.GetVersion(FileUpdateType.NetStdInformational, srcFile);
+            var before = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
             Assert.NotEmpty(before);
 
-            sut.PerformUpdate(srcFile, FileUpdateType.NetStdInformational);
+            sut.PerformUpdate(srcFile, FileUpdateType.StdInformational);
 
-            var after = ts.GetVersion(FileUpdateType.NetStdInformational, srcFile);   
-            Assert.NotEqual<string>(before, after);            
+            var after = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
+            Assert.NotEqual<string>(before, after);
         }
     }
 
@@ -273,7 +251,9 @@ namespace Plisky.CodeCraft.Test {
         private List<string> allFileSystemFiles = new List<string>();
 
         #region mocking implementation
+
         public Mocking Mock;
+
         public class Mocking {
             private MockVersionFileUpdater parent;
 
@@ -282,15 +262,14 @@ namespace Plisky.CodeCraft.Test {
             }
 
             public void Mock_MockingBird() {
-
             }
 
             public void AddFilesystemFile(string fname) {
                 parent.allFileSystemFiles.Add(fname);
-
             }
         }
-        #endregion
+
+        #endregion mocking implementation
 
         protected Bilge b;
 
@@ -302,9 +281,6 @@ namespace Plisky.CodeCraft.Test {
             }
 
             Mock = new Mocking(this);
-
         }
-
     }
 }
-

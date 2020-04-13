@@ -1,7 +1,8 @@
 ﻿namespace Plisky.CodeCraft.Test {
-    using System;
+
     using Diagnostics;
     using Plisky.Test;
+    using System;
     using Xunit;
 
     public class VersionUnitTests {
@@ -33,7 +34,6 @@
                 var sut = new VersionUnit("monkey");
                 sut.SetBehaviour(DigitIncremementBehaviour.AutoIncrementWithReset);
             });
-
         }
 
         [Fact]
@@ -41,7 +41,7 @@
         [Trait(Traits.Style, Traits.Unit)]
         public void ChangeBehaviour_OnceSet_Exception() {
             b.Info.Flow();
-            
+
             Assert.Throws<InvalidOperationException>(() => {
                 var sut = new VersionUnit("1");
                 sut.SetBehaviour(DigitIncremementBehaviour.AutoIncrementWithReset);
@@ -62,7 +62,7 @@
         [Trait(Traits.Style, Traits.Unit)]
         public void VersionUnit_DefaultPostfix_IsCorrect() {
             var sut = new VersionUnit("1");
-            Assert.Equal("", sut.PreFix); 
+            Assert.Equal("", sut.PreFix);
         }
 
         [Fact]
@@ -80,6 +80,7 @@
             var sut = new VersionUnit("5", "Monkey");
             Assert.Equal("Monkey5", sut.ToString()); //, "The prefix was not correctly specified in the ToSTring method");
         }
+
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
@@ -96,6 +97,5 @@
             var sut = new VersionUnit("monkey");
             Assert.Equal("monkey", sut.Value); //, "The value was not set correctly");
         }
-
     }
 }

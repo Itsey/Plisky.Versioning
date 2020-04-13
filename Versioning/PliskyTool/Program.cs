@@ -1,18 +1,16 @@
-﻿using System;
-using Plisky.Plumbing;
-using Plisky.CodeCraft;
-using Minimatch;
-using System.Collections.Generic;
-using System.IO;
-using System.Diagnostics;
+﻿using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Diagnostics.Listeners;
+using Plisky.Plumbing;
+using System;
+using System.Diagnostics;
 
 namespace PliskyTool {
-    class Program {
-        public static CommandLineArguments Options = new CommandLineArguments();
 
-        static void Main(string[] args) {
+    internal class Program {
+        public static CommandLineARguments Options = new CommandLineARguments();
+
+        private static void Main(string[] args) {
             Console.WriteLine("Plisky Tool - Online");
             Bilge b = new Bilge(tl: SourceLevels.Verbose);
             b.AddHandler(new TCPHandler("127.0.0.1", 9060, true));
@@ -25,7 +23,6 @@ namespace PliskyTool {
             b.Verbose.Log("Perform Action");
             b.Verbose.Dump(Options, "App Options");
 
-
             Console.WriteLine(Options.QuickValue);
 
             if (PerformActionsFromCommandline()) {
@@ -34,8 +31,6 @@ namespace PliskyTool {
                 string s = clas.GenerateShortHelp(Options, "Plisky Tool");
                 Console.WriteLine(s);
             }
-
-
         }
 
         private static bool PerformActionsFromCommandline() {
@@ -45,21 +40,21 @@ namespace PliskyTool {
                 case "CreateVersion":
                     CreateNewVersionStore();
                     return true;
+
                 case "Override":
                     CreateNewPendingIncrement();
                     return true;
+
                 case "UpdateFiles":
                     ApplyVersionIncrement();
                     return true;
+
                 default:
                     return false;
             }
-
         }
 
         private static void CreateNewPendingIncrement() {
-            
-
             var per = new JsonVersionPersister(Program.Options.VersionPersistanceValue);
             Versioning ver = new Versioning(per);
 
@@ -68,53 +63,45 @@ namespace PliskyTool {
             Console.WriteLine($"Apply Delayed Incremenet. [{ver.ToString()}] using [{verPendPattern}]");
             ver.Version.ApplyPendingVersion(verPendPattern);
 
-            if (!Options.TestMode) {                                
+            if (!Options.TestMode) {
                 per.Persist(ver.Version);
                 ver.Increment();
                 Console.WriteLine($"Saving Overriden Version [{ver.GetVersion()}]");
             } else {
                 ver.Version.Increment();
-                Console.WriteLine($"Would Save "+ver.Version.ToString());
+                Console.WriteLine($"Would Save " + ver.Version.ToString());
             }
         }
 
         private static void ApplyVersionIncrement() {
             Console.WriteLine("Apply Version Increment");
             var per = new JsonVersionPersister(Program.Options.VersionPersistanceValue);
-            Versioning ver = new Versioning(per);
+            Versioning ver = new Versioning(per, Options.TestMode);
+            ver.Logger = (v) => {
+                Console.WriteLine(v);
+            };
 
             if (Options.PerformIncrement) {
-                Console.WriteLine("Version Increment Requested - Currently "+ver.GetVersion());
+                Console.WriteLine("Version Increment Requested - Currently " + ver.GetVersion());
                 ver.Increment();
             }
 
-            Console.WriteLine("Version To Write: "+ver.GetVersion());
+            Console.WriteLine("Version To Write: " + ver.GetVersion());
 
-            // Increment done, now persist and then update the pages.
-            //Options.VersionTargetMinMatch 
-            //Options.Root = @"C:\Files\Code\git\PliskyVersioning";
-
-            var allFiles = SearchForAllFiles(Options.Root, Options.VersionTargetMinMatch);
-
-
-            Action<string> ActionToPerform = GetActionToPerform(ver);
-
-            foreach (var l in allFiles) {
-                ActionToPerform(l);
+            // Increment done, now persist and then update the pages - first check if the command line ovverrides the minimatchers
+            if ((Options.VersionTargetMinMatch != null) && (Options.VersionTargetMinMatch.Length > 0)) {
+                //ver.SetMiniMatches( Options.VersionTargetMinMatch);
+                throw new NotImplementedException();
             }
 
-           
-            if (!Options.TestMode) {
-                ver.UpdateAllRegisteredFiles();
-                Console.WriteLine($"Saving {ver.GetVersion()}");
-                per.Persist(ver.Version);
-            }
+            ver.ApplyUpdatesToAllFiles();
+
+            ver.SaveUpdatedVersion();
         }
 
         private static Action<string> GetActionToPerform(Versioning ver) {
             Action<string> ActionToPerform;
             if (!Options.TestMode) {
-
                 ActionToPerform = (fn) => {
                     if (fn.EndsWith(".cs")) {
                         ver.AddCSharpFile(fn);
@@ -138,36 +125,6 @@ namespace PliskyTool {
 #if DEBUG
             Console.WriteLine(l);
 #endif
-        }
-
-        private static List<string> SearchForAllFiles(string root, string[] versionTargetMinMatch) {
-
-            Console.WriteLine($"Searching in [{root}]");
-
-            List<string> result = new List<string>();
-            Minimatcher[] mm = new Minimatcher[versionTargetMinMatch.Length];
-            for (int i = 0; i < versionTargetMinMatch.Length; i++) {
-                Console.WriteLine("Matching >"+versionTargetMinMatch[i]);
-                mm[i] = new Minimatcher(versionTargetMinMatch[i], new Options { AllowWindowsPaths = true });
-            }
-
-            var fls = Directory.EnumerateFiles(root, "*.*", new EnumerationOptions() { IgnoreInaccessible = true, RecurseSubdirectories = true, MatchCasing = MatchCasing.PlatformDefault, ReturnSpecialDirectories = false });
-
-            foreach (var l in fls) {
-
-                for (int j = 0; j < mm.Length; j++) {
-                    if (mm[j].IsMatch(l)) {
-                        Console.WriteLine("Match :" + l);
-                        result.Add(l);
-                        break;
-                    }
-                }
-
-            }
-
-            return result;
-
-
         }
 
         private static void CreateNewVersionStore() {

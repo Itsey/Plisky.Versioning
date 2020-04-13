@@ -1,14 +1,13 @@
 ﻿using Minimatch;
-using Plisky.Plumbing;
+using Plisky.Diagnostics;
 using System;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Plisky.Diagnostics;
 
 namespace Plisky.CodeCraft {
+
     public class VersionFileUpdater {
         private Bilge b = new Bilge();
         private const string ASMFILE_FILEVER_TAG = "AssemblyFileVersion";
@@ -46,34 +45,41 @@ namespace Plisky.CodeCraft {
             var dtx = cv.GetDisplayType(fut, dt);
             string versonToWrite = cv.GetVersionString(dtx);
             switch (fut) {
-                case FileUpdateType.Assembly:
+                case FileUpdateType.NetAssembly:
                     UpdateCSFileWithAttribute(fl, ASMFILE_VER_TAG, versonToWrite);
                     break;
-                case FileUpdateType.AssemblyInformational:
+
+                case FileUpdateType.NetInformational:
                     UpdateCSFileWithAttribute(fl, ASMFILE_INFVER_TAG, versonToWrite);
                     break;
-                case FileUpdateType.AssemblyFile:
+
+                case FileUpdateType.NetFile:
                     UpdateCSFileWithAttribute(fl, ASMFILE_FILEVER_TAG, versonToWrite);
                     break;
+
                 case FileUpdateType.Wix:
                     UpdateWixFile(fl, versonToWrite);
                     break;
+
                 case FileUpdateType.Nuspec:
                     UpdateNuspecFile(fl, versonToWrite);
                     break;
-                case FileUpdateType.NetStdAssembly:
+
+                case FileUpdateType.StdAssembly:
                     UpdateStdCSPRoj(fl, versonToWrite, ASM_STD_ASMVTAG);
                     break;
-                case FileUpdateType.NetStdFile:
+
+                case FileUpdateType.StdFile:
                     UpdateStdCSPRoj(fl, versonToWrite, ASM_STD_FILETAG);
                     break;
-                case FileUpdateType.NetStdInformational:
+
+                case FileUpdateType.StdInformational:
                     UpdateStdCSPRoj(fl, versonToWrite, ASM_STD_VERSTAG);
                     break;
-                default:
-                    throw new NotImplementedException("The file type requested does not have a way to update files currently.");                    
-            }
 
+                default:
+                    throw new NotImplementedException("The file type requested does not have a way to update files currently.");
+            }
         }
 
         private void UpdateStdCSPRoj(string fl, string versonToWrite, string propName) {
@@ -85,15 +91,15 @@ namespace Plisky.CodeCraft {
             XDocument xd2 = XDocument.Load(fl);
 
             var el2 = xd2.Element("Project");
-            if (el2 == null){
+            if (el2 == null) {
                 b.Error.Log($"Unable to locate [Project] element in file [{fl}], version update failed.");
                 return;
             }
 
             var el3 = el2?.Element("PropertyGroup");
-            if(el3!=null) {
+            if (el3 != null) {
                 var el4 = el3.Element(propName);
-                if (el4==null) {
+                if (el4 == null) {
                     el4 = new XElement(propName);
                     el3.Add(el4);
                 }
@@ -101,7 +107,6 @@ namespace Plisky.CodeCraft {
             }
 
             xd2.Save(fl);
-            
         }
 
         private void UpdateWixFile(string fileName, string versionToWrite) {
@@ -142,8 +147,6 @@ namespace Plisky.CodeCraft {
             xd.Save(fileName);
         }
 
-       
-
         private bool CheckForAssemblyVersion(string fl) {
             if (AssemblyMM == null) { return false; }
             string assemblyVerString = cv.GetVersionString(DisplayType.Short);
@@ -153,18 +156,15 @@ namespace Plisky.CodeCraft {
         }
 
         private bool CheckForInformationalVersion(string fl) {
-
             if (InfoMM == null) { return false; }
             string assemblyVerString = cv.GetVersionString(DisplayType.Short);
 
             return CheckAndUpdate(fl, InfoMM, assemblyVerString, (theFile, theVn) => {
                 UpdateCSFileWithAttribute(fl, ASMFILE_INFVER_TAG, theVn);
             });
-
         }
 
         private bool CheckForWix(string fl) {
-
             if (WixMM == null) { return false; }
             string assemblyVerString = cv.GetVersionString(DisplayType.Short);
 
@@ -172,8 +172,6 @@ namespace Plisky.CodeCraft {
                 // TODO : UpdateWixFileWithVersion(fl, theVn);
             });
         }
-
-
 
         private bool CheckAndUpdate(string fl, Minimatcher assemblyMM, string versionValue, Action<string, string> p) {
             b.Assert.True(p != null, "The action used cant be null");
@@ -190,8 +188,6 @@ namespace Plisky.CodeCraft {
                 p(fl, versionValue);
 
                 hook?.PostUpdateFileAction(fl);
-
-
             }
             return result;
         }
@@ -204,42 +200,39 @@ namespace Plisky.CodeCraft {
         /// <param name="targetAttribute">The name of the attribute to write the verison number into</param>
         /// <param name="vn">The verison number to apply to the code</param>
         private void UpdateCSFileWithAttribute(string fileName, string targetAttribute, string versionValue) {
+
             #region entry code
+
             b.Assert.True(!string.IsNullOrEmpty(fileName), "fileName is null, internal consistancy error.");
             b.Assert.True(!string.IsNullOrEmpty(targetAttribute), "target attribute cant be null, internal consistancy error");
             b.Assert.True(versionValue != null, "vn cant be null, internal consistancy error");
-            #endregion (entry code)
+
+            #endregion entry code
 
             b.Info.Log($"VersionSupport, Asked to update CS file with the {targetAttribute} attribute", "Full Filename:" + fileName);
 
             var outputFile = new StringBuilder();
-
 
             if (!File.Exists(fileName)) {
                 b.Verbose.Log("There was no file, creating file and adding attribute");
                 outputFile.Append("using System.Reflection;\r\n");
                 outputFile.Append($"[assembly: {targetAttribute}(\"{versionValue}\")]\r\n");
             } else {
-
                 // If it does exist we need to verify that it is not readonly.
                 if ((File.GetAttributes(fileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly) {
                     b.Warning.Log("The file is readonly, removing attribs so I can write on it", "fname [" + fileName + "]");
                     File.SetAttributes(fileName, (File.GetAttributes(fileName) ^ FileAttributes.ReadOnly));
                 }
 
-
                 // Put this in to identify if there were duplicate entries discovered in the file, this should not be valid but helps to reassure that its not the verisoner that has
-                // introduced a compile error into the code.                
+                // introduced a compile error into the code.
                 bool replacementMade = false;
-
 
                 Regex r = GetRegex(targetAttribute);
                 using (StreamReader sr = new StreamReader(fileName)) {
                     string nextLine = null;
                     while ((nextLine = sr.ReadLine()) != null) {
-
                         if ((!nextLine.Trim().StartsWith("//")) && (r.IsMatch(nextLine))) {
-
                             if (replacementMade) {
                                 // One would hope that this would not occur outside of testing, yet surprisingly enough this is not the case.
                                 throw new ArgumentException("Invalid CSharp File, duplicate verison attribute discovered", fileName);
@@ -254,7 +247,6 @@ namespace Plisky.CodeCraft {
                             // All lines except the one we are interested in are copied across.
                             outputFile.Append(nextLine + "\r\n");
                         }
-
                     }
 
                     if (!replacementMade) {

@@ -1,0 +1,9 @@
+﻿**/PliskyVersioning/Plisky.Versioning/Plisky.Versioning.csproj|NetAssembly
+**/PliskyVersioning/_Dependencies/CDSupport/readme.txt|TextFile
+**/PliskyVersioning/PliskyTool/PliskyTool.csproj|NetInformational
+**/PliskyVersioning/PliskyTool/PliskyTool.csproj|NetFile
+**/PliskyVersioning/PliskyTool/PliskyTool.csproj|Wix
+**/_Dependencies/versioning.nuspec|Nuspec
+**/PliskyVersioning/PliskyTool/AssemblyInfo.cs|StdAssembly
+**/PliskyVersioning/PliskyTool/AssemblyInfo.cs|StdInformational
+**/PliskyVersioning/PliskyTool/AssemblyInfo.cs|StdFile
