@@ -10,7 +10,8 @@
         NuspecSample1,
         NuspecSample2,
         NetStdAll3,
-        MMTypeData
+        MMTypeData,
+        NetStdNone
     }
 
     public static class TestResources {
@@ -26,6 +27,7 @@
                 case TestResourcesReferences.NuspecSample1: return "sample1.nuspec";
                 case TestResourcesReferences.NuspecSample2: return "sample2.nuspec";
                 case TestResourcesReferences.NetStdAll3: return "MultipleVersNetStd.csproj";
+                case TestResourcesReferences.NetStdNone: return "MissingAllElements.csproj";
                 case TestResourcesReferences.MMTypeData: return "mmTypes.txt";
             }
 

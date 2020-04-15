@@ -2,7 +2,7 @@
   "profiles": {
     "PliskyTool": {
       "commandName": "Project",
-      "commandLineArgs": "UpdateFiles -Root=C:\\Files\\Code\\git\\PliskyDiagnostics\\ -VS=\\\\blackpearl\\DevShare\\Versions\\PliskyDiagnostics.version -Increment -mm=**\\\\properties\\\\assemblyinfo.cs,**\\\\versions\\\\CommonAssemblyInfo.cs,**\\\\*.nuspec,**\\Plisky.DiagnosticsStd2\\*.csproj"
+      "commandLineArgs": "UpdateFiles -Root=C:\\Files\\Code\\git\\PliskyDiagnostics\\ -VS=\\\\blackpearl\\DevShare\\Versions\\PliskyDiagnostics.version -Increment -mm=**\\\\properties\\\\assemblyinfo.cs,**\\\\versions\\\\CommonAssemblyInfo.cs,**\\\\*.nuspec,**\\Plisky.DiagnosticsStd2\\*.csproj -Debug"
     }
   }
 }

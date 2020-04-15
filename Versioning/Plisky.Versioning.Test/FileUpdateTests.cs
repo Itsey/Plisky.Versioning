@@ -212,6 +212,69 @@ namespace Plisky.CodeCraft.Test {
             Assert.NotEqual<string>(before, after);
         }
 
+
+        [Fact(DisplayName = nameof(UpdateStd_AddsFileWhenMissing))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void UpdateStd_AddsFileWhenMissing() {
+            var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone);
+            string srcFile = uth.GetTestDataFile(reid); 
+            CompleteVersion cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
+            VersionFileUpdater sut = new VersionFileUpdater(cv);
+            var before = ts.GetVersion(FileUpdateType.StdFile, srcFile);
+            
+            sut.PerformUpdate(srcFile, FileUpdateType.StdFile);
+
+            var after = ts.GetVersion(FileUpdateType.StdFile, srcFile);
+            Assert.True(string.IsNullOrEmpty(before));
+            Assert.False(string.IsNullOrEmpty(after));
+        }
+
+
+        [Fact(DisplayName = nameof(UpdateStd_AddsAsmWhenMissing))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void UpdateStd_AddsAsmWhenMissing() {
+            var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone);
+            string srcFile = uth.GetTestDataFile(reid);
+            CompleteVersion cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
+            VersionFileUpdater sut = new VersionFileUpdater(cv);
+            var before = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
+
+            sut.PerformUpdate(srcFile, FileUpdateType.StdAssembly);
+
+            var after = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
+
+            Assert.True(string.IsNullOrEmpty(before));
+            Assert.False(string.IsNullOrEmpty(after));
+        }
+
+
+
+
+        [Fact(DisplayName = nameof(UpdateStd_AddsStdInfoWhenMissing))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void UpdateStd_AddsStdInfoWhenMissing() {
+            var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone);
+            string srcFile = uth.GetTestDataFile(reid);
+            CompleteVersion cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
+            VersionFileUpdater sut = new VersionFileUpdater(cv);
+            var before = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
+
+            sut.PerformUpdate(srcFile, FileUpdateType.StdInformational);
+
+            var after = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
+
+            Assert.True(string.IsNullOrEmpty(before));
+            Assert.False(string.IsNullOrEmpty(after));
+        }
+
+
+
+
+
+
         [Fact(DisplayName = nameof(Update_StdCSProjFile_Works))]
         [Trait(Traits.Age, Traits.Fresh)]
         [Trait(Traits.Style, Traits.Unit)]

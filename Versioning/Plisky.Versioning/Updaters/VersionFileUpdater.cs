@@ -9,7 +9,7 @@ using System.Xml.Linq;
 namespace Plisky.CodeCraft {
 
     public class VersionFileUpdater {
-        private Bilge b = new Bilge();
+        private Bilge b = new Bilge("Plisky-Versioning");
         private const string ASMFILE_FILEVER_TAG = "AssemblyFileVersion";
         private const string ASMFILE_VER_TAG = "AssemblyVersion";
         private const string ASMFILE_INFVER_TAG = "AssemblyInformationalVersion";
@@ -83,27 +83,33 @@ namespace Plisky.CodeCraft {
         }
 
         private void UpdateStdCSPRoj(string fl, string versonToWrite, string propName) {
+            const string PROPERTYGROUP_ELNAME = "PropertyGroup";
+            const string PROJECT_ELNAME = "Project";
 #if DEBUG
             if (!File.Exists(fl)) { throw new InvalidOperationException("Must not be possible, check this before you reach this code"); }
 #endif
-            b.Verbose.Log($"Updating CSPROJ style file with ver {versonToWrite} property {propName}");
+            b.Info.Log($"Updating NetStd style file with ver {versonToWrite} property {propName}",fl);
 
             XDocument xd2 = XDocument.Load(fl);
 
-            var el2 = xd2.Element("Project");
+            var el2 = xd2.Element(PROJECT_ELNAME);
             if (el2 == null) {
-                b.Error.Log($"Unable to locate [Project] element in file [{fl}], version update failed.");
+                b.Error.Log($"Unable to locate [{PROJECT_ELNAME}] element in file [{fl}], version update failed.","Likely this is not a .net standard csproj but a framework one.");
                 return;
             }
 
-            var el3 = el2?.Element("PropertyGroup");
-            if (el3 != null) {
-                var el4 = el3.Element(propName);
-                if (el4 == null) {
-                    el4 = new XElement(propName);
-                    el3.Add(el4);
+            var propGroupElement = el2?.Element(PROPERTYGROUP_ELNAME);
+            if (propGroupElement != null) {
+                b.Verbose.Log("PropertyGroup Matched");
+                var versionElementToUpdate = propGroupElement.Element(propName);
+                if (versionElementToUpdate == null) {
+                    b.Verbose.Log($"Element {propName} not found, Adding.");
+                    versionElementToUpdate = new XElement(propName);
+                    propGroupElement.Add(versionElementToUpdate);
                 }
-                el4.Value = versonToWrite;
+                versionElementToUpdate.Value = versonToWrite;
+            } else {
+                b.Warning.Log($"Unable to locate [{PROPERTYGROUP_ELNAME}] element in the file [{fl}], version update failed");
             }
 
             xd2.Save(fl);

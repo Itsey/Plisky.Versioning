@@ -26,6 +26,7 @@
     <EmbeddedResource Include="TestFileStructure\Nuget\sample1.nuspec" />
     <EmbeddedResource Include="TestFileStructure\Nuget\sample2.nuspec" />
     <EmbeddedResource Include="TestFileStructure\Properties\AssemblyInfo.txt" />
+    <EmbeddedResource Include="TestFileStructure\StdCSProj\MissingAllElements.csproj" />
   </ItemGroup>
 
   <ItemGroup>

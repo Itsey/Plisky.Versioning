@@ -1,6 +1,10 @@
-﻿namespace Plisky.CodeCraft {
+﻿using Plisky.Diagnostics;
+
+namespace Plisky.CodeCraft {
 
     public abstract class VersionStorage {
+        protected Bilge b = new Bilge("Plisky-Versioning");
+
         protected string InitValue = null;
 
         protected abstract void ActualPersist(CompleteVersion cv);

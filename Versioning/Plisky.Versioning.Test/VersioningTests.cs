@@ -15,6 +15,10 @@ namespace Plisky.Versioning.Test {
             ts = new TestSupport(uth);
         }
 
+
+
+
+
         [Fact(DisplayName = nameof(GetDefaultMinimatchers_IsNotEmpty))]
         [Trait(Traits.Age, Traits.Fresh)]
         [Trait(Traits.Style, Traits.Unit)]
@@ -51,7 +55,7 @@ namespace Plisky.Versioning.Test {
             MockVersionStorage mva = new MockVersionStorage("");
             MockVersioning v = new MockVersioning(mva);
 
-            v.LoadVersioningMinmatchersFromSourceFile(srcFile);
+            v.LoadMiniMatches(srcFile);
 
             Assert.Equal(9, v.Mock.ReturnMinMatchers().Length);
         }

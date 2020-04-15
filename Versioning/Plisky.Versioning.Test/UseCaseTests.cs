@@ -4,6 +4,7 @@ namespace Plisky.CodeCraft.Test {
 
     using CodeCraft;
     using Plisky.Diagnostics;
+    using Plisky.Diagnostics.Listeners;
     using Plisky.Test;
     using System;
     using Xunit;
@@ -11,6 +12,38 @@ namespace Plisky.CodeCraft.Test {
     public class UseCaseTests {
         private Bilge b = new Bilge();
         private UnitTestHelper uth = new UnitTestHelper();
+
+        public UseCaseTests() {
+            Bilge.AddMessageHandler(new TCPHandler("127.0.0.1", 9060));
+            Bilge.SetConfigurationResolver((a, b) => {
+                return System.Diagnostics.SourceLevels.Verbose;
+            });
+        }
+
+        [Fact(DisplayName = nameof(Versioning_MultiMMSameFile_UpdatesMultipleTimes))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Versioning_MultiMMSameFile_UpdatesMultipleTimes() {
+            b.Info.Flow();
+
+            // Get the Std CSroj with no attributes.
+            var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone);
+            string srcFile = uth.GetTestDataFile(reid);
+
+            // Find This file
+            var v = new MockVersioning(new MockVersionStorage(""));
+            v.Mock.AddFilenameToFind(srcFile);
+            v.LoadMiniMatches("**/csproj|StdFile", srcFile+ "|StdFile", srcFile+ "|StdAssembly", srcFile + "|StdInformational");
+            v.SearchForAllFiles("");
+            v.UpdateAllRegisteredFiles();
+
+            string s = File.ReadAllText(srcFile);
+
+            Assert.Contains("<Version>",s);
+            Assert.Contains("<AssemblyVersion>",s);
+            Assert.Contains("<FileVersion>",s);            
+        }
+
 
         [Fact(DisplayName = nameof(Versioning_DefaultBehaviour_IsIncrementBuild))]
         [Trait(Traits.Age, Traits.Fresh)]

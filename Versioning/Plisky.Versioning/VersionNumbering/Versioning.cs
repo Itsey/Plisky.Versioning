@@ -1,4 +1,5 @@
 ﻿using Minimatch;
+using Plisky.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,6 +7,7 @@ using System.IO;
 namespace Plisky.CodeCraft {
 
     public class Versioning {
+        protected Bilge b = new Bilge("Plisky-Versioning");
         protected List<Tuple<string, FileUpdateType>> filenamesRegistered = new List<Tuple<string, FileUpdateType>>();
         protected Dictionary<FileUpdateType, List<string>> fileUpdateMinmatchers = new Dictionary<FileUpdateType, List<string>>();
         protected CompleteVersion cv;
@@ -14,6 +16,8 @@ namespace Plisky.CodeCraft {
         protected bool testMode;
 
         public Versioning(VersionStorage jvp, bool dryRun = false) {
+            b.Verbose.Log($"Versioning Online - DryRun {dryRun}");
+
             testMode = dryRun;
             repo = jvp;
             cv = repo.GetVersion();
@@ -64,42 +68,76 @@ namespace Plisky.CodeCraft {
         }
 
         public void UpdateAllRegisteredFiles() {
+            Log("Update All Files");
+            
             foreach (var f in filenamesRegistered) {
                 vfu.PerformUpdate(f.Item1, f.Item2);
             }
         }
 
-        public string GetVersion() {
-            return cv.ToString();
+        private void Log(string v) {
+            b.Info.Log(v);
+            Logger?.Invoke(v);
         }
 
-        public void LoadVersioningMinmatchersFromSourceFile(string srcFile) {
-            if (!File.Exists(srcFile)) {
-                throw new FileNotFoundException("Versioning File Must Exist", srcFile);
+        public string GetVersion() {
+            string result = cv.ToString();
+            b.Verbose.Log($"Returning Verison {result}");
+            return result;
+        }
+
+        public void LoadMiniMatches(params string[] srcFile) {
+            b.Verbose.Dump(srcFile, "Load MiniMatchers from Array");
+            if (srcFile.Length == 1) {
+                if (File.Exists(srcFile[0])) {
+                    Log($"Loading MM from file - {srcFile}");
+                    srcFile = File.ReadAllLines(srcFile[0]);
+                }
             }
 
             ClearMiniMatchers();
 
-            foreach (var line in File.ReadAllLines(srcFile)) {
-                var ln = line.Split('|');
-                if (ln.Length == 2) {
-                    // Valid
-                    if (Enum.TryParse<FileUpdateType>(ln[1], out FileUpdateType fut)) {
-                        if (!fileUpdateMinmatchers.ContainsKey(fut)) {
-                            fileUpdateMinmatchers.Add(fut, new List<string>());
-                        }
-                        fileUpdateMinmatchers[fut].Add(ln[0]);
-                    }
-                } else {
-                    // TODO : Log invalid
+            foreach (var line in srcFile) {
+                AddMMLine(line);
+            }
+        }
+
+        private void AddMMLine(string line) {
+            Tuple<FileUpdateType, string> mmPattern = ParseMMStringToPattern(line);
+
+            if (mmPattern != null) {
+                if (!fileUpdateMinmatchers.ContainsKey(mmPattern.Item1)) {
+                    fileUpdateMinmatchers.Add(mmPattern.Item1, new List<string>());
+                }
+                fileUpdateMinmatchers[mmPattern.Item1].Add(mmPattern.Item2);
+                Log($"{mmPattern.Item1} Registered For {mmPattern.Item2}");
+            } else {
+                Log($"Invalid MM Line: {line}");
+            }
+        }
+
+        private Tuple<FileUpdateType, string> ParseMMStringToPattern(string line) {
+            Tuple<FileUpdateType, string> result = null;
+            var ln = line.Split('|');
+            if (ln.Length == 2) {
+                // Valid
+                if (Enum.TryParse<FileUpdateType>(ln[1], out FileUpdateType fut)) {
+                    result = new Tuple<FileUpdateType, string>(fut, ln[0]);
                 }
             }
+            
+            
+            return result;
+        }
+
+        protected virtual IEnumerable<string> ActualGetFiles(string root) {
+            return Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories);
         }
 
         public List<string> SearchForAllFiles(string root) {
             List<string> result = new List<string>();
 
-            Logger?.Invoke($"Searching in [{root}]");
+            Log($"Searching in [{root}]");
 
             List<Tuple<Minimatcher, FileUpdateType>> mm = new List<Tuple<Minimatcher, FileUpdateType>>();
 
@@ -109,15 +147,15 @@ namespace Plisky.CodeCraft {
                 }
             }
 
-            var fls = Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories);
+            var fls = ActualGetFiles(root);
 
             foreach (var l in fls) {
+
                 for (int j = 0; j < mm.Count; j++) {
                     if (mm[j].Item1.IsMatch(l)) {
-                        Logger?.Invoke("Match :" + l);
+                        Log($"MM Match {l} - {mm[j].Item2}, queued for update.");
                         filenamesRegistered.Add(new Tuple<string, FileUpdateType>(l, mm[j].Item2));
                         result.Add(l);
-                        break;
                     }
                 }
             }
@@ -126,23 +164,15 @@ namespace Plisky.CodeCraft {
         }
 
         public void SaveUpdatedVersion() {
-            Logger?.Invoke("Updating Version In Storage");
+            Log("Updating Version In Storage");
             if (!testMode) {
                 repo.Persist(Version);
             }
         }
 
-        public void ApplyUpdatesToAllFiles() {
-            /* Action<string> ActionToPerform = GetActionToPerform(ver);
+        
 
-             foreach (var l in allFiles) {
-                 ActionToPerform(l);
-             }
-
-     */
-            UpdateAllRegisteredFiles();
-        }
-
+        
         public void SetMiniMatches(FileUpdateType target, params string[] versionTargetMinMatch) {
             if (!fileUpdateMinmatchers.ContainsKey(target)) {
                 fileUpdateMinmatchers.Add(target, new List<string>());

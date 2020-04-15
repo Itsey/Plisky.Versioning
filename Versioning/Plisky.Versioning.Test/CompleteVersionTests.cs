@@ -80,20 +80,6 @@ namespace Plisky.CodeCraft.Test {
             Assert.Equal(endVer, cv.ToString());
         }
 
-        [Fact(DisplayName = nameof(VersioningFile_Missing_ThrowsException))]
-        [Trait(Traits.Age, Traits.Fresh)]
-        [Trait(Traits.Style, Traits.Unit)]
-        public void VersioningFile_Missing_ThrowsException() {
-            b.Info.Flow();
-
-            MockVersionStorage mva = new MockVersionStorage("");
-
-            MockVersioning v = new MockVersioning(mva);
-
-            Assert.Throws<FileNotFoundException>(() => {
-                v.LoadVersioningMinmatchersFromSourceFile(@"C:\doesnotexist\afilethatdontexist.azdyt");
-            });
-        }
 
         [Theory(DisplayName = "ManipulateVersionTests")]
         [InlineData("1", "+", "2")]

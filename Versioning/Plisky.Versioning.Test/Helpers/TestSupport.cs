@@ -33,6 +33,7 @@ namespace Plisky.CodeCraft.Test {
         public string GetVersionFromCSProj(string srcFile, string propName) {
             XDocument xd2 = XDocument.Load(srcFile);
             var el2 = xd2.Element("Project")?.Element("PropertyGroup")?.Element(propName);
+            if (el2==null) { return null;  }
             var after = el2.Value;
             return after;
         }

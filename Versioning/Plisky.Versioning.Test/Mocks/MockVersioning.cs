@@ -6,6 +6,12 @@ namespace Plisky.CodeCraft.Test {
 
     public class MockVersioning : Versioning {
 
+        private List<string> filenamesToFind = new List<string>();
+
+        protected override IEnumerable<string> ActualGetFiles(string root) {
+            return filenamesToFind;
+        }
+
         #region mocking implementation
 
         public Mocking Mock;
@@ -52,11 +58,15 @@ namespace Plisky.CodeCraft.Test {
 
                 return result.ToArray();
             }
+
+            public void AddFilenameToFind(params string[] filenames) {
+                parent.filenamesToFind.AddRange(filenames);
+            }
         }
 
         #endregion mocking implementation
 
-        protected Bilge b;
+       
 
         public MockVersioning(VersionStorage vs) : base(vs) {
             Mock = new Mocking(this);

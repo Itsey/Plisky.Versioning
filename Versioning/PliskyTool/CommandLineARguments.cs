@@ -35,6 +35,9 @@ namespace PliskyTool {
         [CommandLineArg("DryRun", Description = "Runs the tool in output mode only, no changes are made")]
         public bool TestMode { get; set; }
 
+        [CommandLineArg("Debug", Description = "Enables Debug Logging")]
+        public bool Debug { get; set; }
+
         public CommandLineARguments() {
             VersionTargetMinMatch = null;
         }

@@ -12,14 +12,28 @@ namespace PliskyTool {
 
         private static void Main(string[] args) {
             Console.WriteLine("Plisky Tool - Online");
-            Bilge b = new Bilge(tl: SourceLevels.Verbose);
-            b.AddHandler(new TCPHandler("127.0.0.1", 9060, true));
-            b.Info.Log("Online");
+            
+            
+            
             CommandArgumentSupport clas = new CommandArgumentSupport();
 
             clas.ArgumentPostfix = "=";
             clas.ProcessArguments(Options, args);
 
+            if (Options.Debug) {
+                Bilge.AddMessageHandler(new TCPHandler("192.168.1.15", 9060));
+                Bilge.SetConfigurationResolver((name, inLevel) => {
+
+                    if (name == "Plisky-Versioning") {
+                        return SourceLevels.Verbose;
+                    }
+                    return inLevel;
+                });
+            }
+
+            Bilge b = new Bilge("Plisky-Versioning");
+
+            b.Info.Log("Online");
             b.Verbose.Log("Perform Action");
             b.Verbose.Dump(Options, "App Options");
 
@@ -89,12 +103,13 @@ namespace PliskyTool {
             Console.WriteLine("Version To Write: " + ver.GetVersion());
 
             // Increment done, now persist and then update the pages - first check if the command line ovverrides the minimatchers
-            if ((Options.VersionTargetMinMatch != null) && (Options.VersionTargetMinMatch.Length > 0)) {
-                //ver.SetMiniMatches( Options.VersionTargetMinMatch);
-                throw new NotImplementedException();
+            if ((Options.VersionTargetMinMatch != null) && (Options.VersionTargetMinMatch.Length > 0)) {                
+                ver.LoadMiniMatches(Options.VersionTargetMinMatch);
             }
 
-            ver.ApplyUpdatesToAllFiles();
+            ver.SearchForAllFiles(Options.Root);
+
+            ver.UpdateAllRegisteredFiles();
 
             ver.SaveUpdatedVersion();
         }
