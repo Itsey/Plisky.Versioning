@@ -162,13 +162,16 @@ namespace Plisky.CodeCraft.Test {
             Assert.True(ts.DoesFileContainThisText(tfn1, "AssemblyFileVersion(\"1.1.1.1"), "The target filename was not updated");
         }
 
-        [Fact]
+        [Theory]
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
-        public void MinimatchSyntax_Research() {
+        [InlineData(@"C:\temp\verworking\assemblyinfo.cs", @"**\assemblyinfo.cs", true)]
+        [InlineData(@"C:\temp\verworking\testing.csproj", @"**/*. csproj", true)]
+        [InlineData(@"C:\temp\verworking\testing.csproj", @"**\*.csproj", true)]        
+        public void MinimatchSyntax_Research(string filename, string minimatch, bool shouldPass) {
             var mtchs = new List<Tuple<string, bool>>();
-            mtchs.Add(new Tuple<string, bool>(@"C:\temp\verworking\assemblyinfo.cs", true));
-            CheckTheseMatches(mtchs, @"**\assemblyinfo.cs");
+            mtchs.Add(new Tuple<string, bool>(filename, shouldPass));
+            CheckTheseMatches(mtchs, minimatch);
         }
 
         [Fact]

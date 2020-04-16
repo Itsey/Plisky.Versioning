@@ -148,18 +148,25 @@ namespace Plisky.CodeCraft {
                 }
             }
 
+            int totalNoFiles = 0;
+            int registered = 0;
+
             var fls = ActualGetFiles(root);
 
             foreach (var l in fls) {
+                totalNoFiles++;
 
-                for (int j = 0; j < mm.Count; j++) {
+                for (int j = 0; j < mm.Count; j++) {                    
                     if (mm[j].Item1.IsMatch(l)) {
                         Log($"MM Match {l} - {mm[j].Item2}, queued for update.");
                         filenamesRegistered.Add(new Tuple<string, FileUpdateType>(l, mm[j].Item2));
+                        registered++;
                         result.Add(l);
                     }
                 }
             }
+
+            b.Verbose.Log($"Total Files {totalNoFiles} registered for update {registered}");
 
             return result;
         }

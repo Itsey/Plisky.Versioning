@@ -16,14 +16,15 @@ Command Line Options
 
 Command line options are prefixed with -.  They are postfixed with =.   e.g. -Command=CreateVersion 
 
--Command  (-C)
--VersionSource  (-VS)
--Increment
--Digits
--QuickValue  (-Q)
--MinMatch
--Root
--DryRun
+-Command  (-C)              Specify the Command that is to be run
+-VersionSource  (-VS)       Specify an inititialisation string to a supported version source
+-Increment                  Increment the version number during the command operation.
+-Digits                     
+-QuickValue  (-Q)           Provide a value for the versioning command.
+-MinMatch                   Provide a file or list of minimatches to identify files to update.
+-Root                       The root folder to recursivly search for files to update.
+-DryRun                     If specified then no updates are made, but output is written to the logs.
+-Debug                      Enables trace handling for debugging and additional logging.
 
 Commands
 ========
@@ -108,4 +109,12 @@ Wix Setup file, looking for the version attribute.  To update the version in the
 Nuspec
 
 Nuget Package File format.
+
+
+Full Eample Command Line:
+'PliskyTool.exe UpdateFiles -Root=c:\src\ -VS=c:\store\pversioner.vstore -Increment -MM="**/*.csproj|StdFile,**/*.csproj|StdAssembly,**/*.csproj|StdInformational"
+
+This will search the folder c:\src for all .csproj files and attempt to add the .net standard versioninng for the three different file types to any csproj files that are
+found.  Note that for the std file type it will look inside the file and see whether it looks like a net std file or a framework one.  Framework ones
+will not be udpated.  
 
