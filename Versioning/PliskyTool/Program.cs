@@ -21,6 +21,7 @@ namespace PliskyTool {
             clas.ProcessArguments(Options, args);
 
             if (Options.Debug) {
+                Console.WriteLine("Debug Mode, Adding Trace Handler");
                 Bilge.AddMessageHandler(new TCPHandler("192.168.1.15", 9060));
                 Bilge.SetConfigurationResolver((name, inLevel) => {
 
@@ -33,8 +34,7 @@ namespace PliskyTool {
 
             Bilge b = new Bilge("Plisky-Versioning");
 
-            b.Info.Log("Online");
-            b.Verbose.Log("Perform Action");
+            b.Info.Log("Online");            
             b.Verbose.Dump(Options, "App Options");
 
             Console.WriteLine(Options.QuickValue);
@@ -45,6 +45,7 @@ namespace PliskyTool {
                 string s = clas.GenerateShortHelp(Options, "Plisky Tool");
                 Console.WriteLine(s);
             }
+           
         }
 
         private static bool PerformActionsFromCommandline() {

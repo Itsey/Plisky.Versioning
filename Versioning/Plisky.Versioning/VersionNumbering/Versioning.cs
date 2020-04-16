@@ -71,6 +71,7 @@ namespace Plisky.CodeCraft {
             Log("Update All Files");
             
             foreach (var f in filenamesRegistered) {
+                Log("Updating : " + f);
                 vfu.PerformUpdate(f.Item1, f.Item2);
             }
         }
