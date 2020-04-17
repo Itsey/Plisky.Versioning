@@ -31,7 +31,10 @@ namespace Plisky.CodeCraft {
             fileUpdateMinmatchers[FileUpdateType.Nuspec].Add("**\\*.nuspec");
         }
 
-        public void Increment() {
+        public void Increment(string newReleaseName=null) {
+            if ((!string.IsNullOrEmpty(newReleaseName)) && (newReleaseName != cv.ReleaseName)) {
+                cv.ReleaseName = newReleaseName;
+            }
             cv.Increment();
         }
 
@@ -69,7 +72,7 @@ namespace Plisky.CodeCraft {
 
         public void UpdateAllRegisteredFiles() {
             Log("Update All Files");
-            
+
             foreach (var f in filenamesRegistered) {
                 Log("Updating : " + f);
                 vfu.PerformUpdate(f.Item1, f.Item2);
@@ -126,8 +129,8 @@ namespace Plisky.CodeCraft {
                     result = new Tuple<FileUpdateType, string>(fut, ln[0]);
                 }
             }
-            
-            
+
+
             return result;
         }
 
@@ -151,21 +154,24 @@ namespace Plisky.CodeCraft {
             int totalNoFiles = 0;
             int registered = 0;
 
-            var fls = ActualGetFiles(root);
+            try {
+                var fls = ActualGetFiles(root);
 
-            foreach (var l in fls) {
-                totalNoFiles++;
+                foreach (var l in fls) {
+                    totalNoFiles++;
 
-                for (int j = 0; j < mm.Count; j++) {                    
-                    if (mm[j].Item1.IsMatch(l)) {
-                        Log($"MM Match {l} - {mm[j].Item2}, queued for update.");
-                        filenamesRegistered.Add(new Tuple<string, FileUpdateType>(l, mm[j].Item2));
-                        registered++;
-                        result.Add(l);
+                    for (int j = 0; j < mm.Count; j++) {
+                        if (mm[j].Item1.IsMatch(l)) {
+                            Log($"MM Match {l} - {mm[j].Item2}, queued for update.");
+                            filenamesRegistered.Add(new Tuple<string, FileUpdateType>(l, mm[j].Item2));
+                            registered++;
+                            result.Add(l);
+                        }
                     }
                 }
+            } catch (UnauthorizedAccessException) {
+                Log($"Access Denied - File Searcher Stopped.");
             }
-
             b.Verbose.Log($"Total Files {totalNoFiles} registered for update {registered}");
 
             return result;
@@ -178,9 +184,9 @@ namespace Plisky.CodeCraft {
             }
         }
 
-        
 
-        
+
+
         public void SetMiniMatches(FileUpdateType target, params string[] versionTargetMinMatch) {
             if (!fileUpdateMinmatchers.ContainsKey(target)) {
                 fileUpdateMinmatchers.Add(target, new List<string>());

@@ -61,8 +61,8 @@ namespace Plisky.CodeCraft {
                 }
             }
 
-            if (Behaviour == DigitIncremementBehaviour.Fixed) {
-                b.Verbose.Log("Behaviour Set to Fixed, not doing anything.");
+            if ((Behaviour == DigitIncremementBehaviour.Fixed)||(Behaviour==DigitIncremementBehaviour.ReleaseName)) {
+                b.Verbose.Log($"Behaviour Set to {Behaviour}, not doing anything.");
                 return false;
             }
 
@@ -133,11 +133,11 @@ namespace Plisky.CodeCraft {
 
         private void ValidateForBehaviour() {
             int i;
-            if (Behaviour != DigitIncremementBehaviour.Fixed) {
+            if ((Behaviour != DigitIncremementBehaviour.Fixed)&&(Behaviour!= DigitIncremementBehaviour.ReleaseName)) {
                 try {
                     int.Parse(Value);
                 } catch (Exception inr) {
-                    throw new InvalidOperationException("Increment behaviour can not be set on non integer value", inr);
+                    throw new InvalidOperationException($"Behaviour set to {Behaviour}.  This requires an integer value for the digit. Only Fixed and ReleaseName behaviours can be strings", inr);
                 }
             }
         }

@@ -1,0 +1,2 @@
+﻿Release: XXX-RELEASENAME-XXX
+Version: XXX-VERSION-XXX

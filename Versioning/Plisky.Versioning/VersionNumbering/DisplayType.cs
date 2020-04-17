@@ -8,6 +8,7 @@
         Short = 0x0001,
         Full = 0x0002,
         NoDisplay = 0x0003,
-        ThreeDigit = 0x0004
+        ThreeDigit = 0x0004,
+        Release = 0x5
     }
 }

@@ -25,6 +25,10 @@ namespace PliskyTool {
         [CommandLineArg("QuickValue")]
         public string QuickValue { get; set; }
 
+        [CommandLineArg("R")]
+        [CommandLineArg("Release", Description = "The release name associated with this version number")]
+        public string Release { get; set; }
+
         [CommandLineArg("MM")]
         [CommandLineArg("MinMatch", ArraySeparatorChar = ";", Description = "A series of minmatch path descriptions to files to update")]
         public string[] VersionTargetMinMatch { get; set; }

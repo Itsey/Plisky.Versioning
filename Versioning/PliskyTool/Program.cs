@@ -35,9 +35,7 @@ namespace PliskyTool {
             Bilge b = new Bilge("Plisky-Versioning");
 
             b.Info.Log("Online");            
-            b.Verbose.Dump(Options, "App Options");
-
-            Console.WriteLine(Options.QuickValue);
+            b.Verbose.Dump(Options, "App Options");          
 
             if (PerformActionsFromCommandline()) {
                 b.Info.Log("Complete.");
@@ -65,6 +63,7 @@ namespace PliskyTool {
                     return true;
 
                 default:
+                    Console.WriteLine("Unrecognised Command: "+Options.Command);
                     return false;
             }
         }
@@ -98,7 +97,7 @@ namespace PliskyTool {
 
             if (Options.PerformIncrement) {
                 Console.WriteLine("Version Increment Requested - Currently " + ver.GetVersion());
-                ver.Increment();
+                ver.Increment(Options.Release);
             }
 
             Console.WriteLine("Version To Write: " + ver.GetVersion());
@@ -149,9 +148,13 @@ namespace PliskyTool {
                 Console.WriteLine($"Using Value From Command Line: {Options.QuickValue}");
                 startVer = Options.QuickValue;
             }
+            if (!string.IsNullOrEmpty(Options.QuickValue)) {
+                Console.WriteLine($"Setting Release From Command Line: {Options.Release}");
+            }
             Console.WriteLine($"Creating New Version Store: {startVer}");
 
             CompleteVersion cv = new CompleteVersion(startVer);
+            cv.ReleaseName = Options.Release;
             VersionStorage vs = new JsonVersionPersister(Options.VersionPersistanceValue);
 
             Console.WriteLine($"Saving {cv.GetVersionString()}");

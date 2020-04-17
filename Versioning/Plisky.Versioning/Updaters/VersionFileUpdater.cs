@@ -77,9 +77,35 @@ namespace Plisky.CodeCraft {
                     UpdateStdCSPRoj(fl, versonToWrite, ASM_STD_VERSTAG);
                     break;
 
+                case FileUpdateType.TextFile:
+                    UpdateLiteralReplacer(fl, cv, dtx);
+                    break;
+
                 default:
                     throw new NotImplementedException("The file type requested does not have a way to update files currently.");
             }
+        }
+
+        private void UpdateLiteralReplacer(string fl, CompleteVersion versonToWrite, DisplayType dtx) {
+#if DEBUG
+            if (!File.Exists(fl)) { throw new InvalidOperationException("Must not be possible, check this before you reach this code"); }
+#endif
+
+            Func<string,string> replacer;
+
+            if (dtx == DisplayType.NoDisplay) {
+                replacer = new Func<string, string>( (inney)  =>{                    
+                    return inney.Replace("XXX-RELEASENAME-XXX", versonToWrite.ReleaseName);
+                });
+            } else {
+                replacer = new Func<string, string>((inney) => {
+                    return inney.Replace("XXX-RELEASENAME-XXX", versonToWrite.ReleaseName).Replace("XXX-VERSION-XXX", versonToWrite.GetVersionString(dtx));
+                });
+            }
+
+          
+            string fileText = replacer(File.ReadAllText(fl));
+            File.WriteAllText(fl,fileText);
         }
 
         private void UpdateStdCSPRoj(string fl, string versonToWrite, string propName) {

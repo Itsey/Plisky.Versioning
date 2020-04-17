@@ -7,6 +7,7 @@ using Xunit;
 namespace Plisky.CodeCraft.Test {
 
     using CodeCraft;
+    using System.IO;
 
     public class FileUpdateTests {
         private UnitTestHelper uth;
@@ -30,6 +31,55 @@ namespace Plisky.CodeCraft.Test {
         ~FileUpdateTests() {
             uth.ClearUpTestFiles();
         }
+
+
+        [Fact(DisplayName = nameof(LiteralReplace_DefaultReplacesVersionAndReleaseName))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void LiteralReplace_DefaultReplacesVersionAndReleaseName() {
+            b.Info.Flow();
+
+            var reid = TestResources.GetIdentifiers(TestResourcesReferences.ReleaseNameAndVerTxt);
+            string srcFile = uth.GetTestDataFile(reid);
+            CompleteVersion cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
+            cv.ReleaseName = "Unicorn";
+
+            VersionFileUpdater sut = new VersionFileUpdater(cv);
+            sut.PerformUpdate(srcFile, FileUpdateType.TextFile,DisplayType.Release);
+
+
+            string result = File.ReadAllText(srcFile);
+            Assert.DoesNotContain("XXX-RELEASENAME-XXX", result);
+            Assert.Contains("Unicorn", result);
+            Assert.DoesNotContain("XXX-VERSION-XXX", result);
+            Assert.Contains("1.1.1.1", result);
+        }
+
+
+        [Fact(DisplayName = nameof(LiteralReplace_NoDisplay_DoesNotUpdateVersion))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void LiteralReplace_NoDisplay_DoesNotUpdateVersion() {
+            b.Info.Flow();
+
+            var reid = TestResources.GetIdentifiers(TestResourcesReferences.ReleaseNameAndVerTxt);
+            string srcFile = uth.GetTestDataFile(reid);
+            CompleteVersion cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
+            cv.ReleaseName = "Unicorn";
+
+            VersionFileUpdater sut = new VersionFileUpdater(cv);
+            sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.NoDisplay);
+
+
+            string result = File.ReadAllText(srcFile);
+            Assert.DoesNotContain("XXX-RELEASENAME-XXX", result);
+            Assert.Contains("Unicorn", result);
+            Assert.Contains("XXX-VERSION-XXX",result);
+            Assert.DoesNotContain("1.1.1.1", result);
+
+        }
+
+
 
         [Fact(DisplayName = nameof(VersionFileUpdaterFindsFiles))]
         [Trait(Traits.Age, Traits.Fresh)]

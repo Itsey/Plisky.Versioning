@@ -4,6 +4,8 @@ using System.Collections.Generic;
 namespace Plisky.CodeCraft {
 
     public class CompleteVersion {
+        private string actualReleaseName;
+        private string pendingReleaseName;
 
         /// <summary>
         /// Returns the default, empty, version instance which is four digits and all fixed except the
@@ -34,9 +36,25 @@ namespace Plisky.CodeCraft {
             DisplayTypes.Add(FileUpdateType.StdAssembly, DisplayType.Short);
             DisplayTypes.Add(FileUpdateType.StdFile, DisplayType.Full);
             DisplayTypes.Add(FileUpdateType.StdInformational, DisplayType.Full);
+            DisplayTypes.Add(FileUpdateType.TextFile, DisplayType.Short);
         }
 
+        
+
         public bool IsDefault { get; set; }
+        public string ReleaseName { 
+            get {
+                return actualReleaseName;
+            }
+            set {
+                actualReleaseName = value;
+                foreach(var l in Digits) {
+                    if (l.Behaviour == DigitIncremementBehaviour.ReleaseName) {
+                        l.Value = actualReleaseName;
+                    }
+                }
+            }
+        }
 
         public void SetDisplayTypeForVersion(FileUpdateType fut, DisplayType dt) {
             DisplayTypes[fut] = dt;
@@ -131,10 +149,19 @@ namespace Plisky.CodeCraft {
             bool anyChanged = false;
             DateTime t1 = DateTime.Now;
 
+            if (pendingReleaseName!=null) {                
+                ReleaseName = pendingReleaseName;
+                pendingReleaseName = null;
+            }
+
             foreach (var un in Digits) {
                 lastChanged = un.PerformIncrement(lastChanged, anyChanged, t1, t1);
                 if (lastChanged) { anyChanged = true; }
             }
+        }
+
+        public void ApplyPendingRelease(string newReleaseName) {
+            pendingReleaseName = newReleaseName;
         }
     }
 }

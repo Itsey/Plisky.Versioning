@@ -11,7 +11,9 @@
         NuspecSample2,
         NetStdAll3,
         MMTypeData,
-        NetStdNone
+        NetStdNone,
+        ReleaseNameAndVerTxt,
+        MultiReleaseNameAndVer
     }
 
     public static class TestResources {
@@ -29,6 +31,8 @@
                 case TestResourcesReferences.NetStdAll3: return "MultipleVersNetStd.csproj";
                 case TestResourcesReferences.NetStdNone: return "MissingAllElements.csproj";
                 case TestResourcesReferences.MMTypeData: return "mmTypes.txt";
+                case TestResourcesReferences.ReleaseNameAndVerTxt: return "ReleaseName.txt";
+                case TestResourcesReferences.MultiReleaseNameAndVer: return "ReleaseNameLorem.txt";
             }
 
             return null;

@@ -12,6 +12,11 @@ pushd C:\Files\Code\git\PliskyVersioning\Versioning\PliskyTool\bin\Debug\netcore
 
 ::dotnet PliskyTool.dll CreateVersion -VS=\\unicorn\Files\BuildTools\VersionStore\pversioner.vstore -Q=1.0.0.0
 
+::Release name Test
+::pliskytool.exe CreateVersion -VS=\\unicorn\Files\BuildTools\VersionStore\jsbsite.vstore -Q=1.1.0.0 -R=Sunflower
+
+
+PliskyTool.exe UpdateFiles -Root=C:\Temp\votalot -VS=\\unicorn\Files\BuildTools\VersionStore\jsbsite.vstore -Increment -R=Daffodil -MM="**/temp.txt|TextFile" -Debug
 popd
 
 

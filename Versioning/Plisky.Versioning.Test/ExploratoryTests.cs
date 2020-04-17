@@ -166,7 +166,7 @@ namespace Plisky.CodeCraft.Test {
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         [InlineData(@"C:\temp\verworking\assemblyinfo.cs", @"**\assemblyinfo.cs", true)]
-        [InlineData(@"C:\temp\verworking\testing.csproj", @"**/*. csproj", true)]
+        [InlineData(@"C:\temp\verworking\testing.csproj", @"**/*.csproj", true)]
         [InlineData(@"C:\temp\verworking\testing.csproj", @"**\*.csproj", true)]        
         public void MinimatchSyntax_Research(string filename, string minimatch, bool shouldPass) {
             var mtchs = new List<Tuple<string, bool>>();

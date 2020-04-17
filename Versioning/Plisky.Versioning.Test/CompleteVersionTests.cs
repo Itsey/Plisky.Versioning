@@ -100,6 +100,89 @@ namespace Plisky.CodeCraft.Test {
             Assert.Equal(result, res);
         }
 
+
+
+
+        [Fact(DisplayName = nameof(ReleaseVersion_StartsEmpty))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void ReleaseVersion_StartsEmpty() {
+            b.Info.Flow();
+
+            var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."));
+            Assert.Null(sut.ReleaseName);
+        }
+
+
+        [Fact(DisplayName = nameof(SetReleaseName_Works))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void SetReleaseName_Works() {
+            const string RELEASENAME = "Unicorn";
+            b.Info.Flow();
+
+            var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("","+", DigitIncremementBehaviour.ReleaseName));
+            sut.ReleaseName = RELEASENAME;
+
+            Assert.Equal(RELEASENAME, sut.ReleaseName);
+            Assert.Equal("2.0+" + RELEASENAME, sut.ToString());
+        }
+
+
+
+        [Fact(DisplayName = nameof(Increment_DoesNotChangeReleaseName))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Increment_DoesNotChangeReleaseName() {
+            const string RELEASENAME = "Unicorn";
+            b.Info.Flow();
+
+            var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncremementBehaviour.ReleaseName));
+            sut.ReleaseName = RELEASENAME;
+            sut.Increment();
+
+            Assert.Equal(RELEASENAME, sut.ReleaseName);
+            Assert.Equal("2.0+" + RELEASENAME, sut.ToString());
+        }
+
+
+
+        [Fact(DisplayName = nameof(PendingReleaseName_AppliedOnIncrement))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void PendingReleaseName_AppliedOnIncrement() {
+            const string RELEASENAME = "Unicorn";
+            const string NEWRELEASE = "Phoenix";
+            b.Info.Flow();
+
+            var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncremementBehaviour.ReleaseName));
+            sut.ReleaseName = RELEASENAME;
+            sut.ApplyPendingRelease(NEWRELEASE);
+
+            sut.Increment();
+
+            Assert.Equal(NEWRELEASE, sut.ReleaseName);
+            Assert.Equal("2.0+" + NEWRELEASE, sut.ToString());
+        }
+
+
+        [Fact(DisplayName = nameof(PendingReleaseName_IgnoredNoIncrement))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void PendingReleaseName_IgnoredNoIncrement() {
+            const string RELEASENAME = "Unicorn";
+            const string NEWRELEASE = "Phoenix";
+            b.Info.Flow();
+
+            var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncremementBehaviour.ReleaseName));
+            sut.ReleaseName = RELEASENAME;
+            sut.ApplyPendingRelease(NEWRELEASE);
+            
+
+            Assert.Equal(RELEASENAME, sut.ReleaseName);
+            Assert.Equal("2.0+" + RELEASENAME, sut.ToString());
+        }
+
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
