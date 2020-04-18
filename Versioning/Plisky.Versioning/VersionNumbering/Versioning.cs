@@ -147,7 +147,7 @@ namespace Plisky.CodeCraft {
 
             foreach (var regmm in fileUpdateMinmatchers.Keys) {
                 foreach (var m in fileUpdateMinmatchers[regmm]) {
-                    mm.Add(new Tuple<Minimatcher, FileUpdateType>(new Minimatcher(m, new Options { AllowWindowsPaths = true }), regmm));
+                    mm.Add(new Tuple<Minimatcher, FileUpdateType>(new Minimatcher(m, new Options { AllowWindowsPaths = true, NoCase =  true }), regmm));
                 }
             }
 
