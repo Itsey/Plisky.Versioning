@@ -56,6 +56,47 @@ namespace Plisky.CodeCraft.Test {
         }
 
 
+        [Fact(DisplayName = nameof(LiteralReplace_Version3_IsThreeDigits))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void LiteralReplace_Version3_IsThreeDigits() {
+            b.Info.Flow();
+
+            var reid = TestResources.GetIdentifiers(TestResourcesReferences.VersionV3Txt);
+            string srcFile = uth.GetTestDataFile(reid);
+            CompleteVersion cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
+     
+            VersionFileUpdater sut = new VersionFileUpdater(cv);
+            sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Release);
+            string result = File.ReadAllText(srcFile);
+
+            Assert.DoesNotContain("XXX-VERSION3-XXX", result);
+            Assert.DoesNotContain("1.1.1.1", result);
+            Assert.Contains("1.1.1", result);
+        }
+
+        [Fact(DisplayName = nameof(LiteralReplace_Version2_IsTwoDigits))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void LiteralReplace_Version2_IsTwoDigits() {
+            b.Info.Flow();
+
+            var reid = TestResources.GetIdentifiers(TestResourcesReferences.VersionV3Txt);
+            string srcFile = uth.GetTestDataFile(reid);
+            File.WriteAllText(srcFile, File.ReadAllText(srcFile).Replace("XXX-VERSION3-XXX", "XXX-VERSION2-XXX"));
+            CompleteVersion cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
+
+            VersionFileUpdater sut = new VersionFileUpdater(cv);
+            sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Release);
+            string result = File.ReadAllText(srcFile);
+
+            Assert.DoesNotContain("XXX-VERSION3-XXX", result);
+            Assert.DoesNotContain("XXX-VERSION2-XXX", result);
+            Assert.DoesNotContain("1.1.1.1", result);
+            Assert.DoesNotContain("1.1.1", result);
+            Assert.Contains("1.1", result);
+        }
+
         [Fact(DisplayName = nameof(LiteralReplace_NoDisplay_DoesNotUpdateVersion))]
         [Trait(Traits.Age, Traits.Fresh)]
         [Trait(Traits.Style, Traits.Unit)]

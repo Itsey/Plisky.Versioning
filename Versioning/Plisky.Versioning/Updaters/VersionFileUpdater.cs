@@ -99,7 +99,10 @@ namespace Plisky.CodeCraft {
                 });
             } else {
                 replacer = new Func<string, string>((inney) => {
-                    return inney.Replace("XXX-RELEASENAME-XXX", versonToWrite.ReleaseName).Replace("XXX-VERSION-XXX", versonToWrite.GetVersionString(dtx));
+                    return inney.Replace("XXX-RELEASENAME-XXX", versonToWrite.ReleaseName)
+                    .Replace("XXX-VERSION-XXX", versonToWrite.GetVersionString(dtx))
+                    .Replace("XXX-VERSION3-XXX", versonToWrite.GetVersionString(DisplayType.ThreeDigit))
+                    .Replace("XXX-VERSION2-XXX", versonToWrite.GetVersionString(DisplayType.Short));
                 });
             }
 

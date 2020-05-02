@@ -13,7 +13,8 @@
         MMTypeData,
         NetStdNone,
         ReleaseNameAndVerTxt,
-        MultiReleaseNameAndVer
+        MultiReleaseNameAndVer,
+        VersionV3Txt
     }
 
     public static class TestResources {
@@ -32,6 +33,7 @@
                 case TestResourcesReferences.NetStdNone: return "MissingAllElements.csproj";
                 case TestResourcesReferences.MMTypeData: return "mmTypes.txt";
                 case TestResourcesReferences.ReleaseNameAndVerTxt: return "ReleaseName.txt";
+                case TestResourcesReferences.VersionV3Txt: return "ReleaseNameV3.txt";
                 case TestResourcesReferences.MultiReleaseNameAndVer: return "ReleaseNameLorem.txt";
             }
 
