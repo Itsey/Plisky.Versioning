@@ -42,6 +42,9 @@ namespace PliskyTool {
         [CommandLineArg("Debug", Description = "Enables Debug Logging")]
         public bool Debug { get; set; }
 
+        [CommandLineArg("Trace", Description = "Enables Debug Tracing, set to Info,Verbose,Off")]
+        public string Trace { get; set; }
+
         public CommandLineARguments() {
             VersionTargetMinMatch = null;
         }

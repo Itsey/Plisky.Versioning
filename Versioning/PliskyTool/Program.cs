@@ -13,20 +13,27 @@ namespace PliskyTool {
         private static void Main(string[] args) {
             Console.WriteLine("Plisky Tool - Online");
             
-            
-            
-            CommandArgumentSupport clas = new CommandArgumentSupport();
+            var clas = new CommandArgumentSupport();
 
             clas.ArgumentPostfix = "=";
             clas.ProcessArguments(Options, args);
 
-            if (Options.Debug) {
+            if ((Options.Debug)||(!string.IsNullOrEmpty(Options.Trace))) {
+
                 Console.WriteLine("Debug Mode, Adding Trace Handler");
-                Bilge.AddMessageHandler(new TCPHandler("192.168.1.15", 9060));
+                
+                Bilge.AddHandler(new ConsoleHandler(),HandlerAddOptions.SingleType);
+
                 Bilge.SetConfigurationResolver((name, inLevel) => {
 
+                    SourceLevels returnLvl = SourceLevels.Verbose;
+
+                    if ((Options.Trace !=null) && (Options.Trace.ToLowerInvariant()=="info")) {
+                        returnLvl = SourceLevels.Information;
+                    }
+                    
                     if (name == "Plisky-Versioning") {
-                        return SourceLevels.Verbose;
+                        return returnLvl;
                     }
                     return inLevel;
                 });
@@ -43,6 +50,8 @@ namespace PliskyTool {
                 string s = clas.GenerateShortHelp(Options, "Plisky Tool");
                 Console.WriteLine(s);
             }
+
+            Console.ReadLine();
            
         }
 
@@ -106,7 +115,7 @@ namespace PliskyTool {
             if ((Options.VersionTargetMinMatch != null) && (Options.VersionTargetMinMatch.Length > 0)) {                
                 ver.LoadMiniMatches(Options.VersionTargetMinMatch);
             }
-
+            
             ver.SearchForAllFiles(Options.Root);
 
             ver.UpdateAllRegisteredFiles();

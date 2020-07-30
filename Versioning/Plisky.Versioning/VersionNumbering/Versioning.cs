@@ -76,6 +76,7 @@ namespace Plisky.CodeCraft {
             foreach (var f in filenamesRegistered) {
                 Log("Updating : " + f);
                 vfu.PerformUpdate(f.Item1, f.Item2);
+                b.Verbose.Log($"Update Completed {f.Item1} : {f.Item2}");
             }
         }
 
@@ -156,7 +157,7 @@ namespace Plisky.CodeCraft {
 
             try {
                 var fls = ActualGetFiles(root);
-
+                
                 foreach (var l in fls) {
                     totalNoFiles++;
 
@@ -195,6 +196,7 @@ namespace Plisky.CodeCraft {
         }
 
         public void ClearMiniMatchers() {
+            b.Verbose.Log("Clearing Minimatchers");
             fileUpdateMinmatchers.Clear();
         }
     }
