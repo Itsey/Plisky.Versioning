@@ -77,10 +77,21 @@ namespace PliskyTool {
                     ApplyVersionIncrement();
                     return true;
 
+                case "Passive":
+                    LoadVersionStore();
+                    return true;
+
                 default:
                     Console.WriteLine("Unrecognised Command: "+options.Command);
                     return false;
             }
+        }
+
+        private static void LoadVersionStore() {
+            var per = new JsonVersionPersister(Program.options.VersionPersistanceValue);
+            Versioning ver = new Versioning(per);
+            versionerUsed = ver.Version;
+            Console.WriteLine($"Loaded [{ver.GetVersion()}]");
         }
 
         private static void CreateNewPendingIncrement() {

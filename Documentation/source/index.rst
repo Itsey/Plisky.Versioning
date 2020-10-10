@@ -6,7 +6,7 @@ Plisky Code Craft.
    :maxdepth: 2
    :caption: Contents:
 
-   /versioning/VersioningQuickStart
+   /versioning/versioningStart
 
 Indices and tables
 ==================

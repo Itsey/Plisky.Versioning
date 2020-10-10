@@ -37,6 +37,14 @@ Requires -VersionSource
 Will create a new version at 1.0.0.0 in the source specified by version source.
 
 
+-Command Passive
+Requires -VersionSource or -QuickValue
+'pliskytool.exe -Command=Passive -VersionSource=C:\temp\aversion.vstore
+'pliskytool.exe -Command=Passive -VersionSource=C:\temp\aversion.vstore -O=File
+Will load the version number into the tool then perform no action.  This is only really used in conjuction with the -O output option to ensure that the
+version number is made available to a calling or alternative process.
+
+
 -Command Override
 Requires -VersionSource
 Requires -QuickValue
@@ -76,7 +84,7 @@ To override a minmatch specify it using the -MM or -MinMatch command.  This is a
 and if this refers to a file that exists on disk then this file will be parsed for MinMatches instead.  The file format is as follows.
 
 ' <minmatch to the file>|<FileTypeToMatch>
-'**/MyApp/commonAssemblyInfo.cs|NetAssembly
+' **/MyApp/commonAssemblyInfo.cs|NetAssembly
 ' **/MyApp/_Dependencies/CDSupport/readme.txt|TextFile
 ' **/MyApp/AppDir/App.csproj|NetInformational
 ' **/MyApp/AppDir/App.csproj|NetFile
