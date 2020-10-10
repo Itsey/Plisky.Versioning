@@ -161,12 +161,15 @@ namespace Plisky.CodeCraft {
                 foreach (var l in fls) {
                     totalNoFiles++;
 
-                    for (int j = 0; j < mm.Count; j++) {
+                    for (int j = 0; j < mm.Count; j++) {                       
+
                         if (mm[j].Item1.IsMatch(l)) {
                             Log($"MM Match {l} - {mm[j].Item2}, queued for update.");
                             filenamesRegistered.Add(new Tuple<string, FileUpdateType>(l, mm[j].Item2));
                             registered++;
                             result.Add(l);
+                        } else {
+                            b.Verbose.Log($"No Match > {l}");
                         }
                     }
                 }

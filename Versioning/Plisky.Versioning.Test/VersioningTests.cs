@@ -15,10 +15,6 @@ namespace Plisky.Versioning.Test {
             ts = new TestSupport(uth);
         }
 
-
-
-
-
         [Fact(DisplayName = nameof(GetDefaultMinimatchers_IsNotEmpty))]
         [Trait(Traits.Age, Traits.Fresh)]
         [Trait(Traits.Style, Traits.Unit)]

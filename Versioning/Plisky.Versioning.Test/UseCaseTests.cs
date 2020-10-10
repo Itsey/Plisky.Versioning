@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace Plisky.CodeCraft.Test {
+﻿namespace Plisky.CodeCraft.Test {
 
     using CodeCraft;
     using Plisky.Diagnostics;
@@ -8,6 +6,7 @@ namespace Plisky.CodeCraft.Test {
     using Plisky.Test;
     using System;
     using Xunit;
+    using System.IO;
 
     public class UseCaseTests {
         private Bilge b = new Bilge();

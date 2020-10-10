@@ -1,9 +1,15 @@
-﻿using Plisky.Plumbing;
+﻿using Newtonsoft.Json;
+using Plisky.CodeCraft;
+using Plisky.Plumbing;
+using System;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace PliskyTool {
 
     [CommandLineArguments]
-    public class CommandLineARguments {
+    public class CommandLineArguments {
+        private OutputPossibilities outcache = OutputPossibilities.None;
+        private string outOpts;
 
         [CommandLineArg("Command", IsSingleParameterDefault = true)]
         public string Command { get; set; }
@@ -45,7 +51,48 @@ namespace PliskyTool {
         [CommandLineArg("Trace", Description = "Enables Debug Tracing, set to Info,Verbose,Off")]
         public string Trace { get; set; }
 
-        public CommandLineARguments() {
+        [CommandLineArg("O")]
+        [CommandLineArg("Output", Description = "Specifies output options, hypen separate multiple values:  Env")]
+        public string OutputOptions {
+            get { return outOpts; }
+            set {
+                value ??= "";
+                outOpts = value.Trim().ToLowerInvariant();
+                ParseOutputOptions();
+            }
+        }
+
+
+
+
+        public OutputPossibilities OutputsActive {
+            get {
+                return outcache;
+            }
+        }
+
+        private void ParseOutputOptions() {
+            if (string.IsNullOrEmpty(outOpts)) {
+                outcache = OutputPossibilities.None;
+                return;
+            }
+
+            if (outOpts == "env") {
+                outcache = OutputPossibilities.Environment;
+                return;
+            }
+
+
+            if (outOpts == "file") {
+                outcache = OutputPossibilities.File;
+                return;
+            }
+
+            throw new ArgumentOutOfRangeException("OutputOptions", "The output options that were specified are invalid.");
+
+        }
+
+        public CommandLineArguments() {
             VersionTargetMinMatch = null;
         }
     }

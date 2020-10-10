@@ -1,4 +1,5 @@
 ﻿using Plisky.CodeCraft;
+using Plisky.CodeCraft.Test;
 using Plisky.Diagnostics;
 using Plisky.Diagnostics.Listeners;
 using Plisky.Plumbing;
@@ -8,7 +9,8 @@ using System.Diagnostics;
 namespace PliskyTool {
 
     internal class Program {
-        public static CommandLineARguments Options = new CommandLineARguments();
+        public static CommandLineArguments options = new CommandLineArguments();
+        private static CompleteVersion versionerUsed;
 
         private static void Main(string[] args) {
             Console.WriteLine("Plisky Tool - Online");
@@ -16,9 +18,9 @@ namespace PliskyTool {
             var clas = new CommandArgumentSupport();
 
             clas.ArgumentPostfix = "=";
-            clas.ProcessArguments(Options, args);
+            clas.ProcessArguments(options, args);
 
-            if ((Options.Debug)||(!string.IsNullOrEmpty(Options.Trace))) {
+            if ((options.Debug)||(!string.IsNullOrEmpty(options.Trace))) {
 
                 Console.WriteLine("Debug Mode, Adding Trace Handler");
                 
@@ -28,7 +30,7 @@ namespace PliskyTool {
 
                     SourceLevels returnLvl = SourceLevels.Verbose;
 
-                    if ((Options.Trace !=null) && (Options.Trace.ToLowerInvariant()=="info")) {
+                    if ((options.Trace !=null) && (options.Trace.ToLowerInvariant()=="info")) {
                         returnLvl = SourceLevels.Information;
                     }
                     
@@ -39,15 +41,19 @@ namespace PliskyTool {
                 });
             }
 
-            Bilge b = new Bilge("Plisky-Versioning");
-
-            b.Info.Log("Online");            
-            b.Verbose.Dump(Options, "App Options");          
+            Bilge b = new Bilge("Plisky-Tool");
+            Bilge.Alert.Online("Plisky-Tool");
+            b.Verbose.Dump(options, "App Options");          
 
             if (PerformActionsFromCommandline()) {
-                b.Info.Log("Complete.");
+                if (versionerUsed != null) {
+                    VersioningOutputter vo = new VersioningOutputter(versionerUsed);
+                    vo.DoOutput(options.OutputsActive);
+                }
+
+                b.Info.Log("All Actions - Complete - Exiting.");
             } else {
-                string s = clas.GenerateShortHelp(Options, "Plisky Tool");
+                string s = clas.GenerateShortHelp(options, "Plisky Tool");
                 Console.WriteLine(s);
             }
 
@@ -58,7 +64,7 @@ namespace PliskyTool {
         private static bool PerformActionsFromCommandline() {
             Console.WriteLine("Performing Versioning Actions");
 
-            switch (Options.Command) {
+            switch (options.Command) {
                 case "CreateVersion":
                     CreateNewVersionStore();
                     return true;
@@ -72,21 +78,22 @@ namespace PliskyTool {
                     return true;
 
                 default:
-                    Console.WriteLine("Unrecognised Command: "+Options.Command);
+                    Console.WriteLine("Unrecognised Command: "+options.Command);
                     return false;
             }
         }
 
         private static void CreateNewPendingIncrement() {
-            var per = new JsonVersionPersister(Program.Options.VersionPersistanceValue);
+            var per = new JsonVersionPersister(Program.options.VersionPersistanceValue);
             Versioning ver = new Versioning(per);
+            versionerUsed = ver.Version;
 
-            string verPendPattern = Options.QuickValue;
+            string verPendPattern = options.QuickValue;
 
             Console.WriteLine($"Apply Delayed Incremenet. [{ver.ToString()}] using [{verPendPattern}]");
             ver.Version.ApplyPendingVersion(verPendPattern);
 
-            if (!Options.TestMode) {
+            if (!options.TestMode) {
                 per.Persist(ver.Version);
                 ver.Increment();
                 Console.WriteLine($"Saving Overriden Version [{ver.GetVersion()}]");
@@ -98,25 +105,27 @@ namespace PliskyTool {
 
         private static void ApplyVersionIncrement() {
             Console.WriteLine("Apply Version Increment");
-            var per = new JsonVersionPersister(Program.Options.VersionPersistanceValue);
-            Versioning ver = new Versioning(per, Options.TestMode);
+            var per = new JsonVersionPersister(Program.options.VersionPersistanceValue);
+            Versioning ver = new Versioning(per, options.TestMode);
+            versionerUsed = ver.Version;
+
             ver.Logger = (v) => {
                 Console.WriteLine(v);
             };
 
-            if (Options.PerformIncrement) {
+            if (options.PerformIncrement) {
                 Console.WriteLine("Version Increment Requested - Currently " + ver.GetVersion());
-                ver.Increment(Options.Release);
+                ver.Increment(options.Release);
             }
 
             Console.WriteLine("Version To Write: " + ver.GetVersion());
 
             // Increment done, now persist and then update the pages - first check if the command line ovverrides the minimatchers
-            if ((Options.VersionTargetMinMatch != null) && (Options.VersionTargetMinMatch.Length > 0)) {                
-                ver.LoadMiniMatches(Options.VersionTargetMinMatch);
+            if ((options.VersionTargetMinMatch != null) && (options.VersionTargetMinMatch.Length > 0)) {                
+                ver.LoadMiniMatches(options.VersionTargetMinMatch);
             }
             
-            ver.SearchForAllFiles(Options.Root);
+            ver.SearchForAllFiles(options.Root);
 
             ver.UpdateAllRegisteredFiles();
 
@@ -125,7 +134,7 @@ namespace PliskyTool {
 
         private static Action<string> GetActionToPerform(Versioning ver) {
             Action<string> ActionToPerform;
-            if (!Options.TestMode) {
+            if (!options.TestMode) {
                 ActionToPerform = (fn) => {
                     if (fn.EndsWith(".cs")) {
                         ver.AddCSharpFile(fn);
@@ -153,21 +162,24 @@ namespace PliskyTool {
 
         private static void CreateNewVersionStore() {
             string startVer = "0.0.0.0";
-            if (!string.IsNullOrEmpty(Options.QuickValue)) {
-                Console.WriteLine($"Using Value From Command Line: {Options.QuickValue}");
-                startVer = Options.QuickValue;
+            if (!string.IsNullOrEmpty(options.QuickValue)) {
+                Console.WriteLine($"Using Value From Command Line: {options.QuickValue}");
+                startVer = options.QuickValue;
             }
-            if (!string.IsNullOrEmpty(Options.QuickValue)) {
-                Console.WriteLine($"Setting Release From Command Line: {Options.Release}");
+            if (!string.IsNullOrEmpty(options.QuickValue)) {
+                Console.WriteLine($"Setting Release From Command Line: {options.Release}");
             }
             Console.WriteLine($"Creating New Version Store: {startVer}");
 
             CompleteVersion cv = new CompleteVersion(startVer);
-            cv.ReleaseName = Options.Release;
-            VersionStorage vs = new JsonVersionPersister(Options.VersionPersistanceValue);
+            versionerUsed = cv;
+
+            cv.ReleaseName = options.Release;
+            VersionStorage vs = new JsonVersionPersister(options.VersionPersistanceValue);
 
             Console.WriteLine($"Saving {cv.GetVersionString()}");
             vs.Persist(cv);
+            
         }
     }
 }
