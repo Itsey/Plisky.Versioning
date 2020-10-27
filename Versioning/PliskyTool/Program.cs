@@ -5,12 +5,14 @@ using Plisky.Diagnostics.Listeners;
 using Plisky.Plumbing;
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace PliskyTool {
 
     internal class Program {
         public static CommandLineArguments options = new CommandLineArguments();
-        private static CompleteVersion versionerUsed;
+        private static CompleteVersion versionerUsed; 
+        private static VersionStorage storage;
 
         private static void Main(string[] args) {
             Console.WriteLine("Plisky Tool - Online");
@@ -64,6 +66,8 @@ namespace PliskyTool {
         private static bool PerformActionsFromCommandline() {
             Console.WriteLine("Performing Versioning Actions");
 
+            GetVersionStorageFromCommandLine();
+
             switch (options.Command) {
                 case "CreateVersion":
                     CreateNewVersionStore();
@@ -86,6 +90,34 @@ namespace PliskyTool {
                     return false;
             }
         }
+
+        
+
+        /// <summary>
+        /// Most of the versioning approaches require a version store of some sort. This initialises the version store from the command line using the
+        /// initialisation data that is passed in to determine which version store to load.
+        /// </summary>
+        private static void GetVersionStorageFromCommandLine() {
+            if (!options.VersionPersistanceValue.Contains("|")) {
+                // Default to file based using a filepath.
+                storage = new JsonVersionPersister(options.VersionPersistanceValue);
+            } else {
+
+                string pluginName = options.VersionPersistanceValue.Substring(0, options.VersionPersistanceValue.IndexOf('|'));
+                if (!pluginName.EndsWith("-plugin")) {
+                    pluginName += "-plugin";
+                }
+                string assemblyName = Path.Combine(Environment.CurrentDirectory, pluginName);
+                assemblyName = Path.ChangeExtension(assemblyName, ".dll");
+                if (!File.Exists(assemblyName)) {
+                    throw new FileNotFoundException($"The versioning plugin {pluginName} could not be found", assemblyName);
+                }
+            }
+
+
+        }
+
+        
 
         private static void LoadVersionStore() {
             var per = new JsonVersionPersister(Program.options.VersionPersistanceValue);

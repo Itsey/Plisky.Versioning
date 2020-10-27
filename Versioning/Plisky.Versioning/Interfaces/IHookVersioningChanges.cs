@@ -2,7 +2,6 @@
 
     public interface IHookVersioningChanges {
 
-        object PreUpdateAllAction();
 
         void PreUpdateAllAction(string rootPath);
 

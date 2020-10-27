@@ -1,7 +1,7 @@
 ﻿namespace Plisky.CodeCraft.Test {
 
     internal class MockVersionStorage : VersionStorage {
-        private string initialisationString;
+        private string initialisationValue;
         private CompleteVersion loadedVersion;
 
         #region mocking implementation
@@ -28,21 +28,21 @@
 
         #endregion mocking implementation
 
-        public MockVersionStorage(string initialisatioinString) : base(initialisatioinString) {
+        public MockVersionStorage(string initValue)  {
+            this.InitValue = new VersionStorageOptions() {
+                InitialisationString = initValue
+            };
+
             Mock = new Mocking(this);
 
-            initialisationString = initialisatioinString;
+            initialisationValue = initValue;
         }
 
         public bool PersistWasCalled { get; private set; }
         public string VersionStringPersisted { get; private set; }
 
         protected override CompleteVersion ActualLoad() {
-            if (initialisationString == "default") {
-                loadedVersion = null;
-            } else {
-                loadedVersion = new CompleteVersion(initialisationString);
-            }
+            loadedVersion = initialisationValue == "default" ? null : new CompleteVersion(initialisationValue);
 
             return loadedVersion;
         }

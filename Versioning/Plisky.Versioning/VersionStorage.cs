@@ -5,18 +5,22 @@ namespace Plisky.CodeCraft {
     public abstract class VersionStorage {
         protected Bilge b = new Bilge("Plisky-Versioning");
 
-        protected string InitValue = null;
+        protected VersionStorageOptions InitValue = null;
 
         protected abstract void ActualPersist(CompleteVersion cv);
 
         protected abstract CompleteVersion ActualLoad();
 
+        protected VersionStorage() {
+            InitValue = null;    
+        }
+
         /// <summary>
         /// Manages the storage of version numbers, allowing them to be saved and loaded.
         /// </summary>
-        /// <param name="initialisationValue">An initialisation string for the underlying system.</param>
-        public VersionStorage(string initialisationValue) {
-            InitValue = initialisationValue;
+        /// <param name="opts">Initialisation options for the underlying system.</param>
+        public VersionStorage(VersionStorageOptions opts) : this() {
+            InitValue = opts;
         }
 
         /// <summary>
