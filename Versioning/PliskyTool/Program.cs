@@ -15,7 +15,7 @@ namespace PliskyTool {
         private static VersionStorage storage;
 
         private static void Main(string[] args) {
-            Console.WriteLine("Plisky Tool - Online");
+            Console.WriteLine("Plisky Tool - Online.");
             
             var clas = new CommandArgumentSupport();
 
@@ -36,7 +36,7 @@ namespace PliskyTool {
                         returnLvl = SourceLevels.Information;
                     }
                     
-                    if (name == "Plisky-Versioning") {
+                    if ((name.Contains("Plisky-Versioning"))||(name.Contains("Plisky-Tool"))) {
                         return returnLvl;
                     }
                     return inLevel;
@@ -59,7 +59,8 @@ namespace PliskyTool {
                 Console.WriteLine(s);
             }
 
-          
+            b.Verbose.Log("Plisky Tool - Exit.");
+            b.Flush();
            
         }
 
@@ -127,6 +128,8 @@ namespace PliskyTool {
             if (options.PerformIncrement) {
                 Console.WriteLine("Version Increment Requested - Currently " + ver.GetVersion());
                 ver.Increment(options.Release);
+                
+                ver.SaveUpdatedVersion();
             }
 
             

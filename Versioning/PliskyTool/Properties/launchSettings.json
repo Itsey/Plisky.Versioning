@@ -2,7 +2,7 @@
   "profiles": {
     "PliskyTool": {
       "commandName": "Project",
-      "commandLineArgs": "UpdateFiles -Root=C:\\Files\\Code\\git\\PliskyDiagnostics\\ -VS=c:\\temp\\PliskyDiagnostics.version -Increment -mm=**\\\\properties\\\\assemblyinfo.cs,**\\\\versions\\\\CommonAssemblyInfo.cs,**\\\\*.nuspec,**\\Plisky.DiagnosticsStd2\\*.csproj -Trace=Verb"
+      "commandLineArgs": "-Command=Passive -Increment -VersionSource=\\\\unicorn\\Files\\BuildTools\\VersionStore\\papi-apilayer.vstore-Trace=Verb -Debug"
     }
   }
 }

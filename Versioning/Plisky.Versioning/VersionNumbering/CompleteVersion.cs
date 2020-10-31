@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Plisky.Diagnostics;
+using System;
 using System.Collections.Generic;
 
 namespace Plisky.CodeCraft {
 
     public class CompleteVersion {
+        protected Bilge b = new Bilge("Plisky-Versioning");
+
         private string actualReleaseName;
         private string pendingReleaseName;
 
@@ -70,6 +73,7 @@ namespace Plisky.CodeCraft {
         }
 
         public CompleteVersion(string initialValue) : this() {
+            b.Verbose.Log($"Parsing Initialisation String [{initialValue}]");
             if (initialValue.Contains(".")) {
                 string[] parse = initialValue.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
                 var vd = new List<VersionUnit>();
@@ -145,17 +149,23 @@ namespace Plisky.CodeCraft {
         }
 
         public void Increment() {
+            
             bool lastChanged = false;
             bool anyChanged = false;
             DateTime t1 = DateTime.Now;
+            
 
             if (pendingReleaseName!=null) {                
                 ReleaseName = pendingReleaseName;
                 pendingReleaseName = null;
             }
 
+            b.Verbose.Log("Incrementing Version.",ReleaseName);
+
             foreach (var un in Digits) {
+                string tmp = un.Value;
                 lastChanged = un.PerformIncrement(lastChanged, anyChanged, t1, t1);
+                b.Verbose.Log($"{tmp}>{un.Value} using {un.Behaviour}");
                 if (lastChanged) { anyChanged = true; }
             }
         }

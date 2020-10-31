@@ -24,7 +24,7 @@ namespace PliskyTool {
 
         //-DG:
         [CommandLineArg("DG")]
-        [CommandLineArg("Digits", ArraySeparatorChar = ";")]
+        [CommandLineArg("Digits",Description ="Separated characters to form digits for the verison number", ArraySeparatorChar = ";")]
         public string[] DigitManipulations { get; set; }
 
         [CommandLineArg("Q")]
