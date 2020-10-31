@@ -123,6 +123,13 @@ namespace PliskyTool {
             var per = new JsonVersionPersister(Program.options.VersionPersistanceValue);
             Versioning ver = new Versioning(per);
             versionerUsed = ver.Version;
+
+            if (options.PerformIncrement) {
+                Console.WriteLine("Version Increment Requested - Currently " + ver.GetVersion());
+                ver.Increment(options.Release);
+            }
+
+            
             Console.WriteLine($"Loaded [{ver.GetVersion()}]");
         }
 

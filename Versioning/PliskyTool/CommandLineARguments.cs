@@ -11,7 +11,7 @@ namespace PliskyTool {
         private OutputPossibilities outcache = OutputPossibilities.None;
         private string outOpts;
 
-        [CommandLineArg("Command", IsSingleParameterDefault = true)]
+        [CommandLineArg("Command", Description = "Choose One of the following: CreateVersion,Override,UpdateFiles,Passive", IsSingleParameterDefault = true)]
         public string Command { get; set; }
 
         [CommandLineArg("VS")]
