@@ -206,6 +206,18 @@ namespace Plisky.CodeCraft.Test {
             Assert.Equal("1111", msut.VersionStringPersisted);
         }
 
+
+
+        [Fact(DisplayName = nameof(Storage_DefaultValidationIsTrue))]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Storage_DefaultValidationIsTrue() {
+            b.Info.Flow();
+            VersionStorage sut = new MockVersionStorage("itsamock");
+            Assert.True(sut.ValidateInitialisation());
+        }
+
+
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]

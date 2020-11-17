@@ -16,7 +16,7 @@ namespace Plisky.Versioning.Test {
         }
 
         [Fact(DisplayName = nameof(GetDefaultMinimatchers_IsNotEmpty))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void GetDefaultMinimatchers_IsNotEmpty() {
             b.Info.Flow();
@@ -27,7 +27,7 @@ namespace Plisky.Versioning.Test {
         }
 
         [Fact(DisplayName = nameof(SetMinMatchers_ReplacesAll))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void SetMinMatchers_ReplacesAll() {
             b.Info.Flow();
@@ -40,7 +40,7 @@ namespace Plisky.Versioning.Test {
         }
 
         [Fact(DisplayName = nameof(Versioning_MMLoadedFromFile))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Versioning_MMLoadedFromFile() {
             b.Info.Flow();

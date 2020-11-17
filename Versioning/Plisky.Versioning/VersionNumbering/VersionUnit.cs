@@ -53,10 +53,13 @@ namespace Plisky.CodeCraft {
             if (!string.IsNullOrEmpty(IncrementOverride)) {
                 b.Verbose.Log($"Override Value Present {IncrementOverride} - All Other considerations ignored.");
                 // An override overrules anything else - even fixed.
+
                 if (IncrementOverride != actualValue) {
                     actualValue = IncrementOverride;
+                    IncrementOverride = null;
                     return true;
                 } else {
+                    IncrementOverride = null;
                     return false;
                 }
             }

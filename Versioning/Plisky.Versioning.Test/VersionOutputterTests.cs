@@ -20,7 +20,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(Outputter_Environment_WritesToEnvironment))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Outputter_Environment_WritesToEnvironment() {
             b.Info.Flow();

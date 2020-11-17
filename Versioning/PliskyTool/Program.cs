@@ -22,6 +22,15 @@ namespace PliskyTool {
             clas.ArgumentPostfix = "=";
             clas.ProcessArguments(options, args);
 
+            if (!ValidateArgumentSettings(options)) {
+                // TODO : Merge this in with the same code below
+                Console.WriteLine("Fatal:  Argument Validation Failed.");
+                Console.WriteLine();
+                string s = clas.GenerateShortHelp(options, "Plisky Tool");
+                Console.WriteLine(s);
+                return;
+            }
+
             if ((options.Debug)||(!string.IsNullOrEmpty(options.Trace))) {
 
                 Console.WriteLine("Debug Mode, Adding Trace Handler");
@@ -55,6 +64,7 @@ namespace PliskyTool {
 
                 b.Info.Log("All Actions - Complete - Exiting.");
             } else {
+                // TODO : Merge this in with the same code Above
                 string s = clas.GenerateShortHelp(options, "Plisky Tool");
                 Console.WriteLine(s);
             }
@@ -62,6 +72,24 @@ namespace PliskyTool {
             b.Verbose.Log("Plisky Tool - Exit.");
             b.Flush();
            
+        }
+
+        private static bool ValidateArgumentSettings(CommandLineArguments options) {
+            bool valid = true;
+
+            if (!string.IsNullOrWhiteSpace(options.Root)) {
+                if (!Directory.Exists(options.Root)) {
+                    Console.WriteLine("Invalid Directory For Root:"+options.Root);
+                    valid = false;
+                }
+            }
+            
+            if (string.IsNullOrWhiteSpace(options.VersionPersistanceValue)) {
+                Console.WriteLine("A versioning store must be selected.  Use -VS= and pass your initialisation data");
+                valid = false;
+            }
+
+            return valid;
         }
 
         private static bool PerformActionsFromCommandline() {

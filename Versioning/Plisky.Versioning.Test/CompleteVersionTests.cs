@@ -18,7 +18,7 @@ namespace Plisky.CodeCraft.Test {
         }
 
         [Theory(DisplayName = nameof(CompletedVersion_ConstructorStringParser_Works))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         [InlineData("0.0.0.0", 4)]
         [InlineData("9086334.2345.1234.111", 4)]
@@ -35,7 +35,7 @@ namespace Plisky.CodeCraft.Test {
         }
 
         [Theory(DisplayName = (nameof(DisplayTypes_WorkCorrectly)))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         [InlineData("1.1.1.1", "1.1.1.1", DisplayType.Full)]
         [InlineData("1.9.0.0", "1.9.0.0", DisplayType.Full)]
@@ -59,9 +59,10 @@ namespace Plisky.CodeCraft.Test {
         }
 
         [Theory(DisplayName = nameof(PendingIncrementPatterns_Work))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         [InlineData("1.0.0.0", "+.0.0.0", "2.0.0.0")]
+        [InlineData("1.0.0.0", "1.0.0.0", "1.0.0.0")]
         [InlineData("1.0.0.0", "0.0.0.0", "0.0.0.0")]
         [InlineData("1.0.0.0", "+.+.+.+", "2.1.1.1")]
         [InlineData("2.2.2.2", "-.-.-.-", "1.1.1.1")]
@@ -80,8 +81,86 @@ namespace Plisky.CodeCraft.Test {
             Assert.Equal(endVer, cv.ToString());
         }
 
+        [Theory(DisplayName = nameof(PendingIncrement_IsAppliedCorrectly))]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        [InlineData("1.0.0.0", "+...0", "2",null,null,"0")]
+        [InlineData("1.0.0.0", "1.0.0.0", "1","0","0","0")]
+        [InlineData("1.0.0.0", "+.+.+.+", "2","1","1","1")]
+        [InlineData("2.2.2.2", "-.-.-.-", "1","1","1","1")]
+        [InlineData("2.2.2.2", "-..-.",  "1", null, "1", null)]
+        [InlineData("2.2.2.2", "...",     null, null, null, null)]
+        [InlineData("2.2.2.2", "..Bealzebub.-", null, null, "Bealzebub","1")]
+        [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear", "Unicorn","Peach","Applie","Pear")]
+        public void PendingIncrement_IsAppliedCorrectly(string startVer, string pattern, string d1Expected, string d2Expected, string d3Expected, string d4Expected) {
+            b.Info.Flow();
+
+            CompleteVersion cv = new CompleteVersion(startVer);
+
+            cv.ApplyPendingVersion(pattern);            
+
+            Assert.Equal(d1Expected, cv.Digits[0].IncrementOverride);
+            Assert.Equal(d2Expected, cv.Digits[1].IncrementOverride);
+            Assert.Equal(d3Expected, cv.Digits[2].IncrementOverride);
+            Assert.Equal(d4Expected, cv.Digits[3].IncrementOverride);
+        }
+
+
+        [Theory(DisplayName = nameof(PendingIncrement_IsRemovedCorrectly))]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        [InlineData("1.0.0.0", "+.0.0.0")]
+        [InlineData("1.0.0.0", "1.0.0.0")]
+        [InlineData("1.0.0.0", "+.+.+.+")]
+        [InlineData("2.2.2.2", "-.-.-.-")]
+        [InlineData("2.2.2.2", "-..-.-")]
+        [InlineData("2.2.2.2", "...")]
+        [InlineData("2.2.2.2", "..Bealzebub.-")]
+        [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear")]
+        public void PendingIncrement_IsRemovedCorrectly(string startVer, string pattern) {
+            b.Info.Flow();
+
+            CompleteVersion cv = new CompleteVersion(startVer);
+
+            cv.ApplyPendingVersion(pattern);
+            cv.Increment();
+
+            Assert.Equal(null, cv.Digits[0].IncrementOverride);
+            Assert.Equal(null, cv.Digits[1].IncrementOverride);
+            Assert.Equal(null, cv.Digits[2].IncrementOverride);
+            Assert.Equal(null, cv.Digits[3].IncrementOverride);
+        }
+
+
+
+        
+        [Theory(DisplayName = nameof(PendingIncrements_StackCorrectly))]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        [InlineData("1.0.0.0", "+.0.0.0",".+.0.0", "2.1.0.0")]
+        [InlineData("1.1.1.1", "0.+.+.0","0.-.-.0", "0.0.0.0")]
+        [InlineData("1.0.0.0", "+.+.+.+","+.+.+.+", "2.1.1.1")]
+        [InlineData("2.2.2.2", "-.-.-.-","-.-.-.-", "1.1.1.1")]
+        [InlineData("2.2.2.2", "-..-.-", "-..-.-", "1.2.1.1")]     
+        [InlineData("2.2.2.2", "...", "...", "2.2.2.2")]
+        [InlineData("2.2.2.2", "..Bealzebub.-", "..Demon.", "2.2.Demon.1")]
+        [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear", "..Berry.", "Unicorn.Peach.Berry.Pear")]
+        public void PendingIncrements_StackCorrectly(string startVer, string pattern, string secondPattern, string endVer) {
+            b.Info.Flow();
+            // Multi patterns dont really stack, just partially replace
+
+            CompleteVersion cv = new CompleteVersion(startVer);
+
+            cv.ApplyPendingVersion(pattern);
+            cv.ApplyPendingVersion(secondPattern);
+            cv.Increment();
+
+            Assert.Equal(endVer, cv.ToString());
+        }
 
         [Theory(DisplayName = "ManipulateVersionTests")]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
         [InlineData("1", "+", "2")]
         [InlineData("1", "-", "0")]
         [InlineData("1", "1", "1")]
@@ -89,7 +168,7 @@ namespace Plisky.CodeCraft.Test {
         [InlineData("1", "alpha", "alpha")]
         [InlineData("1", "brav+o", "brav+o")]
         [InlineData("3", "+", "4")]
-        [InlineData("9", "", "9")]
+        [InlineData("9", "", null)]
         [InlineData("9", "6", "6")]
         [InlineData("bannana", "pEEl", "pEEl")]
         public void ManipulateVersionTests(string value, string pattern, string result) {
@@ -104,7 +183,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(ReleaseVersion_StartsEmpty))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void ReleaseVersion_StartsEmpty() {
             b.Info.Flow();
@@ -115,7 +194,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(SetReleaseName_Works))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void SetReleaseName_Works() {
             const string RELEASENAME = "Unicorn";
@@ -131,7 +210,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(Increment_DoesNotChangeReleaseName))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Increment_DoesNotChangeReleaseName() {
             const string RELEASENAME = "Unicorn";
@@ -148,7 +227,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(PendingReleaseName_AppliedOnIncrement))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void PendingReleaseName_AppliedOnIncrement() {
             const string RELEASENAME = "Unicorn";
@@ -167,7 +246,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(PendingReleaseName_IgnoredNoIncrement))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void PendingReleaseName_IgnoredNoIncrement() {
             const string RELEASENAME = "Unicorn";

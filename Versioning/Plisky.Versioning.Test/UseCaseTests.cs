@@ -20,7 +20,7 @@
         }
 
         [Fact(DisplayName = nameof(Versioning_MultiMMSameFile_UpdatesMultipleTimes))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Versioning_MultiMMSameFile_UpdatesMultipleTimes() {
             b.Info.Flow();
@@ -45,7 +45,7 @@
 
 
         [Fact(DisplayName = nameof(Versioning_DefaultBehaviour_IsIncrementBuild))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Versioning_DefaultBehaviour_IsIncrementBuild() {
             b.Info.Flow();
@@ -62,7 +62,7 @@
         }
 
         [Fact(DisplayName = nameof(Versioning_StartsAtZero))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Versioning_StartsAtZero() {
             b.Info.Flow();
@@ -75,7 +75,7 @@
         }
 
         [Fact(DisplayName = nameof(UC_NoIncrement_NoChange))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void UC_NoIncrement_NoChange() {
             MockVersionStorage mvs = new MockVersionStorage("0.0.0.1");
@@ -85,7 +85,7 @@
         }
 
         [Theory(DisplayName = nameof(UC_BehaviouralIncrement_Works))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         [InlineData("0.0.0.0", "0.0.1.0")]
         [InlineData("0.0.1.1", "0.0.2.0")]
@@ -102,7 +102,7 @@
         }
 
         [Fact(DisplayName = nameof(UC_UpdateNuspecFile_Works))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void UC_UpdateNuspecFile_Works() {
             b.Info.Flow();
@@ -117,7 +117,7 @@
         }
 
         [Fact(DisplayName = nameof(AddInvalid_NugetFile_Throws))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void AddInvalid_NugetFile_Throws() {
             b.Info.Flow();

@@ -23,6 +23,16 @@ namespace Plisky.CodeCraft {
             InitValue = opts;
         }
 
+
+        /// <summary>
+        /// Called after the initialisation is set this can be used to validate whether the initialisation data was correct for the given version store, default
+        /// implementation simply returns true.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool ValidateInitialisation() {
+            return true;
+        }
+
         /// <summary>
         /// Saves the complete version to the underlying storage system.  Where the underlying storage system faults then this error will be passed
         /// up and it should be assumed that the save has not succeeded.

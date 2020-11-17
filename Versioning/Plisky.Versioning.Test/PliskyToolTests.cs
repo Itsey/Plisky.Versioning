@@ -23,7 +23,7 @@ namespace Plisky.Versioning.Test {
 
 
         [Fact(DisplayName = nameof(ParseOptions_EnvSelected_Works))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void ParseOptions_EnvSelected_Works() {
             b.Info.Flow();
@@ -35,7 +35,7 @@ namespace Plisky.Versioning.Test {
         }
 
         [Fact(DisplayName = nameof(ParseOptions_FileSelected_Works))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void ParseOptions_FileSelected_Works() {
             b.Info.Flow();
@@ -48,7 +48,7 @@ namespace Plisky.Versioning.Test {
 
 
         [Fact(DisplayName = nameof(ParseOptions_Invalid_ThrowsError))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void ParseOptions_Invalid_ThrowsError() {
             b.Info.Flow();
@@ -61,7 +61,7 @@ namespace Plisky.Versioning.Test {
 
 
         [Fact(DisplayName = nameof(ParseOptions_DefaultsToNone))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void ParseOptions_DefaultsToNone() {
             b.Info.Flow();
@@ -72,7 +72,7 @@ namespace Plisky.Versioning.Test {
 
 
         [Fact(DisplayName = nameof(ParseOptions_NullIsNone))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void ParseOptions_NullIsNone() {
             b.Info.Flow();

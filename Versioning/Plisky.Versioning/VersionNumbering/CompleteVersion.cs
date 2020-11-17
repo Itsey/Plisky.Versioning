@@ -98,19 +98,22 @@ namespace Plisky.CodeCraft {
         /// <param name="pendingPattern">Pattern [val].[val].[val].[val]</param>
         public void ApplyPendingVersion(string pendingPattern) {
             string[] changes = pendingPattern.Split('.');
+
             for (int i = 0; i < changes.Length; i++) {
                 if (Digits.Length > i) {
-                    string cval = Digits[i].Value;
-                    var nv = ManipulateValueBasedOnPattern(changes[i], cval);
-                    if (nv != null) {
-                        Digits[i].IncrementOverride = nv;
+                    string currentDigitValue = Digits[i].Value;
+                    var newDigitValue = ManipulateValueBasedOnPattern(changes[i], currentDigitValue);
+
+                    // Only set this if it is not null, this allows for stacking patterns to work.  
+                    if (newDigitValue != null) {
+                        Digits[i].IncrementOverride = newDigitValue;
                     }
                 }
             }
         }
 
         protected string ManipulateValueBasedOnPattern(string pattern, string currentValue) {
-            if (string.IsNullOrEmpty(pattern)) { return currentValue; }
+            if (string.IsNullOrEmpty(pattern)) { return null; }
 
             if (int.TryParse(currentValue, out int currentInteger)) {
                 if (pattern == "+") {

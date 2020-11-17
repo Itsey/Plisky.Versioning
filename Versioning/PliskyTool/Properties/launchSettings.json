@@ -2,7 +2,7 @@
   "profiles": {
     "PliskyTool": {
       "commandName": "Project",
-      "commandLineArgs": "-Command=Passive -Increment -VersionSource=\\\\unicorn\\Files\\BuildTools\\VersionStore\\papi-apilayer.vstore-Trace=Verb -Debug"
+      "commandLineArgs": "Override -VS=\\\\unicorn\\Files\\BuildTools\\VersionStore\\pliskyplumbing.vstore -Q=..+. "
     }
   }
 }

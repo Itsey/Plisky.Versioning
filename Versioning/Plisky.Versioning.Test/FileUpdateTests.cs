@@ -34,7 +34,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(LiteralReplace_DefaultReplacesVersionAndReleaseName))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void LiteralReplace_DefaultReplacesVersionAndReleaseName() {
             b.Info.Flow();
@@ -57,7 +57,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(LiteralReplace_Version3_IsThreeDigits))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void LiteralReplace_Version3_IsThreeDigits() {
             b.Info.Flow();
@@ -76,7 +76,7 @@ namespace Plisky.CodeCraft.Test {
         }
 
         [Fact(DisplayName = nameof(LiteralReplace_Version2_IsTwoDigits))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void LiteralReplace_Version2_IsTwoDigits() {
             b.Info.Flow();
@@ -98,7 +98,7 @@ namespace Plisky.CodeCraft.Test {
         }
 
         [Fact(DisplayName = nameof(LiteralReplace_NoDisplay_DoesNotUpdateVersion))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void LiteralReplace_NoDisplay_DoesNotUpdateVersion() {
             b.Info.Flow();
@@ -123,7 +123,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(VersionFileUpdaterFindsFiles))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void VersionFileUpdaterFindsFiles() {
             b.Info.Flow();
@@ -270,7 +270,7 @@ namespace Plisky.CodeCraft.Test {
         }
 
         [Fact(DisplayName = nameof(Update_Nuspec_Works))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Update_Nuspec_Works() {
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.NuspecSample1);
@@ -287,7 +287,7 @@ namespace Plisky.CodeCraft.Test {
         }
 
         [Fact(DisplayName = nameof(Update_StdCSProjAsm_Works))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Update_StdCSProjAsm_Works() {
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdAll3);
@@ -305,7 +305,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(UpdateStd_AddsFileWhenMissing))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void UpdateStd_AddsFileWhenMissing() {
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone);
@@ -323,7 +323,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(UpdateStd_AddsAsmWhenMissing))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void UpdateStd_AddsAsmWhenMissing() {
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone);
@@ -344,7 +344,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(UpdateStd_AddsStdInfoWhenMissing))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void UpdateStd_AddsStdInfoWhenMissing() {
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone);
@@ -367,7 +367,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         [Fact(DisplayName = nameof(Update_StdCSProjFile_Works))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Update_StdCSProjFile_Works() {
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdAll3);
@@ -384,7 +384,7 @@ namespace Plisky.CodeCraft.Test {
         }
 
         [Fact(DisplayName = nameof(Update_StdCSProjInfo_Works))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Update_StdCSProjInfo_Works() {
             var reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdAll3);

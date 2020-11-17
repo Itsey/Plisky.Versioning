@@ -19,7 +19,7 @@ namespace Plisky.CodeCraft.Test {
         }
 
         [Fact(DisplayName = nameof(VersionStorage_CreatesDefaultIfNotPresent))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void VersionStorage_CreatesDefaultIfNotPresent() {
             b.Info.Flow();
@@ -33,7 +33,7 @@ namespace Plisky.CodeCraft.Test {
         }
 
         [Fact(DisplayName = nameof(VersionStorage_NotDefaultWhenPresent))]
-        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void VersionStorage_NotDefaultWhenPresent() {
             b.Info.Flow();
