@@ -399,6 +399,35 @@ namespace Plisky.CodeCraft.Test {
             var after = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
             Assert.NotEqual<string>(before, after);
         }
+
+
+
+        [Fact(DisplayName = nameof(Update_Nuspec_BugNoUpdate))]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Update_Nuspec_BugNoUpdate() {
+            b.Info.Flow();
+            // BUG Case - for some reason nuspec was not being updated.  B_NuspecUpdateFailed
+
+            var reid = TestResources.GetIdentifiers(TestResourcesReferences.BugNuspecUpdateFail);
+            string srcFile = uth.GetTestDataFile(reid);
+
+            CompleteVersion cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
+            VersionFileUpdater sut = new VersionFileUpdater(cv);
+            
+            string knownStartPoint = "<version>1.7.2.0</version>";
+            string destinationPoint = "<version>1.1.1.1</version>";
+            string txt = File.ReadAllText(srcFile);
+
+            sut.PerformUpdate(srcFile, FileUpdateType.Nuspec, DisplayType.Release);
+            string txt2 = File.ReadAllText(srcFile);
+
+            Assert.True(txt.IndexOf(knownStartPoint) > 0);
+            Assert.False(txt.IndexOf(destinationPoint) > 0);
+            Assert.False(txt2.IndexOf(knownStartPoint) > 0);
+            Assert.True(txt2.IndexOf(destinationPoint) > 0);
+        }
+
     }
 
     public class MockVersionFileUpdater : VersionFileUpdater {

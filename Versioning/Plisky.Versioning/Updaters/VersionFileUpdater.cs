@@ -174,6 +174,11 @@ namespace Plisky.CodeCraft {
             XDocument xd = XDocument.Load(fileName);
             XNamespace ns = NUGETNAMESPACE;
             var el2 = xd.Element(ns + "package")?.Element(ns + "metadata")?.Element(ns + "version");
+
+            if (el2==null) {
+                el2 = xd.Element("package")?.Element("metadata")?.Element("version");
+            }
+
             if (el2 != null) {
                 el2.Value = versionText;
             } else {

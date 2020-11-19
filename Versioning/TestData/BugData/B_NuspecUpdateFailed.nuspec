@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Plisky.Plumbing</id>
+    <version>1.7.2.0</version>
+    <title>Plisky Infrastructure Plumbing Library</title>
+    <authors>Jim</authors>
+    <owners>Jim</owners>
+    <license type="expression">MS-PL</license>
+    <projectUrl>http://www.plisky.net/main/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Plisky Plumbing Functions including Hub, ConfigHub, CommandLineSupport.</description>
+    <releaseNotes>
+                  XXX-VERSION-XXX
+                     Config Hub settings Now Case INSENSITVE
+                     All Unit Tests Fixed
+                     CommandLineArgs ProcessArguments now has a Generic override to create an instance of the class
+                     BUGFIX -> ArraySeparator char now actually works.  Previously only , worked.
+                  1.7.0 
+                     Bilge TraceSwitch Added (Plisky-CLAS)
+                     Constructor no longer taks Bilge.  (Use Bilge Swtich Levlels Instead)
+                  1.6.3 
+                     Updating Dependency Chain on Diagnostics To Keep Up with New Constructor Changes
+                   ALL Others
+                      See Read The Docs.
+                  </releaseNotes>
+    <copyright>Copyright 2020</copyright>
+    <tags>plisky plumbing hub messaging command line commandline</tags>
+    <dependencies>
+      <dependency id="Plisky.Diagnostics" version="2.8"/>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\..\FrameworkVersions\Plisky.Plumbing.452\Bin\$configuration$\Plisky.Plumbing.Dll" target="lib\net452\"/>
+    <file src="..\..\FrameworkVersions\Plisky.Plumbing.452\Bin\$configuration$\Plisky.Plumbing.Pdb" target="lib\net452\"/>
+    <file src="..\..\FrameworkVersions\Plisky.Plumbing.452\Bin\$configuration$\Plisky.Plumbing.xml" target="lib\net452\"/>
+
+    <file src="..\..\FrameworkVersions\Plisky.Plumbing.46\Bin\$configuration$\Plisky.Plumbing.Dll" target="lib\net46\"/>
+    <file src="..\..\FrameworkVersions\Plisky.Plumbing.46\Bin\$configuration$\Plisky.Plumbing.Pdb" target="lib\net46\"/>
+    <file src="..\..\FrameworkVersions\Plisky.Plumbing.46\Bin\$configuration$\Plisky.Plumbing.xml" target="lib\net46\"/>
+
+
+    <file src="..\..\FrameworkVersions\Plisky.Plumbing.47\Bin\$configuration$\Plisky.Plumbing.Dll" target="lib\net47\"/>
+    <file src="..\..\FrameworkVersions\Plisky.Plumbing.47\Bin\$configuration$\Plisky.Plumbing.Pdb" target="lib\net47\"/>
+    <file src="..\..\FrameworkVersions\Plisky.Plumbing.47\Bin\$configuration$\Plisky.Plumbing.xml" target="lib\net47\"/>
+
+    <!-- Latest -->
+    <file src="..\..\Plumbing\Bin\$configuration$\Plisky.Plumbing.Dll" target="lib\net471\"/>
+    <file src="..\..\Plumbing\Bin\$configuration$\Plisky.Plumbing.Pdb" target="lib\net471\"/>
+    <file src="..\..\Plumbing\Bin\$configuration$\Plisky.Plumbing.xml" target="lib\net471\"/>
+    
+    <!-- Net Standard 2.0-->
+    <file src="..\..\FrameworkVersions\Plisky.Plumbing.Standard\Bin\$configuration$\netstandard2.0\Plisky.Plumbing.Dll" target="lib\netstandard2.0\"/>
+    <file src="..\..\FrameworkVersions\Plisky.Plumbing.Standard\Bin\$configuration$\netstandard2.0\Plisky.Plumbing.Pdb" target="lib\netstandard2.0\"/>
+    <file src="..\..\FrameworkVersions\Plisky.Plumbing.Standard\Bin\$configuration$\netstandard2.0\Plisky.Plumbing.xml" target="lib\netstandard2.0\"/>
+
+  </files>
+
+</package>
+

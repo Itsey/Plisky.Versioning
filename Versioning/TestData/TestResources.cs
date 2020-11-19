@@ -2,6 +2,7 @@
 
     public enum TestResourcesReferences {
         Bug464RefContent,
+        BugNuspecUpdateFail,
         JustAssemblyVer,
         NoChangeAssemInfo,
         PropertiesAssemInfo,
@@ -35,6 +36,7 @@
                 case TestResourcesReferences.ReleaseNameAndVerTxt: return "ReleaseName.txt";
                 case TestResourcesReferences.VersionV3Txt: return "ReleaseNameV3.txt";
                 case TestResourcesReferences.MultiReleaseNameAndVer: return "ReleaseNameLorem.txt";
+                case TestResourcesReferences.BugNuspecUpdateFail: return "B_NuspecUpdateFailed.nuspec";
             }
 
             return null;
