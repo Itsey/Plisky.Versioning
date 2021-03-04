@@ -2,6 +2,7 @@
 using Plisky.CodeCraft;
 using Plisky.Plumbing;
 using System;
+using System.IO;
 using System.Runtime.InteropServices.ComTypes;
 
 namespace PliskyTool {
@@ -10,6 +11,7 @@ namespace PliskyTool {
     public class CommandLineArguments {
         private OutputPossibilities outcache = OutputPossibilities.None;
         private string outOpts;
+        private string pathPassed;
 
         [CommandLineArg("Command", Description = "Choose One of the following: CreateVersion,Override,UpdateFiles,Passive", IsSingleParameterDefault = true)]
         public string Command { get; set; }
@@ -40,7 +42,14 @@ namespace PliskyTool {
         public string[] VersionTargetMinMatch { get; set; }
 
         [CommandLineArg("Root", Description = "The root disk location to start searching for versionable files in")]
-        public string Root { get; set; }
+        public string Root { 
+            get {
+                return Path.GetFullPath(pathPassed);
+            }
+            set {
+                pathPassed = value;
+            }
+        }
 
         [CommandLineArg("DryRun", Description = "Runs the tool in output mode only, no changes are made")]
         public bool TestMode { get; set; }

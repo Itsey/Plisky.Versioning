@@ -95,7 +95,7 @@ namespace Plisky.CodeCraft {
             b.Verbose.Dump(srcFile, "Load MiniMatchers from Array");
             if (srcFile.Length == 1) {
                 if (File.Exists(srcFile[0])) {
-                    Log($"Loading MM from file - {srcFile}");
+                    Log($"Loading MM from file - {srcFile[0]}");
                     srcFile = File.ReadAllLines(srcFile[0]);
                 }
             }
