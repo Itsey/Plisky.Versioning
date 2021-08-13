@@ -44,6 +44,9 @@ namespace PliskyTool {
         [CommandLineArg("Root", Description = "The root disk location to start searching for versionable files in")]
         public string Root { 
             get {
+                if (string.IsNullOrEmpty(pathPassed)) {
+                    return null;
+                }
                 return Path.GetFullPath(pathPassed);
             }
             set {
