@@ -20,6 +20,9 @@ namespace PliskyTool {
         [CommandLineArg("VersionSource", Description = "Provides the source for retrieving version information")]
         public string VersionPersistanceValue { get; set; }
 
+        [CommandLineArg("NO", Description ="Allows you to ignore a saved override (see documentaiton).")]
+        public bool NoOverride { get; set; }
+
         [CommandLineArg("I")]
         [CommandLineArg("Increment", Description = "Perform increment prior to updating the files.")]
         public bool PerformIncrement { get; set; }
@@ -64,7 +67,7 @@ namespace PliskyTool {
         public string Trace { get; set; }
 
         [CommandLineArg("O")]
-        [CommandLineArg("Output", Description = "Specifies output options, hypen separate multiple values:  Env")]
+        [CommandLineArg("Output", Description = "Specifies output options supports:  Env,Con,AzDo,File")]
         public string OutputOptions {
             get { return outOpts; }
             set {
@@ -82,6 +85,7 @@ namespace PliskyTool {
                 return outcache;
             }
         }
+        public string ConsoleTemplate { get; private set; }
 
         private void ParseOutputOptions() {
             if (string.IsNullOrEmpty(outOpts)) {
@@ -97,6 +101,23 @@ namespace PliskyTool {
 
             if (outOpts == "file") {
                 outcache = OutputPossibilities.File;
+                return;
+            }
+
+            if(outOpts.StartsWith("vsts")) {
+                outcache = OutputPossibilities.Console;
+                string varToReplace = "CodeVersionNumber";
+                string outputTemplate = "blahblah%BN%=%VER%";
+                if (outOpts.Contains(":")) {
+                    varToReplace = outOpts.Substring(outOpts.IndexOf(":"));                    
+                }
+                ConsoleTemplate = outputTemplate.Replace("%BN%", varToReplace);
+                return;
+            }
+
+            if (outOpts.StartsWith("con")) {
+                outcache = OutputPossibilities.Console;
+                ConsoleTemplate = "%VER%";
                 return;
             }
 

@@ -2,7 +2,7 @@
   "profiles": {
     "PliskyTool": {
       "commandName": "Project",
-      "commandLineArgs": "Override -VS=\\\\unicorn\\Files\\BuildTools\\VersionStore\\pliskyplumbing.vstore -Q=..+. "
+      "commandLineArgs": "UpdateFiles -VS=\\\\unicorn\\Files\\BuildTools\\VersionStore\\pliskyplumbing.vstore -Q=..+. -NO"
     }
   }
 }
