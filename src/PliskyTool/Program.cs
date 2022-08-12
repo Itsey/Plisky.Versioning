@@ -6,6 +6,7 @@ using Plisky.Plumbing;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 
 namespace PliskyTool {
 
@@ -22,11 +23,18 @@ namespace PliskyTool {
             clas.ArgumentPostfix = "=";
             try {
                 clas.ProcessArguments(options, args);
-            }
-            catch (ArgumentOutOfRangeException aox) {
+            } catch (ArgumentOutOfRangeException aox) {
                 Console.WriteLine("Fatal: Invalid Arguments Passed to Pliskytool.");
                 Console.WriteLine($"{aox.ParamName} - {aox.Message}");
                 return;
+            } catch (TargetInvocationException tox) {
+                if (tox.InnerException.GetType()==typeof(ArgumentOutOfRangeException)) {
+                    ArgumentOutOfRangeException axx = (ArgumentOutOfRangeException)tox.InnerException;
+                    Console.WriteLine("Fatal: Invalid Arguments Passed to Pliskytool.");
+                    Console.WriteLine($"{axx.ParamName} - {axx.Message}");
+                } else {
+                    throw;
+                }
             }
 
             if (!ValidateArgumentSettings(options)) {
@@ -71,8 +79,7 @@ namespace PliskyTool {
                 }
 
                 b.Info.Log("All Actions - Complete - Exiting.");
-            }
-            else {
+            } else {
                 // TODO : Merge this in with the same code Above
                 string s = clas.GenerateShortHelp(options, "Plisky Tool");
                 Console.WriteLine(s);
@@ -139,8 +146,7 @@ namespace PliskyTool {
             if (!options.VersionPersistanceValue.Contains("|")) {
                 // Default to file based using a filepath.
                 storage = new JsonVersionPersister(options.VersionPersistanceValue);
-            }
-            else {
+            } else {
 
                 string pluginName = options.VersionPersistanceValue.Substring(0, options.VersionPersistanceValue.IndexOf('|'));
                 if (!pluginName.EndsWith("-plugin")) {
@@ -188,8 +194,7 @@ namespace PliskyTool {
                 per.Persist(ver.Version);
                 ver.Increment();
                 Console.WriteLine($"Saving Overriden Version [{ver.GetVersion()}]");
-            }
-            else {
+            } else {
                 ver.Version.Increment();
                 Console.WriteLine($"Would Save " + ver.Version.ToString());
             }
@@ -231,9 +236,9 @@ namespace PliskyTool {
         }
 
         private static Action<string> GetActionToPerform(Versioning ver) {
-            Action<string> ActionToPerform;
+            Action<string> actionToPerform;
             if (!options.TestMode) {
-                ActionToPerform = (fn) => {
+                actionToPerform = (fn) => {
                     if (fn.EndsWith(".cs")) {
                         ver.AddCSharpFile(fn);
                     }
@@ -241,15 +246,14 @@ namespace PliskyTool {
                         ver.AddNugetFile(fn);
                     }
                 };
-            }
-            else {
+            } else {
                 Console.WriteLine("Dry Run Mode Active.");
-                ActionToPerform = (fn) => {
+                actionToPerform = (fn) => {
                     Console.WriteLine("Would Update :" + fn);
                 };
             }
 
-            return ActionToPerform;
+            return actionToPerform;
         }
 
         [Conditional("DEBUG")]

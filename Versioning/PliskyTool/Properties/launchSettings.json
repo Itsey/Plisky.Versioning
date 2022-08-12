@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "PliskyTool": {
-      "commandName": "Project",
-      "commandLineArgs": "UpdateFiles -VS=\\\\unicorn\\Files\\BuildTools\\VersionStore\\pliskyplumbing.vstore -Q=..+. -NO"
-    }
-  }
-}
