@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove="BugData\B464_AsmInfo_Source.txt" />
     <None Remove="BugData\B_NuspecUpdateFailed.nuspec" />
@@ -19,7 +17,6 @@
     <None Remove="TestFileStructure\Nuget\sample2.nuspec" />
     <None Remove="TestFileStructure\Properties\AssemblyInfo.txt" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="BugData\B464_AsmInfo_Source.txt" />
     <EmbeddedResource Include="BugData\B_NuspecUpdateFailed.nuspec" />
@@ -36,9 +33,7 @@
     <EmbeddedResource Include="TestFileStructure\Properties\AssemblyInfo.txt" />
     <EmbeddedResource Include="TestFileStructure\StdCSProj\MissingAllElements.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="TestFileStructure\StdCSProj\MultipleVersNetStd.csproj" />
   </ItemGroup>
-
 </Project>

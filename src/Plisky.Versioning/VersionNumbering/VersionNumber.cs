@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Plisky.CodeCraft {
 
@@ -48,23 +49,35 @@ namespace Plisky.CodeCraft {
             if (value < 0) {
                 throw new ArgumentOutOfRangeException(nameof(value), "The versioned digit can not be less than zero");
             }
-            digits[(int)digitPosition].DigitValue = value;
+            if (digits[(int)digitPosition] == null) {
+                digits[(int)digitPosition] = new VersionableDigit(digitPosition,DigitIncremementBehaviour.Fixed,value);
+            } else {
+                digits[(int)digitPosition].DigitValue = value;
+            }            
         }
 
         public static VersionNumber Parse(string parseTxt) {
             if (string.IsNullOrEmpty(parseTxt)) {
                 throw new ArgumentOutOfRangeException(nameof(parseTxt), "The text to parse for a version number must be present");
             }
-            if (parseTxt.IndexOf('.') < 0) {
-                throw new ArgumentOutOfRangeException(nameof(parseTxt), "The text for the verison number must be digits separated by periods");
-            }
+          
             string[] values = parseTxt.Split('.');
-
-            if (values.Length != 4) {
-                throw new ArgumentException("The current verison must be in the format n.n.n.n where n is a digit.", "current");
+            List<int> actualValues = new();
+            
+            for(int i=0; i<4; i++) {
+                if ((values.Length > i)&& (!string.IsNullOrEmpty(values[i]))){
+                    try {
+                        actualValues.Add(int.Parse(values[i]));
+                    } catch(FormatException) {
+                       actualValues.Add(0);
+                    }
+                } else {
+                    actualValues.Add(0);
+                }                
             }
+            
             try {
-                return new VersionNumber(int.Parse(values[0]), int.Parse(values[1]), int.Parse(values[2]), int.Parse(values[3]));
+                return new VersionNumber(actualValues[0], actualValues[1], actualValues[2], actualValues[3]);
             } catch (OverflowException ox) {
                 throw new ArgumentOutOfRangeException(nameof(parseTxt), ox);
             } catch (FormatException fx) {
@@ -99,5 +112,39 @@ namespace Plisky.CodeCraft {
             result &= this.Revision == target.Revision;
             return result;
         }
+
+        public static bool operator >(VersionNumber v1, VersionNumber v2) {
+            if(v1.Major>v2.Major) {
+                return true;
+            }
+            if (v1.Minor > v2.Minor) {
+                return true;
+            }
+            if (v1.Build > v2.Build) {
+                return true;
+            }
+            if (v1.Revision > v2.Revision) {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool operator <(VersionNumber v1, VersionNumber v2) {
+            if (v1.Major < v2.Major) {
+                return true;
+            }
+            if (v1.Minor < v2.Minor) {
+                return true;
+            }
+            if (v1.Build < v2.Build) {
+                return true;
+            }
+            if (v1.Revision < v2.Revision) {
+                return true;
+            }
+            return false;
+        }
+
+
     }
 }

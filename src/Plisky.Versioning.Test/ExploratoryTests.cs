@@ -49,6 +49,33 @@ namespace Plisky.CodeCraft.Test {
             );
         }
 
+        [Theory]
+        [InlineData("0.0.0.0", "0.0.0.0")]
+        [InlineData("1.2.3.4", "1.2.3.4")]
+        [InlineData("1234.1234.1234.1234", "1234.1234.1234.1234")]
+        [InlineData("0","0.0.0.0")]
+        [InlineData("1.2.3", "1.2.3.0")]
+        public void VersionNumberParseTests(string parseString, string expected) {
+            VersionNumber vnd = VersionNumber.Parse(parseString);
+            Assert.Equal(expected, vnd.ToString());
+        }
+
+        [Theory]
+        [InlineData("1.2.3.4", "1.2.3.4",false)]
+        [InlineData("2.2.3.4", "1.2.3.4", true)]
+        [InlineData("0.2.3.4", "1.2.3.4", false)]
+        [InlineData("0.2.4.0", "0.2.3.400", true)]
+        [InlineData("1.0.0.0", "0.999.999.999", true)]
+        [InlineData("0.0.1.0", "0.0.0.400", true)]
+        [InlineData("1.0", "0.0.0.400", true)]
+        public void DoVersionComparisonsWork(string v1, string v2, bool v1IsGreater) {
+            VersionNumber vn1 = VersionNumber.Parse(v1);
+            VersionNumber vn2 = VersionNumber.Parse(v2);
+
+            bool isGreater = vn1 > vn2;
+            Assert.Equal(v1IsGreater, isGreater);
+        }
+
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Developer)]
