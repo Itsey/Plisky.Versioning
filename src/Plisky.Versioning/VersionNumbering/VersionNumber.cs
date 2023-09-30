@@ -145,6 +145,25 @@ namespace Plisky.CodeCraft {
             return false;
         }
 
+        public static bool operator <=(VersionNumber v1, VersionNumber v2) {
+            if (v1.Equals(v2)) {
+                return true;
+            }
+            if (v1< v2) {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool operator >=(VersionNumber v1, VersionNumber v2) {
+            if (v1.Equals(v2)) {
+                return true;
+            }
+            if (v1 > v2) {
+                return true;
+            }
+            return false;
+        }
 
     }
 }

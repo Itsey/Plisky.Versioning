@@ -1,4 +1,5 @@
 ﻿namespace Plisky.CodeCraft.Test {
+    using Plisky.Versioning.VersionNumbering;
 
     internal class TestableVersioningTask : VersioningTask {
 

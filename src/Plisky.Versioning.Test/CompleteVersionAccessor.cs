@@ -1,27 +1,26 @@
-﻿namespace Plisky.CodeCraft.Test {
+﻿namespace Plisky.CodeCraft.Test; 
 
-    public class CompleteVersionMock : CompleteVersion {
+public class CompleteVersionMock : CompleteVersion {
 
-        #region mocking implementation
+    #region mocking implementation
 
-        public Mocking Mock;
+    public Mocking Mock;
 
-        public class Mocking {
-            private CompleteVersionMock parent;
+    public class Mocking {
+        private CompleteVersionMock parent;
 
-            public Mocking(CompleteVersionMock p) {
-                parent = p;
-            }
-
-            public string ManipulateVerisonBasedOnPattern(string pattern, string currentValue) {
-                return parent.ManipulateValueBasedOnPattern(pattern, currentValue);
-            }
+        public Mocking(CompleteVersionMock p) {
+            parent = p;
         }
 
-        #endregion mocking implementation
-
-        public CompleteVersionMock() {
-            Mock = new Mocking(this);
+        public string ManipulateVerisonBasedOnPattern(string pattern, string currentValue) {
+            return parent.ManipulateValueBasedOnPattern(pattern, currentValue);
         }
+    }
+
+    #endregion mocking implementation
+
+    public CompleteVersionMock() {
+        Mock = new Mocking(this);
     }
 }

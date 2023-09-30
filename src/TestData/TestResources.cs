@@ -1,45 +1,43 @@
-﻿namespace Plisky.Test {
+﻿namespace Plisky.Test;
 
-    public enum TestResourcesReferences {
-        Bug464RefContent,
-        BugNuspecUpdateFail,
-        JustAssemblyVer,
-        NoChangeAssemInfo,
-        PropertiesAssemInfo,
-        JustFileVer,
-        JustInformational,
-        NuspecSample1,
-        NuspecSample2,
-        NetStdAll3,
-        MMTypeData,
-        NetStdNone,
-        ReleaseNameAndVerTxt,
-        MultiReleaseNameAndVer,
-        VersionV3Txt
-    }
+public enum TestResourcesReferences {
+    Bug464RefContent,
+    BugNuspecUpdateFail,
+    JustAssemblyVer,
+    NoChangeAssemInfo,
+    PropertiesAssemInfo,
+    JustFileVer,
+    JustInformational,
+    NuspecSample1,
+    NuspecSample2,
+    NetStdAll3,
+    MMTypeData,
+    NetStdNone,
+    ReleaseNameAndVerTxt,
+    MultiReleaseNameAndVer,
+    VersionV3Txt
+}
 
-    public static class TestResources {
+public static class TestResources {
 
-        public static string GetIdentifiers(TestResourcesReferences refNo) {
-            switch (refNo) {
-                case TestResourcesReferences.Bug464RefContent: return "B464_AsmInfo_Source";
-                case TestResourcesReferences.JustAssemblyVer: return "JustAssemblyVersion.txt";
-                case TestResourcesReferences.NoChangeAssemInfo: return "DoesNotChange.AssemblyInfo.txt";
-                case TestResourcesReferences.PropertiesAssemInfo: return "Properties.AssemblyInfo.txt";
-                case TestResourcesReferences.JustFileVer: return "JustFileVersion.txt";
-                case TestResourcesReferences.JustInformational: return "JustInformationalVersion.txt";
-                case TestResourcesReferences.NuspecSample1: return "sample1.nuspec";
-                case TestResourcesReferences.NuspecSample2: return "sample2.nuspec";
-                case TestResourcesReferences.NetStdAll3: return "MultipleVersNetStd.csproj";
-                case TestResourcesReferences.NetStdNone: return "MissingAllElements.csproj";
-                case TestResourcesReferences.MMTypeData: return "mmTypes.txt";
-                case TestResourcesReferences.ReleaseNameAndVerTxt: return "ReleaseName.txt";
-                case TestResourcesReferences.VersionV3Txt: return "ReleaseNameV3.txt";
-                case TestResourcesReferences.MultiReleaseNameAndVer: return "ReleaseNameLorem.txt";
-                case TestResourcesReferences.BugNuspecUpdateFail: return "B_NuspecUpdateFailed.nuspec";
-            }
-
-            return null;
-        }
+    public static string GetIdentifiers(TestResourcesReferences refNo) {
+        return refNo switch {
+            TestResourcesReferences.Bug464RefContent => "B464_AsmInfo_Source",
+            TestResourcesReferences.JustAssemblyVer => "JustAssemblyVersion.txt",
+            TestResourcesReferences.NoChangeAssemInfo => "DoesNotChange.AssemblyInfo.txt",
+            TestResourcesReferences.PropertiesAssemInfo => "Properties.AssemblyInfo.txt",
+            TestResourcesReferences.JustFileVer => "JustFileVersion.txt",
+            TestResourcesReferences.JustInformational => "JustInformationalVersion.txt",
+            TestResourcesReferences.NuspecSample1 => "sample1.nuspec",
+            TestResourcesReferences.NuspecSample2 => "sample2.nuspec",
+            TestResourcesReferences.NetStdAll3 => "MultipleVersNetStd.csproj",
+            TestResourcesReferences.NetStdNone => "MissingAllElements.csproj",
+            TestResourcesReferences.MMTypeData => "mmTypes.txt",
+            TestResourcesReferences.ReleaseNameAndVerTxt => "ReleaseName.txt",
+            TestResourcesReferences.VersionV3Txt => "ReleaseNameV3.txt",
+            TestResourcesReferences.MultiReleaseNameAndVer => "ReleaseNameLorem.txt",
+            TestResourcesReferences.BugNuspecUpdateFail => "B_NuspecUpdateFailed.nuspec",
+            _ => null,
+        };
     }
 }

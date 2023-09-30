@@ -1,14 +1,13 @@
-﻿namespace Plisky.CodeCraft {
+﻿namespace Plisky.CodeCraft; 
 
-    public interface IHookVersioningChanges {
+public interface IHookVersioningChanges {
 
 
-        void PreUpdateAllAction(string rootPath);
+    void PreUpdateAllAction(string rootPath);
 
-        void PostUpdateAllAction(string rootPath);
+    void PostUpdateAllAction(string rootPath);
 
-        void PreUpdateFileAction(string fl);
+    void PreUpdateFileAction(string fl);
 
-        void PostUpdateFileAction(string fl);
-    }
+    void PostUpdateFileAction(string fl);
 }
