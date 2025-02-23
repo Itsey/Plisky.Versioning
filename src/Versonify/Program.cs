@@ -1,4 +1,4 @@
-﻿namespace PliskyTool;
+﻿namespace Versonify;
 
 using System;
 using System.Diagnostics;
@@ -9,88 +9,117 @@ using Plisky.Diagnostics;
 using Plisky.Diagnostics.Listeners;
 using Plisky.Plumbing;
 
-
 internal class Program {
-    public static CommandLineArguments options = new CommandLineArguments();
+    public static VersonifyCommandline options = new();
     private static CompleteVersion versionerUsed;
     private static VersionStorage storage;
+    private static Bilge b = new Bilge();
 
-    private static void Main(string[] args) {
-        Console.WriteLine("Plisky Tool - Online.");
+    private static int Main(string[] args) {
+        Console.WriteLine("Versonify - Online.");
 
-        var clas = new CommandArgumentSupport();
-
-        clas.ArgumentPostfix = "=";
+        CommandArgumentSupport clas = null;
         try {
-            clas.ProcessArguments(options, args);
-        } catch (ArgumentOutOfRangeException aox) {
-            Console.WriteLine("Fatal: Invalid Arguments Passed to Pliskytool.");
-            Console.WriteLine($"{aox.ParamName} - {aox.Message}");
-            return;
-        } catch (TargetInvocationException tox) {
-            if (tox.InnerException.GetType() == typeof(ArgumentOutOfRangeException)) {
-                var axx = (ArgumentOutOfRangeException)tox.InnerException;
-                Console.WriteLine("Fatal: Invalid Arguments Passed to Pliskytool.");
-                Console.WriteLine($"{axx.ParamName} - {axx.Message}");
-            } else {
-                throw;
+            clas = GetCommandLineArguments(args);
+
+            if (!ValidateArgumentSettings(options)) {
+                WriteErrorConditions(clas);
+                return 1;
+            }
+        } catch (Exception ex) {
+            Console.WriteLine(ex.Message);
+            return 1;
+        }
+
+        if (options.Debug) {
+            foreach (string a in args) {
+                Console.WriteLine($"Command Line: {a}");
             }
         }
 
-        if (!ValidateArgumentSettings(options)) {
-            // TODO : Merge this in with the same code below
-            Console.WriteLine("Fatal:  Argument Validation Failed.");
-            Console.WriteLine();
-            string s = clas.GenerateShortHelp(options, "Plisky Tool");
-            Console.WriteLine(s);
-            return;
+        if (options.Debug || (!string.IsNullOrEmpty(options.Trace))) {
+            ConfigureTrace();
         }
 
-        if ((options.Debug) || (!string.IsNullOrEmpty(options.Trace))) {
-
-            Console.WriteLine("Debug Mode, Adding Trace Handler");
-
-            Bilge.AddHandler(new ConsoleHandler(), HandlerAddOptions.SingleType);
-
-            Bilge.SetConfigurationResolver((name, inLevel) => {
-
-                var returnLvl = SourceLevels.Verbose;
-
-                if ((options.Trace != null) && (options.Trace.ToLowerInvariant() == "info")) {
-                    returnLvl = SourceLevels.Information;
-                }
-
-                if ((name.Contains("Plisky-Versioning")) || (name.Contains("Plisky-Tool"))) {
-                    return returnLvl;
-                }
-                return inLevel;
-            });
-        }
-
-        var b = new Bilge("Plisky-Tool");
-        Bilge.Alert.Online("Plisky-Tool");
+        b = new Bilge("Versonify");
+        Bilge.Alert.Online("Versonify");
         b.Verbose.Dump(options, "App Options");
 
         if (PerformActionsFromCommandline()) {
             if (versionerUsed != null) {
-                var vo = new VersioningOutputter(versionerUsed);
-                vo.ConsoleTemplate = options.ConsoleTemplate;
+                b.Verbose.Log($"All Actions - Complete - Outputting.");
+                var vo = new VersioningOutputter(versionerUsed) {
+                    ConsoleTemplate = options.ConsoleTemplate
+                };
+
                 vo.DoOutput(options.OutputsActive);
             }
 
             b.Info.Log("All Actions - Complete - Exiting.");
         } else {
             // TODO : Merge this in with the same code Above
-            string s = clas.GenerateShortHelp(options, "Plisky Tool");
+            string s = clas.GenerateShortHelp(options, "Versonify");
             Console.WriteLine(s);
         }
 
-        b.Verbose.Log("Plisky Tool - Exit.");
+        b.Verbose.Log("Versonify - Exit.");
         b.Flush();
-
+        return 0;
     }
 
-    private static bool ValidateArgumentSettings(CommandLineArguments options) {
+    private static CommandArgumentSupport GetCommandLineArguments(string[] args) {
+        b.Verbose.Flow();
+
+        var result = new CommandArgumentSupport {
+            ArgumentPostfix = "="
+        };
+        try {
+            b.Verbose.Log("Processing Arguments");
+            result.ProcessArguments(options, args);
+            options.OutputOptions = options.RawOutputOptions;
+            //b.Verbose.Log($"Seting OO {options.RawOutputOptions} as {options.OutputOptions}");            
+        } catch (ArgumentOutOfRangeException aox) {
+            Console.WriteLine("Fatal: Invalid Arguments Passed to Versonify.");
+            Console.WriteLine($"{aox.ParamName} - {aox.Message}");
+            throw;
+        } catch (TargetInvocationException tox) {
+            if (tox.InnerException.GetType() == typeof(ArgumentOutOfRangeException)) {
+                var axx = (ArgumentOutOfRangeException)tox.InnerException;
+                Console.WriteLine("Fatal: Invalid Arguments Passed to Versonify.");
+                Console.WriteLine($"{axx.ParamName} - {axx.Message}");
+            } else {
+                throw;
+            }
+        }
+        return result;
+    }
+
+    private static void WriteErrorConditions(CommandArgumentSupport clas) {
+        // TODO : Merge this in with the same code below
+        Console.WriteLine("Fatal:  Argument Validation Failed.");
+        Console.WriteLine();
+        string s = clas.GenerateShortHelp(options, "Versonify.");
+        Console.WriteLine(s);
+    }
+
+    private static void ConfigureTrace() {
+        Console.WriteLine("Debug Mode, Adding Trace Handler");
+
+        _ = Bilge.AddHandler(new ConsoleHandler(), HandlerAddOptions.SingleType);
+
+        Bilge.SetConfigurationResolver((name, inLevel) => {
+
+            var returnLvl = SourceLevels.Verbose;
+
+            if ((options.Trace != null) && (options.Trace.ToLowerInvariant() == "info")) {
+                returnLvl = SourceLevels.Information;
+            }
+
+            return name.Contains("Plisky-Versioning") || name.Contains("Versonify") ? returnLvl : inLevel;
+        });
+    }
+
+    private static bool ValidateArgumentSettings(VersonifyCommandline options) {
         bool valid = true;
 
         if (!string.IsNullOrWhiteSpace(options.Root)) {
@@ -109,6 +138,8 @@ internal class Program {
     }
 
     private static bool PerformActionsFromCommandline() {
+        b.Verbose.Flow();
+
         Console.WriteLine("Performing Versioning Actions");
 
         GetVersionStorageFromCommandLine();
@@ -141,6 +172,8 @@ internal class Program {
         }
     }
 
+
+
     /// <summary>
     /// Most of the versioning approaches require a version store of some sort. This initialises the version store from the command line using the
     /// initialisation data that is passed in to determine which version store to load.
@@ -150,15 +183,20 @@ internal class Program {
         storage = VersionStorage.CreateFromInitialisation(vpv);
     }
 
+
+
     private static void LoadVersionStore() {
 
         var ver = new Versioning(storage);
         versionerUsed = ver.Version;
 
         if (options.PerformIncrement) {
-            Console.WriteLine("Version Increment Requested - Currently " + ver.GetVersion());
+            string v = ver.GetVersion();
+            b.Verbose.Log($"Performing increment {v}");
+            Console.WriteLine("Version Increment Requested - Currently " + v);
             ver.Increment(options.Release);
 
+            b.Verbose.Log("About to save version store");
             ver.SaveUpdatedVersion();
         }
 
@@ -167,6 +205,7 @@ internal class Program {
     }
 
     private static void CreateNewPendingIncrement() {
+        b.Verbose.Flow();
 
         var ver = new Versioning(storage);
         versionerUsed = ver.Version;
@@ -182,19 +221,18 @@ internal class Program {
             Console.WriteLine($"Saving Overriden Version [{ver.GetVersion()}]");
         } else {
             ver.Version.Increment();
-            Console.WriteLine($"Would Save " + ver.Version.ToString());
+            Console.WriteLine($"DryRun - Would Save :" + ver.Version.ToString());
         }
     }
 
     private static void ApplyVersionIncrement() {
+        b.Verbose.Flow();
 
 
         var ver = new Versioning(storage, options.TestMode);
         versionerUsed = ver.Version;
 
-        ver.Logger = (v) => {
-            Console.WriteLine(v);
-        };
+        ver.Logger = Console.WriteLine;
 
         if (options.NoOverride) {
             Console.WriteLine("Version Increment Override, Disabled");
@@ -217,7 +255,7 @@ internal class Program {
         }
 
         if (!string.IsNullOrEmpty(options.Root) && Directory.Exists(options.Root)) {
-            ver.SearchForAllFiles(options.Root);
+            _ = ver.SearchForAllFiles(options.Root);
         } else {
             Console.WriteLine($"WARNING >> Path {options.Root} is invalid, skipping.");
         }
@@ -228,6 +266,8 @@ internal class Program {
         ver.SaveUpdatedVersion();
     }
 
+
+#if FALSE
     private static Action<string> GetActionToPerform(Versioning ver) {
         Action<string> actionToPerform;
         if (!options.TestMode) {
@@ -240,14 +280,15 @@ internal class Program {
                 }
             };
         } else {
-            Console.WriteLine("Dry Run Mode Active.");
+            
             actionToPerform = (fn) => {
-                Console.WriteLine("Would Update :" + fn);
+                Console.WriteLine("DryRun - Would Update :" + fn);
             };
         }
 
         return actionToPerform;
     }
+#endif
 
     [Conditional("DEBUG")]
     private static void DebugLog(string l) {

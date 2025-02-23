@@ -10,7 +10,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plisky.Versioning.Test", "P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestData", "TestData\TestData.csproj", "{376F0B11-8B4D-419B-BD79-33AE999F5EB3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Versionify", "PliskyTool\Versionify.csproj", "{78AA8013-9484-44EA-B375-854A94929257}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Versonify", "Versonify\Versonify.csproj", "{330B369D-0F41-B2EE-5DDA-2BBBA6384550}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "versionify.build", "versionify.build\versionify.build.csproj", "{416A7D15-2E42-120C-4EC0-719CB4D26B94}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,10 +34,12 @@ Global
 		{376F0B11-8B4D-419B-BD79-33AE999F5EB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{376F0B11-8B4D-419B-BD79-33AE999F5EB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{376F0B11-8B4D-419B-BD79-33AE999F5EB3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{78AA8013-9484-44EA-B375-854A94929257}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{78AA8013-9484-44EA-B375-854A94929257}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{78AA8013-9484-44EA-B375-854A94929257}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{78AA8013-9484-44EA-B375-854A94929257}.Release|Any CPU.Build.0 = Release|Any CPU
+		{330B369D-0F41-B2EE-5DDA-2BBBA6384550}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{330B369D-0F41-B2EE-5DDA-2BBBA6384550}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{330B369D-0F41-B2EE-5DDA-2BBBA6384550}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{330B369D-0F41-B2EE-5DDA-2BBBA6384550}.Release|Any CPU.Build.0 = Release|Any CPU
+		{416A7D15-2E42-120C-4EC0-719CB4D26B94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{416A7D15-2E42-120C-4EC0-719CB4D26B94}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

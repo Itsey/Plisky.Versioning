@@ -2,9 +2,10 @@
 
 using System;
 using System.IO;
-
+using Plisky.Diagnostics;
 
 public class VersioningOutputter {
+    protected Bilge b = new Bilge("Plisky-Tool-Output");
     protected string valToWrite;
 
     public string FileTemplate { get; set; }
@@ -12,6 +13,7 @@ public class VersioningOutputter {
 
 
     protected virtual void SetEnvironmentWithValue() {
+        b.Verbose.Log($"Attempting to set environment variable PVER-LATEST to {valToWrite}");
         Environment.SetEnvironmentVariable("PVER-LATEST", valToWrite, EnvironmentVariableTarget.User);
     }
 
@@ -20,15 +22,23 @@ public class VersioningOutputter {
     }
 
     public void DoOutput(OutputPossibilities oo) {
+        b.Verbose.Flow($"{oo}");
+
         if ((oo & OutputPossibilities.Environment) == OutputPossibilities.Environment) {
+            b.Verbose.Log("Environment output requested");
             SetEnvironmentWithValue();
         }
         if ((oo & OutputPossibilities.File) == OutputPossibilities.File) {
+            b.Verbose.Log("File output requested");
             SetFileValue();
         }
 
+
         if ((oo & OutputPossibilities.Console) == OutputPossibilities.Console) {
-            WriteToConsole(ConsoleTemplate.Replace("%VER%", valToWrite));
+
+            string outputString = ConsoleTemplate.Replace("%VER%", valToWrite);
+            //b.Verbose.Log($"Console Output: {outputString}");            
+            WriteToConsole(outputString);
         }
 
 

@@ -6,7 +6,7 @@
 
         #region mocking implementation
 
-        public Mocking Mock;
+        public Mocking mock;
 
         public class Mocking {
             private MockVersionStorage parent;
@@ -33,7 +33,7 @@
                 InitialisationString = initValue
             };
 
-            Mock = new Mocking(this);
+            mock = new Mocking(this);
 
             initialisationValue = initValue;
         }

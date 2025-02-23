@@ -130,7 +130,7 @@ public class FileUpdateTests {
         b.Info.Flow();
 
         var msut = new MockVersionFileUpdater();
-        msut.Mock.AddFilesystemFile("XX");
+        msut.mock.AddFilesystemFile("XX");
     }
 
     [Fact]
@@ -434,7 +434,7 @@ public class MockVersionFileUpdater : VersionFileUpdater {
 
     #region mocking implementation
 
-    public Mocking Mock;
+    public Mocking mock;
 
     public class Mocking {
         private readonly MockVersionFileUpdater parent;
@@ -453,11 +453,9 @@ public class MockVersionFileUpdater : VersionFileUpdater {
 
     #endregion mocking implementation
 
-    protected Bilge b;
 
-    public MockVersionFileUpdater(Bilge useThisTrace = null) {
-        b = useThisTrace == null ? new Bilge() : useThisTrace;
 
-        Mock = new Mocking(this);
+    public MockVersionFileUpdater() {
+        mock = new Mocking(this);
     }
 }

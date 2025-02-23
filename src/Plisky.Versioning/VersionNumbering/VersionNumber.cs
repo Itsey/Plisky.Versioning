@@ -105,15 +105,38 @@ namespace Plisky.CodeCraft {
 
         public override bool Equals(object obj) {
             var target = obj as VersionNumber;
+            if (!ReferenceEquals(target, null)) {
+                return this == target;
+            }
+            return false;
+        }
+
+        public static bool operator ==(VersionNumber v1, VersionNumber v2) {
+            if (ReferenceEquals(v1, v2)) {
+                return true;
+            }
+            if (ReferenceEquals(v1, null) || ReferenceEquals(v2, null)) {
+                return false;
+            }
+
+
             bool result = true;
-            result &= this.Major == target.Major;
-            result &= this.Minor == target.Minor;
-            result &= this.Build == target.Build;
-            result &= this.Revision == target.Revision;
+            result &= v1.Major == v2.Major;
+            result &= v1.Minor == v2.Minor;
+            result &= v1.Build == v2.Build;
+            result &= v1.Revision == v2.Revision;
             return result;
         }
 
+        public static bool operator !=(VersionNumber v1, VersionNumber v2) {
+            return !(v1 == v2);
+        }
+
         public static bool operator >(VersionNumber v1, VersionNumber v2) {
+            if (ReferenceEquals(v1, null) || ReferenceEquals(v2, null)) {
+                return false;
+            }
+
             if (v1.Major > v2.Major) {
                 return true;
             }
@@ -130,6 +153,10 @@ namespace Plisky.CodeCraft {
         }
 
         public static bool operator <(VersionNumber v1, VersionNumber v2) {
+            if (ReferenceEquals(v1, null) || ReferenceEquals(v2, null)) {
+                return false;
+            }
+
             if (v1.Major < v2.Major) {
                 return true;
             }

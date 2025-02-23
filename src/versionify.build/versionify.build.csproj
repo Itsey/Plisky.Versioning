@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>
+    </RootNamespace>
+    <NoWarn>CS0649;CS0169;CA1050;CA1822;CA2211;IDE1006</NoWarn>
+    <NukeRootDirectory>..</NukeRootDirectory>
+    <NukeScriptDirectory>..</NukeScriptDirectory>
+    <NukeTelemetryVersion>1</NukeTelemetryVersion>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);VERSONIFY</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>$(DefineConstants);VERSONIFY</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Flurl.Http" Version="4.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageReference Include="Nuke.Common" Version="9.0.3" />
+    <PackageReference Include="Plisky.Diagnostics" Version="3.2.2" />
+    <PackageReference Include="Plisky.Mollycoddle" Version="0.1.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageDownload Include="Nuget.CommandLine" Version="[6.9.1]" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Plisky.Nuke.Fusion">
+      <HintPath>D:\Scratch\_publishing\pnf\Plisky.Nuke.Fusion.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

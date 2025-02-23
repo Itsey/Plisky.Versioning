@@ -22,7 +22,7 @@ public class VersioningTests {
 
         var v = new MockVersioning(new MockVersionStorage(""));
 
-        Assert.True(v.Mock.ReturnMinMatchers().Length > 0, "There should be some default minmatchers loaded by versioning");
+        Assert.True(v.mock.ReturnMinMatchers().Length > 0, "There should be some default minmatchers loaded by versioning");
     }
 
     [Fact(DisplayName = nameof(SetMinMatchers_ReplacesAll))]
@@ -35,7 +35,7 @@ public class VersioningTests {
 
         v.ClearMiniMatchers();
 
-        Assert.True(v.Mock.ReturnMinMatchers().Length == 0, "Clear should remove all minimatchers");
+        Assert.True(v.mock.ReturnMinMatchers().Length == 0, "Clear should remove all minimatchers");
     }
 
     [Fact(DisplayName = nameof(Versioning_MMLoadedFromFile))]
@@ -52,6 +52,6 @@ public class VersioningTests {
 
         v.LoadMiniMatches(srcFile);
 
-        Assert.Equal(9, v.Mock.ReturnMinMatchers().Length);
+        Assert.Equal(9, v.mock.ReturnMinMatchers().Length);
     }
 }

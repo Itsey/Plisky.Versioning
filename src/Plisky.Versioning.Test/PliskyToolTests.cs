@@ -5,7 +5,7 @@ using Plisky.CodeCraft;
 using Plisky.CodeCraft.Test;
 using Plisky.Diagnostics;
 using Plisky.Test;
-using PliskyTool;
+using Versonify;
 using Xunit;
 
 public class PliskyToolTests {
@@ -26,7 +26,7 @@ public class PliskyToolTests {
     public void ParseOptions_EnvSelected_Works() {
         b.Info.Flow();
 
-        var sut = new CommandLineArguments {
+        var sut = new VersonifyCommandline {
             OutputOptions = "env"
         };
 
@@ -39,7 +39,7 @@ public class PliskyToolTests {
     public void ParseOptions_FileSelected_Works() {
         b.Info.Flow();
 
-        var sut = new CommandLineArguments {
+        var sut = new VersonifyCommandline {
             OutputOptions = "file"
         };
 
@@ -54,7 +54,7 @@ public class PliskyToolTests {
         b.Info.Flow();
 
         _ = Assert.Throws<ArgumentOutOfRangeException>(() => {
-            var sut = new CommandLineArguments {
+            var sut = new VersonifyCommandline {
                 OutputOptions = "MyIncrediblyWrongArgument"
             };
         });
@@ -67,7 +67,7 @@ public class PliskyToolTests {
     public void ParseOptions_DefaultsToNone() {
         b.Info.Flow();
 
-        var sut = new CommandLineArguments();
+        var sut = new VersonifyCommandline();
         Assert.Equal(OutputPossibilities.None, sut.OutputsActive);
     }
 
@@ -78,7 +78,7 @@ public class PliskyToolTests {
     public void ParseOptions_NullIsNone() {
         b.Info.Flow();
 
-        var sut = new CommandLineArguments {
+        var sut = new VersonifyCommandline {
             OutputOptions = ""
         };
         Assert.Equal(OutputPossibilities.None, sut.OutputsActive);

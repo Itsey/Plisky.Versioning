@@ -21,7 +21,12 @@ public class Versioning {
         testMode = dryRun;
         repo = jvp;
         cv = repo.GetVersion();
-        vfu = new VersionFileUpdater(cv);
+
+        if (dryRun) {
+            vfu = new DryRunVersionFileUpdater(cv);
+        } else {
+            vfu = new VersionFileUpdater(cv);
+        }
 
         fileUpdateMinmatchers.Add(FileUpdateType.NetAssembly, new List<string>());
         fileUpdateMinmatchers[FileUpdateType.NetAssembly].Add("**\\properties\\assemblyinfo.cs");
@@ -31,7 +36,7 @@ public class Versioning {
         fileUpdateMinmatchers[FileUpdateType.Nuspec].Add("**\\*.nuspec");
     }
 
-    public void Increment(string newReleaseName = null) {
+    public void Increment(string? newReleaseName = null) {
         if ((!string.IsNullOrEmpty(newReleaseName)) && (newReleaseName != cv.ReleaseName)) {
             cv.ReleaseName = newReleaseName;
         }
@@ -73,12 +78,18 @@ public class Versioning {
     public void UpdateAllRegisteredFiles() {
         Log("Update All Files");
 
+        int numberFilesUpdated = 0;
+
         foreach (var f in filenamesRegistered) {
             Log("Updating : " + f);
             string s = vfu.PerformUpdate(f.Item1, f.Item2);
             Log("Updated : " + s);
 
             b.Verbose.Log($"Update Completed {f.Item1} : {f.Item2}");
+        }
+
+        if (numberFilesUpdated == 0) {
+            Log("Warning - No files found to update.");
         }
     }
 
@@ -124,7 +135,7 @@ public class Versioning {
     }
 
     private Tuple<FileUpdateType, string> ParseMMStringToPattern(string line) {
-        Tuple<FileUpdateType, string> result = null;
+        Tuple<FileUpdateType, string>? result = null;
         string[] ln = line.Split('|');
         if (ln.Length == 2) {
             // Valid
@@ -184,9 +195,12 @@ public class Versioning {
     }
 
     public void SaveUpdatedVersion() {
-        Log("Updating Version In Storage");
+
         if (!testMode) {
+            Log("Updating Version In Storage");
             repo.Persist(Version);
+        } else {
+            Log("DryRun enabled, not updating version storage.");
         }
     }
 

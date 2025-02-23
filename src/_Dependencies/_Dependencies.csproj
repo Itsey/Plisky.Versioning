@@ -8,6 +8,7 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="automation\NuspecVersion.txt" />
     <Content Include="automation\AutoVersion.txt" />
     <Content Include="CDSupport\Readme.txt" />
     <Content Include="TestData\TestFileStructure\JustAssemblyVersion.txt" />

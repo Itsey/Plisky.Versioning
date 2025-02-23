@@ -5,30 +5,36 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
-using Minimatch;
 using Plisky.Diagnostics;
 
+public class DryRunVersionFileUpdater : VersionFileUpdater {
+    protected override void UpdateCSFileWithAttribute(string fileName, string targetAttribute, string versionValue) {
+        b.Verbose.Log($"DRYRUN - Would have updated {fileName} with {targetAttribute} to {versionValue}");
+    }
+
+    public DryRunVersionFileUpdater(CompleteVersion cv, IHookVersioningChanges? actions = null) : base(cv, actions) {
+    }
+}
+
 public class VersionFileUpdater {
-    private Bilge b = new Bilge("Plisky-Versioning");
+    protected Bilge b = new Bilge("Plisky-Versioning");
     private const string ASMFILE_FILEVER_TAG = "AssemblyFileVersion";
     private const string ASMFILE_VER_TAG = "AssemblyVersion";
     private const string ASMFILE_INFVER_TAG = "AssemblyInformationalVersion";
     private const string ASM_STD_ASMVTAG = "AssemblyVersion";
     private const string ASM_STD_VERSTAG = "Version";
     private const string ASM_STD_FILETAG = "FileVersion";
+    private const string RELEASE_NAME_FILE_IDENTIFIER = "XXX-RELEASENAME-XXX";
 
-    private Minimatcher assemblyMM;
-    private Minimatcher infoMM;
-    private Minimatcher wixMM;
-    private IHookVersioningChanges hook;
-
+    private IHookVersioningChanges? hook;
     private CompleteVersion cv;
 
 
     public VersionFileUpdater() {
+        cv = new CompleteVersion();
     }
 
-    public VersionFileUpdater(CompleteVersion cv, IHookVersioningChanges actions = null) {
+    public VersionFileUpdater(CompleteVersion cv, IHookVersioningChanges? actions = null) {
         this.cv = cv;
     }
 
@@ -89,8 +95,7 @@ public class VersionFileUpdater {
                 break;
 
             case FileUpdateType.TextFile:
-                UpdateLiteralReplacer(fl, cv, dtx);
-                responseLog = $"Updated Text file to {versonToWrite}";
+                responseLog = UpdateLiteralReplacer(fl, cv, dtx);
                 break;
 
             default:
@@ -99,36 +104,52 @@ public class VersionFileUpdater {
         return responseLog;
     }
 
-    private void UpdateLiteralReplacer(string fl, CompleteVersion versonToWrite, DisplayType dtx) {
+    private string UpdateLiteralReplacer(string fileToCheck, CompleteVersion versonToWrite, DisplayType displayStyle) {
 #if DEBUG
-        if (!File.Exists(fl)) { throw new InvalidOperationException("Must not be possible, check this before you reach this code"); }
+        if (!File.Exists(fileToCheck)) { throw new InvalidOperationException("Must not be possible, check this before you reach this code"); }
 #endif
+        string response = string.Empty;
 
         Func<string, string> replacer;
 
-        if (dtx == DisplayType.NoDisplay) {
+        if (displayStyle == DisplayType.NoDisplay) {
             replacer = new Func<string, string>((inney) => {
-                return inney.Replace("XXX-RELEASENAME-XXX", versonToWrite.ReleaseName);
+                if (!inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
+                    response = "WARNING - No Release Name Identifier Found";
+                    return inney;
+                } else {
+                    response = $"Replacing {RELEASE_NAME_FILE_IDENTIFIER} with {versonToWrite.ReleaseName}";
+                    return inney.Replace(RELEASE_NAME_FILE_IDENTIFIER, versonToWrite.ReleaseName);
+                }
             });
         } else {
             replacer = new Func<string, string>((inney) => {
-                return inney.Replace("XXX-RELEASENAME-XXX", versonToWrite.ReleaseName)
-                .Replace("XXX-VERSION-XXX", versonToWrite.GetVersionString(dtx))
+
+                if (!inney.Contains("XXX-VERSION") && !inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
+                    response = "WARNING - No Versioning or Release Name Identifier Found, no updates possible.";
+                    return inney;
+                }
+                response = "Replacing XXX-VERSION* with " + versonToWrite.GetVersionString(displayStyle);
+
+                return inney.Replace(RELEASE_NAME_FILE_IDENTIFIER, versonToWrite.ReleaseName)
+                .Replace("XXX-VERSION-XXX", versonToWrite.GetVersionString(displayStyle))
                 .Replace("XXX-VERSION3-XXX", versonToWrite.GetVersionString(DisplayType.ThreeDigit))
-                .Replace("XXX-VERSION2-XXX", versonToWrite.GetVersionString(DisplayType.Short));
+                .Replace("XXX-VERSION2-XXX", versonToWrite.GetVersionString(DisplayType.Short))
+                .Replace("XXX-VERSION4-XXX", versonToWrite.GetVersionString(DisplayType.Full));
             });
         }
 
 
-        string fileText = replacer(File.ReadAllText(fl));
-        File.WriteAllText(fl, fileText);
+        string fileText = replacer(File.ReadAllText(fileToCheck));
+        File.WriteAllText(fileToCheck, fileText);
+        return response;
     }
 
     private void UpdateStdCSPRoj(string fl, string versonToWrite, string propName) {
         const string PROPERTYGROUP_ELNAME = "PropertyGroup";
         const string PROJECT_ELNAME = "Project";
 #if DEBUG
-        if (!File.Exists(fl)) { throw new InvalidOperationException("Must not be possible, check this before you reach this code"); }
+        if (!File.Exists(fl)) { throw new InvalidOperationException("Must not be possible, validate that the file exists prior to this point in the code."); }
 #endif
         b.Info.Log($"Updating NetStd style file with ver {versonToWrite} property {propName}", fl);
 
@@ -182,65 +203,45 @@ public class VersionFileUpdater {
         xd.Save(fileName);
     }
 
-    private void UpdateNuspecFile(string fileName, string versionText) {
+    private string UpdateNuspecFile(string fileName, string versionText) {
         const string NUGETNAMESPACE = "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd";
+        string result = string.Empty;
+
+        b.Verbose.Log("About to load filename", fileName);
+
         var xd = XDocument.Load(fileName);
         XNamespace ns = NUGETNAMESPACE;
         var el2 = xd.Element(ns + "package")?.Element(ns + "metadata")?.Element(ns + "version");
 
         if (el2 == null) {
+            b.Warning.Log("element package/metadata/version using namespace not found, trying alternative");
             el2 = xd.Element("package")?.Element("metadata")?.Element("version");
         }
 
         if (el2 != null) {
-            el2.Value = versionText;
+            result = $"{el2.Name} with {el2.Value} being set to {versionText}";
+            try {
+                b.Verbose.Log($"Performing Update - {result}");
+                el2.Value = versionText;
+                b.Verbose.Log($"About to save. - {fileName}");
+
+
+                xd.Save(fileName);
+                string[] x = File.ReadAllLines(fileName);
+                foreach (string n in x) {
+                    b.Verbose.Log("LINE: " + n);
+                }
+
+                b.Verbose.Log(xd.Element(ns + "package")?.Element(ns + "metadata")?.Element(ns + "version")?.Value);
+            } catch (Exception ex) {
+                b.Warning.Dump(ex, "Unable to save nuspec file");
+                result = "WARNING >> Unable to save nuspec file, update failed.";
+            }
         } else {
-            b.Verbose.Log("Invalid element in the Nuget file, can not update.");
+            b.Warning.Log("Invalid element in the Nuget file, can not update.");
+            result = "WARNING >> Element not found in nuspec, no changes made.";
         }
-        xd.Save(fileName);
-    }
 
-    private bool CheckForAssemblyVersion(string fl) {
-        if (assemblyMM == null) { return false; }
-        string assemblyVerString = cv.GetVersionString(DisplayType.Short);
-        return CheckAndUpdate(fl, assemblyMM, assemblyVerString, (theFile, theVn) => {
-            UpdateCSFileWithAttribute(fl, ASMFILE_VER_TAG, theVn);
-        });
-    }
-
-    private bool CheckForInformationalVersion(string fl) {
-        if (infoMM == null) { return false; }
-        string assemblyVerString = cv.GetVersionString(DisplayType.Short);
-
-        return CheckAndUpdate(fl, infoMM, assemblyVerString, (theFile, theVn) => {
-            UpdateCSFileWithAttribute(fl, ASMFILE_INFVER_TAG, theVn);
-        });
-    }
-
-    private bool CheckForWix(string fl) {
-        if (wixMM == null) { return false; }
-        string assemblyVerString = cv.GetVersionString(DisplayType.Short);
-
-        return CheckAndUpdate(fl, wixMM, assemblyVerString, (theFile, theVn) => {
-            // TODO : UpdateWixFileWithVersion(fl, theVn);
-        });
-    }
-
-    private bool CheckAndUpdate(string fl, Minimatcher assemblyMM, string versionValue, Action<string, string> p) {
-        b.Assert.True(p != null, "The action used cant be null");
-
-        b.Verbose.Log("Checking file :" + fl);
-
-        bool result = assemblyMM.IsMatch(fl);
-        if ((result) && (File.Exists(fl))) {
-            b.Info.Log($"Updating VersioningFile File ({fl}) to ({versionValue})");
-
-            hook?.PreUpdateFileAction(fl);
-
-            p(fl, versionValue);
-
-            hook?.PostUpdateFileAction(fl);
-        }
         return result;
     }
 
@@ -251,7 +252,7 @@ public class VersionFileUpdater {
     /// <param name="fileName">The full path to the file to either update or create</param>
     /// <param name="targetAttribute">The name of the attribute to write the verison number into</param>
     /// <param name="vn">The verison number to apply to the code</param>
-    private void UpdateCSFileWithAttribute(string fileName, string targetAttribute, string versionValue) {
+    protected virtual void UpdateCSFileWithAttribute(string fileName, string targetAttribute, string versionValue) {
 
         #region entry code
 
@@ -282,7 +283,7 @@ public class VersionFileUpdater {
 
             var r = GetRegex(targetAttribute);
             using (var sr = new StreamReader(fileName)) {
-                string nextLine = null;
+                string? nextLine = null;
                 while ((nextLine = sr.ReadLine()) != null) {
                     if ((!nextLine.Trim().StartsWith("//")) && (r.IsMatch(nextLine))) {
                         if (replacementMade) {

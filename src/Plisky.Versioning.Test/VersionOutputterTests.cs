@@ -2,7 +2,7 @@
 using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Test;
-using PliskyTool;
+using Versonify;
 using Xunit;
 
 public class VersionOutputterTests {
@@ -23,7 +23,7 @@ public class VersionOutputterTests {
     public void Args_OutputterParseConsole_Works() {
         b.Info.Flow();
 
-        var cla = new CommandLineArguments {
+        var cla = new VersonifyCommandline {
             OutputOptions = "con"
         };
 
@@ -43,7 +43,7 @@ public class VersionOutputterTests {
     public void Args_OutputterParseSetsConsoleString(string argument, string contains) {
         b.Info.Flow();
 
-        var cla = new CommandLineArguments {
+        var cla = new VersonifyCommandline {
             OutputOptions = argument
         };
 

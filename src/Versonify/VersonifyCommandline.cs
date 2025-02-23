@@ -1,17 +1,19 @@
-﻿namespace PliskyTool;
+﻿namespace Versonify;
 
 using System;
 using System.IO;
 using Plisky.CodeCraft;
+using Plisky.Diagnostics;
 using Plisky.Plumbing;
 
 [CommandLineArguments]
-public class CommandLineArguments {
+public class VersonifyCommandline {
+    protected Bilge b = new Bilge("CommandLineArguments");
     private OutputPossibilities outcache = OutputPossibilities.None;
     private string outOpts;
     private string pathPassed;
 
-    public CommandLineArguments() {
+    public VersonifyCommandline() {
         VersionTargetMinMatch = null;
     }
 
@@ -25,14 +27,16 @@ public class CommandLineArguments {
 
     //-DG:
     [CommandLineArg("DG")]
-    [CommandLineArg("Digits", Description = "Separated characters to form digits for the verison number", ArraySeparatorChar = ";")]
+    [CommandLineArg("Digits", Description = "Separated characters to form digits for the version number", ArraySeparatorChar = ";")]
     public string[] DigitManipulations { get; set; }
 
-    [CommandLineArg("NO", Description = "Allows you to ignore a saved override (see documentaiton).")]
+    [CommandLineArg("NO", Description = "Allows you to ignore a saved override (see documentation).")]
     public bool NoOverride { get; set; }
 
     [CommandLineArg("O")]
     [CommandLineArg("Output", Description = "Specifies output options supports:  Env,Con,AzDo,File")]
+    public string RawOutputOptions { get; set; }
+
     public string OutputOptions {
         get { return outOpts; }
         set {
@@ -88,7 +92,10 @@ public class CommandLineArguments {
     public string[] VersionTargetMinMatch { get; set; }
 
     private void ParseOutputOptions() {
+        b.Verbose.Flow();
+
         if (string.IsNullOrEmpty(outOpts)) {
+            b.Verbose.Log("No output options specified, defaulting to none.");
             outcache = OutputPossibilities.None;
             return;
         }
@@ -104,13 +111,23 @@ public class CommandLineArguments {
         }
 
         if (outOpts.StartsWith("vsts") || (outOpts.StartsWith("azdo"))) {
+            b.Verbose.Log("VSTS/AzDo output options specified.");
+
             outcache = OutputPossibilities.Console;
+
             string varToReplace = "CodeVersionNumber";
-            string outputTemplate = "##vso[task.setvariable variable=%BN%;]%VER%";
+            string outputTemplate = "##vso[task.setvariable variable=XXVARIABLENAMEXX;isOutput=true]%VER%";
+
             if (outOpts.Contains(":")) {
-                varToReplace = outOpts.Substring(outOpts.IndexOf(":"));
+                int markerPos = outOpts.IndexOf(":") + 1;
+                if (markerPos < outOpts.Length) {
+                    varToReplace = outOpts.Substring(markerPos);
+                }
             }
-            ConsoleTemplate = outputTemplate.Replace("%BN%", varToReplace);
+
+            ConsoleTemplate = outputTemplate.Replace("XXVARIABLENAMEXX", varToReplace);
+            b.Verbose.Log($"Console Template Updated to {ConsoleTemplate.Replace("##vso", "dummy")}");
+
             return;
         }
 

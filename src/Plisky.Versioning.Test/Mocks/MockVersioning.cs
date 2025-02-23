@@ -13,7 +13,7 @@ namespace Plisky.CodeCraft.Test {
 
         #region mocking implementation
 
-        public Mocking Mock;
+        public Mocking mock;
 
         public class Mocking {
             private MockVersioning parent;
@@ -68,7 +68,7 @@ namespace Plisky.CodeCraft.Test {
 
 
         public MockVersioning(VersionStorage vs) : base(vs) {
-            Mock = new Mocking(this);
+            mock = new Mocking(this);
         }
     }
 }

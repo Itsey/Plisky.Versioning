@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <AssemblyVersion>0.1</AssemblyVersion>
+    <Version>0.1.1.0</Version>
+    <FileVersion>0.1.1.0</FileVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Minimatch" Version="2.0.0" />

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>Plisky.Versonify</id>
+    <version>0.1.2</version>
+    <authors>Itsey</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://itsey.github.io/</projectUrl>
+    <description>Plisky Versonify, versioning command line tool.</description>
+    <releaseNotes>
+      0.1.2
+        Added Nexus Support.
+      0.1.1
+        Updated documentation to remove references to PliskyTool.
+        🐞 Fix - DryRun no longer updates the files on disk.        
+      0.0.0
+        Renamed to become versonify.
+        Released as tool package to support nuke.
+    </releaseNotes>
+    <readme>.\readme.md</readme>
+    <tags>versioning ci build </tags>
+    <dependencies>
+      <group targetFramework=".NETStandard2.1">
+        <dependency id="SampleDependency" version="1.0.0" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src=".\nuget\readme.md" />
+    <file src=".\nuget\tools\**\*.*" exclude="**\*.log" />
+  </files>
+</package>

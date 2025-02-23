@@ -32,7 +32,7 @@ public class UseCaseTests {
 
         // Find This file
         var v = new MockVersioning(new MockVersionStorage(""));
-        v.Mock.AddFilenameToFind(srcFile);
+        v.mock.AddFilenameToFind(srcFile);
         v.LoadMiniMatches("**/csproj|StdFile", srcFile + "|StdFile", srcFile + "|StdAssembly", srcFile + "|StdInformational");
         _ = v.SearchForAllFiles("");
         v.UpdateAllRegisteredFiles();
@@ -96,7 +96,7 @@ public class UseCaseTests {
         var mvs = new MockVersionStorage(initial);
         var sut = new Versioning(mvs);
 
-        mvs.Mock.SetBehaviours(DigitIncremementBehaviour.Fixed, DigitIncremementBehaviour.Fixed, DigitIncremementBehaviour.AutoIncrementWithResetAny, DigitIncremementBehaviour.AutoIncrementWithResetAny);
+        mvs.mock.SetBehaviours(DigitIncremementBehaviour.Fixed, DigitIncremementBehaviour.Fixed, DigitIncremementBehaviour.AutoIncrementWithResetAny, DigitIncremementBehaviour.AutoIncrementWithResetAny);
 
         sut.Increment();
         Assert.Equal(target, sut.ToString());

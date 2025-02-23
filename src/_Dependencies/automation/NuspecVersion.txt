@@ -1,0 +1,2 @@
+﻿**/versonify.nuspec|Nuspec
+**/versonify.nuspec|TextFile
