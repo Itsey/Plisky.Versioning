@@ -1,9 +1,8 @@
 namespace Plisky.CodeCraft.Test;
 
-using Plisky.Diagnostics;
 using Plisky.CodeCraft;
+using Plisky.Diagnostics;
 using Plisky.Test;
-using System.IO;
 using Xunit;
 
 public class CompleteVersionTests {
@@ -28,7 +27,7 @@ public class CompleteVersionTests {
     public void CompletedVersion_ConstructorStringParser_Works(string initString, int expectedDigits) {
         b.Info.Flow();
 
-        CompleteVersion cv = new CompleteVersion(initString);
+        var cv = new CompleteVersion(initString);
 
         Assert.Equal(expectedDigits, cv.Digits.Length);
     }
@@ -51,7 +50,7 @@ public class CompleteVersionTests {
     public void DisplayTypes_WorkCorrectly(string version, string expectedDisplay, DisplayType dtype) {
         b.Info.Flow();
 
-        CompleteVersion cv = new CompleteVersion(version);
+        var cv = new CompleteVersion(version);
         string output = cv.GetVersionString(dtype);
 
         Assert.Equal(expectedDisplay, output);
@@ -72,7 +71,7 @@ public class CompleteVersionTests {
     public void PendingIncrementPatterns_Work(string startVer, string pattern, string endVer) {
         b.Info.Flow();
 
-        CompleteVersion cv = new CompleteVersion(startVer);
+        var cv = new CompleteVersion(startVer);
 
         cv.ApplyPendingVersion(pattern);
         cv.Increment();
@@ -83,20 +82,20 @@ public class CompleteVersionTests {
     [Theory(DisplayName = nameof(PendingIncrement_IsAppliedCorrectly))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    [InlineData("1.0.0.0", "+...0", "2",null,null,"0")]
-    [InlineData("1.0.0.0", "1.0.0.0", "1","0","0","0")]
-    [InlineData("1.0.0.0", "+.+.+.+", "2","1","1","1")]
-    [InlineData("2.2.2.2", "-.-.-.-", "1","1","1","1")]
-    [InlineData("2.2.2.2", "-..-.",  "1", null, "1", null)]
-    [InlineData("2.2.2.2", "...",     null, null, null, null)]
-    [InlineData("2.2.2.2", "..Bealzebub.-", null, null, "Bealzebub","1")]
-    [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear", "Unicorn","Peach","Applie","Pear")]
+    [InlineData("1.0.0.0", "+...0", "2", null, null, "0")]
+    [InlineData("1.0.0.0", "1.0.0.0", "1", "0", "0", "0")]
+    [InlineData("1.0.0.0", "+.+.+.+", "2", "1", "1", "1")]
+    [InlineData("2.2.2.2", "-.-.-.-", "1", "1", "1", "1")]
+    [InlineData("2.2.2.2", "-..-.", "1", null, "1", null)]
+    [InlineData("2.2.2.2", "...", null, null, null, null)]
+    [InlineData("2.2.2.2", "..Bealzebub.-", null, null, "Bealzebub", "1")]
+    [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear", "Unicorn", "Peach", "Applie", "Pear")]
     public void PendingIncrement_IsAppliedCorrectly(string startVer, string pattern, string d1Expected, string d2Expected, string d3Expected, string d4Expected) {
         b.Info.Flow();
 
-        CompleteVersion cv = new CompleteVersion(startVer);
+        var cv = new CompleteVersion(startVer);
 
-        cv.ApplyPendingVersion(pattern);            
+        cv.ApplyPendingVersion(pattern);
 
         Assert.Equal(d1Expected, cv.Digits[0].IncrementOverride);
         Assert.Equal(d2Expected, cv.Digits[1].IncrementOverride);
@@ -119,28 +118,28 @@ public class CompleteVersionTests {
     public void PendingIncrement_IsRemovedCorrectly(string startVer, string pattern) {
         b.Info.Flow();
 
-        CompleteVersion cv = new CompleteVersion(startVer);
+        var cv = new CompleteVersion(startVer);
 
         cv.ApplyPendingVersion(pattern);
         cv.Increment();
 
-        Assert.Equal(null, cv.Digits[0].IncrementOverride);
-        Assert.Equal(null, cv.Digits[1].IncrementOverride);
-        Assert.Equal(null, cv.Digits[2].IncrementOverride);
-        Assert.Equal(null, cv.Digits[3].IncrementOverride);
+        Assert.Null(cv.Digits[0].IncrementOverride);
+        Assert.Null(cv.Digits[1].IncrementOverride);
+        Assert.Null(cv.Digits[2].IncrementOverride);
+        Assert.Null(cv.Digits[3].IncrementOverride);
     }
 
 
 
-    
+
     [Theory(DisplayName = nameof(PendingIncrements_StackCorrectly))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    [InlineData("1.0.0.0", "+.0.0.0",".+.0.0", "2.1.0.0")]
-    [InlineData("1.1.1.1", "0.+.+.0","0.-.-.0", "0.0.0.0")]
-    [InlineData("1.0.0.0", "+.+.+.+","+.+.+.+", "2.1.1.1")]
-    [InlineData("2.2.2.2", "-.-.-.-","-.-.-.-", "1.1.1.1")]
-    [InlineData("2.2.2.2", "-..-.-", "-..-.-", "1.2.1.1")]     
+    [InlineData("1.0.0.0", "+.0.0.0", ".+.0.0", "2.1.0.0")]
+    [InlineData("1.1.1.1", "0.+.+.0", "0.-.-.0", "0.0.0.0")]
+    [InlineData("1.0.0.0", "+.+.+.+", "+.+.+.+", "2.1.1.1")]
+    [InlineData("2.2.2.2", "-.-.-.-", "-.-.-.-", "1.1.1.1")]
+    [InlineData("2.2.2.2", "-..-.-", "-..-.-", "1.2.1.1")]
     [InlineData("2.2.2.2", "...", "...", "2.2.2.2")]
     [InlineData("2.2.2.2", "..Bealzebub.-", "..Demon.", "2.2.Demon.1")]
     [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear", "..Berry.", "Unicorn.Peach.Berry.Pear")]
@@ -148,7 +147,7 @@ public class CompleteVersionTests {
         b.Info.Flow();
         // Multi patterns dont really stack, just partially replace
 
-        CompleteVersion cv = new CompleteVersion(startVer);
+        var cv = new CompleteVersion(startVer);
 
         cv.ApplyPendingVersion(pattern);
         cv.ApplyPendingVersion(secondPattern);
@@ -173,7 +172,7 @@ public class CompleteVersionTests {
     public void ManipulateVersionTests(string value, string pattern, string result) {
         var sut = new CompleteVersionMock();
 
-        var res = sut.Mock.ManipulateVerisonBasedOnPattern(pattern, value);
+        string res = sut.Mock.ManipulateVerisonBasedOnPattern(pattern, value);
 
         Assert.Equal(result, res);
     }
@@ -199,7 +198,7 @@ public class CompleteVersionTests {
         const string RELEASENAME = "Unicorn";
         b.Info.Flow();
 
-        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("","+", DigitIncremementBehaviour.ReleaseName));
+        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncremementBehaviour.ReleaseName));
         sut.ReleaseName = RELEASENAME;
 
         Assert.Equal(RELEASENAME, sut.ReleaseName);
@@ -255,7 +254,7 @@ public class CompleteVersionTests {
         var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncremementBehaviour.ReleaseName));
         sut.ReleaseName = RELEASENAME;
         sut.ApplyPendingRelease(NEWRELEASE);
-        
+
 
         Assert.Equal(RELEASENAME, sut.ReleaseName);
         Assert.Equal("2.0+" + RELEASENAME, sut.ToString());

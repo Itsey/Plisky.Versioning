@@ -28,7 +28,7 @@
 
         #endregion mocking implementation
 
-        public MockVersionStorage(string initValue)  {
+        public MockVersionStorage(string initValue) {
             this.InitValue = new VersionStorageOptions() {
                 InitialisationString = initValue
             };

@@ -1,8 +1,8 @@
 ﻿namespace Plisky.CodeCraft;
 
-using Plisky.Diagnostics;
 using System;
 using System.Globalization;
+using Plisky.Diagnostics;
 
 internal class VersionableDigit {
     private Bilge b = new Bilge();

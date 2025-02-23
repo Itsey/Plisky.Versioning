@@ -1,10 +1,10 @@
 ﻿namespace Plisky.CodeCraft;
 
-using Minimatch;
-using Plisky.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Minimatch;
+using Plisky.Diagnostics;
 
 public class Versioning {
     protected Bilge b = new Bilge("Plisky-Versioning");
@@ -31,7 +31,7 @@ public class Versioning {
         fileUpdateMinmatchers[FileUpdateType.Nuspec].Add("**\\*.nuspec");
     }
 
-    public void Increment(string newReleaseName=null) {
+    public void Increment(string newReleaseName = null) {
         if ((!string.IsNullOrEmpty(newReleaseName)) && (newReleaseName != cv.ReleaseName)) {
             cv.ReleaseName = newReleaseName;
         }
@@ -75,7 +75,7 @@ public class Versioning {
 
         foreach (var f in filenamesRegistered) {
             Log("Updating : " + f);
-            var s = vfu.PerformUpdate(f.Item1, f.Item2);
+            string s = vfu.PerformUpdate(f.Item1, f.Item2);
             Log("Updated : " + s);
 
             b.Verbose.Log($"Update Completed {f.Item1} : {f.Item2}");
@@ -104,13 +104,13 @@ public class Versioning {
 
         ClearMiniMatchers();
 
-        foreach (var line in srcFile) {
+        foreach (string line in srcFile) {
             AddMMLine(line);
         }
     }
 
     private void AddMMLine(string line) {
-        Tuple<FileUpdateType, string> mmPattern = ParseMMStringToPattern(line);
+        var mmPattern = ParseMMStringToPattern(line);
 
         if (mmPattern != null) {
             if (!fileUpdateMinmatchers.ContainsKey(mmPattern.Item1)) {
@@ -125,10 +125,10 @@ public class Versioning {
 
     private Tuple<FileUpdateType, string> ParseMMStringToPattern(string line) {
         Tuple<FileUpdateType, string> result = null;
-        var ln = line.Split('|');
+        string[] ln = line.Split('|');
         if (ln.Length == 2) {
             // Valid
-            if (Enum.TryParse<FileUpdateType>(ln[1], out FileUpdateType fut)) {
+            if (Enum.TryParse<FileUpdateType>(ln[1], out var fut)) {
                 result = new Tuple<FileUpdateType, string>(fut, ln[0]);
             }
         }
@@ -142,15 +142,15 @@ public class Versioning {
     }
 
     public List<string> SearchForAllFiles(string root) {
-        List<string> result = new List<string>();
+        var result = new List<string>();
 
         Log($"Searching in [{root}]");
 
-        List<Tuple<Minimatcher, FileUpdateType>> mm = new List<Tuple<Minimatcher, FileUpdateType>>();
+        var mm = new List<Tuple<Minimatcher, FileUpdateType>>();
 
         foreach (var regmm in fileUpdateMinmatchers.Keys) {
-            foreach (var m in fileUpdateMinmatchers[regmm]) {
-                mm.Add(new Tuple<Minimatcher, FileUpdateType>(new Minimatcher(m, new Options { AllowWindowsPaths = true, NoCase =  true }), regmm));
+            foreach (string m in fileUpdateMinmatchers[regmm]) {
+                mm.Add(new Tuple<Minimatcher, FileUpdateType>(new Minimatcher(m, new Options { AllowWindowsPaths = true, NoCase = true }), regmm));
             }
         }
 
@@ -159,11 +159,11 @@ public class Versioning {
 
         try {
             var fls = ActualGetFiles(root);
-            
-            foreach (var l in fls) {
+
+            foreach (string l in fls) {
                 totalNoFiles++;
 
-                for (int j = 0; j < mm.Count; j++) {                       
+                for (int j = 0; j < mm.Count; j++) {
 
                     if (mm[j].Item1.IsMatch(l)) {
                         Log($"MM Match {l} - {mm[j].Item2}, queued for update.");

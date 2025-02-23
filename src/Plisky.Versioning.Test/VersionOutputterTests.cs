@@ -34,7 +34,7 @@ public class VersionOutputterTests {
     [Theory(DisplayName = nameof(Args_OutputterParseSetsConsoleString))]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
-    [InlineData("con:variable", "variable")]
+    [InlineData("con:variable", "%VER%")]
     [InlineData("vsts:variable", "variable")]
     [InlineData("con", "%VER%")]
     [InlineData("vsts:variable", "%VER%")]

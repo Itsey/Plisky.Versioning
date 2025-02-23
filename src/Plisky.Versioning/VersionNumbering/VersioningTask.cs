@@ -38,7 +38,14 @@ public class VersioningTask {
     public VersioningTask() {
     }
 
-    public string PersistanceValue { get; set; }
+    protected VersionStorage storage;
+    private string persistanceValue;
+    public void SetPersistanceValue(string pv) {
+        persistanceValue = pv;
+        storage = VersionStorage.CreateFromInitialisation(pv);
+    }
+
+
     public string VersionString { get; set; }
     public string BaseSearchDir { get; set; }
 
@@ -122,8 +129,7 @@ public class VersioningTask {
     }
 
     private void SaveVersioningComponent() {
-        var jvg = new JsonVersionPersister(PersistanceValue);
-        jvg.Persist(ver);
+        storage.Persist(ver);
     }
 
     private void ValidateForUpdate() {
@@ -133,7 +139,6 @@ public class VersioningTask {
     }
 
     private void LoadVersioningComponent() {
-        var jvg = new JsonVersionPersister(PersistanceValue);
-        ver = jvg.GetVersion();
+        ver = storage.GetVersion();
     }
 }

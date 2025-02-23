@@ -1,4 +1,4 @@
-﻿namespace Plisky.CodeCraft; 
+﻿namespace Plisky.CodeCraft;
 
 public interface IKnowHowToVersion {
 

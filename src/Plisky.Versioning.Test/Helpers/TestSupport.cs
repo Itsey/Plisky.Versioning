@@ -1,8 +1,8 @@
-﻿using Plisky.Diagnostics;
-using Plisky.Test;
-using System;
+﻿using System;
 using System.IO;
 using System.Xml.Linq;
+using Plisky.Diagnostics;
+using Plisky.Test;
 
 namespace Plisky.CodeCraft.Test {
 
@@ -31,18 +31,18 @@ namespace Plisky.CodeCraft.Test {
         }
 
         public string GetVersionFromCSProj(string srcFile, string propName) {
-            XDocument xd2 = XDocument.Load(srcFile);
+            var xd2 = XDocument.Load(srcFile);
             var el2 = xd2.Element("Project")?.Element("PropertyGroup")?.Element(propName);
-            if (el2==null) { return null;  }
-            var after = el2.Value;
+            if (el2 == null) { return null; }
+            string after = el2.Value;
             return after;
         }
 
         public string GetVersionFromNuspec(string srcFile) {
             XNamespace ns = "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd";
-            XDocument xd2 = XDocument.Load(srcFile);
+            var xd2 = XDocument.Load(srcFile);
             var el2 = xd2.Element(ns + "package")?.Element(ns + "metadata")?.Element(ns + "version");
-            var after = el2.Value;
+            string after = el2.Value;
             return after;
         }
 

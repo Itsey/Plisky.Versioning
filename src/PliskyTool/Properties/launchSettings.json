@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PliskyTool": {
+      "commandName": "Project",
+      "commandLineArgs": "-command=UPDATEFILES -vs=\"%NEXUSCONFIG%[L::http://20.254.177.177:8081/repository/plisky/vstore/test.vstore\""
+    }
+  }
+}

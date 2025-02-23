@@ -1,4 +1,4 @@
-﻿namespace Plisky.Versioning.Test; 
+﻿namespace Plisky.Versioning.Test;
 using Plisky.CodeCraft.Test;
 using Plisky.Diagnostics;
 using Plisky.Test;

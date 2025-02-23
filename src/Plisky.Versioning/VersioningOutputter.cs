@@ -8,7 +8,7 @@ public class VersioningOutputter {
     protected string valToWrite;
 
     public string FileTemplate { get; set; }
-    public string ConsoleTemplate { get; set; } 
+    public string ConsoleTemplate { get; set; }
 
 
     protected virtual void SetEnvironmentWithValue() {
@@ -28,14 +28,14 @@ public class VersioningOutputter {
         }
 
         if ((oo & OutputPossibilities.Console) == OutputPossibilities.Console) {
-            WriteToConsole(ConsoleTemplate.Replace("%VER%",valToWrite));
+            WriteToConsole(ConsoleTemplate.Replace("%VER%", valToWrite));
         }
 
 
     }
 
     protected virtual void SetFileValue() {
-        var fn = Path.Combine(Environment.CurrentDirectory, "pver-latest.txt");
+        string fn = Path.Combine(Environment.CurrentDirectory, "pver-latest.txt");
         File.WriteAllText(fn, valToWrite);
     }
 

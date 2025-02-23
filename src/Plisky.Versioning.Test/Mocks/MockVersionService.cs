@@ -41,7 +41,7 @@ namespace Plisky.CodeCraft.Test {
 
             #endregion entry code
 
-            var verIdent = g.ToString();
+            string verIdent = g.ToString();
 
             if (!store.ContainsKey(verIdent)) {
                 store.Add(verIdent, new Dictionary<string, VersionNumber>());

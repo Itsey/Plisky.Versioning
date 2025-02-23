@@ -1,12 +1,12 @@
 ﻿namespace Plisky.CodeCraft;
 
-using Minimatch;
-using Plisky.Diagnostics;
 using System;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Minimatch;
+using Plisky.Diagnostics;
 
 public class VersionFileUpdater {
     private Bilge b = new Bilge("Plisky-Versioning");
@@ -17,13 +17,13 @@ public class VersionFileUpdater {
     private const string ASM_STD_VERSTAG = "Version";
     private const string ASM_STD_FILETAG = "FileVersion";
 
-    private Minimatcher AssemblyMM;
-    private Minimatcher InfoMM;
-    private Minimatcher WixMM;
+    private Minimatcher assemblyMM;
+    private Minimatcher infoMM;
+    private Minimatcher wixMM;
     private IHookVersioningChanges hook;
 
     private CompleteVersion cv;
-    private string RootPath;
+
 
     public VersionFileUpdater() {
     }
@@ -38,7 +38,7 @@ public class VersionFileUpdater {
 
     public string PerformUpdate(string fl, FileUpdateType fut, DisplayType dt = DisplayType.Default) {
         b.Verbose.Log("Perform update requested " + fut.ToString(), fl);
-        
+
         if (!File.Exists(fl)) {
             throw new FileNotFoundException($"Filename must be present for version update {fl}");
         }
@@ -104,10 +104,10 @@ public class VersionFileUpdater {
         if (!File.Exists(fl)) { throw new InvalidOperationException("Must not be possible, check this before you reach this code"); }
 #endif
 
-        Func<string,string> replacer;
+        Func<string, string> replacer;
 
         if (dtx == DisplayType.NoDisplay) {
-            replacer = new Func<string, string>( (inney)  =>{                    
+            replacer = new Func<string, string>((inney) => {
                 return inney.Replace("XXX-RELEASENAME-XXX", versonToWrite.ReleaseName);
             });
         } else {
@@ -119,9 +119,9 @@ public class VersionFileUpdater {
             });
         }
 
-      
+
         string fileText = replacer(File.ReadAllText(fl));
-        File.WriteAllText(fl,fileText);
+        File.WriteAllText(fl, fileText);
     }
 
     private void UpdateStdCSPRoj(string fl, string versonToWrite, string propName) {
@@ -130,13 +130,13 @@ public class VersionFileUpdater {
 #if DEBUG
         if (!File.Exists(fl)) { throw new InvalidOperationException("Must not be possible, check this before you reach this code"); }
 #endif
-        b.Info.Log($"Updating NetStd style file with ver {versonToWrite} property {propName}",fl);
+        b.Info.Log($"Updating NetStd style file with ver {versonToWrite} property {propName}", fl);
 
-        XDocument xd2 = XDocument.Load(fl);
+        var xd2 = XDocument.Load(fl);
 
         var el2 = xd2.Element(PROJECT_ELNAME);
         if (el2 == null) {
-            b.Error.Log($"Unable to locate [{PROJECT_ELNAME}] element in file [{fl}], version update failed.","Likely this is not a .net standard csproj but a framework one.");
+            b.Error.Log($"Unable to locate [{PROJECT_ELNAME}] element in file [{fl}], version update failed.", "Likely this is not a .net standard csproj but a framework one.");
             return;
         }
 
@@ -159,7 +159,7 @@ public class VersionFileUpdater {
 
     private void UpdateWixFile(string fileName, string versionToWrite) {
         const string WIXNAMESPACE = "http://schemas.microsoft.com/wix/2006/wi";
-        XDocument xd = XDocument.Load(fileName);
+        var xd = XDocument.Load(fileName);
         XNamespace ns = WIXNAMESPACE;
         var el = xd.Element(ns + "Wix")?.Element(ns + "Product");
         if (el == null) {
@@ -184,11 +184,11 @@ public class VersionFileUpdater {
 
     private void UpdateNuspecFile(string fileName, string versionText) {
         const string NUGETNAMESPACE = "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd";
-        XDocument xd = XDocument.Load(fileName);
+        var xd = XDocument.Load(fileName);
         XNamespace ns = NUGETNAMESPACE;
         var el2 = xd.Element(ns + "package")?.Element(ns + "metadata")?.Element(ns + "version");
 
-        if (el2==null) {
+        if (el2 == null) {
             el2 = xd.Element("package")?.Element("metadata")?.Element("version");
         }
 
@@ -201,27 +201,27 @@ public class VersionFileUpdater {
     }
 
     private bool CheckForAssemblyVersion(string fl) {
-        if (AssemblyMM == null) { return false; }
+        if (assemblyMM == null) { return false; }
         string assemblyVerString = cv.GetVersionString(DisplayType.Short);
-        return CheckAndUpdate(fl, AssemblyMM, assemblyVerString, (theFile, theVn) => {
+        return CheckAndUpdate(fl, assemblyMM, assemblyVerString, (theFile, theVn) => {
             UpdateCSFileWithAttribute(fl, ASMFILE_VER_TAG, theVn);
         });
     }
 
     private bool CheckForInformationalVersion(string fl) {
-        if (InfoMM == null) { return false; }
+        if (infoMM == null) { return false; }
         string assemblyVerString = cv.GetVersionString(DisplayType.Short);
 
-        return CheckAndUpdate(fl, InfoMM, assemblyVerString, (theFile, theVn) => {
+        return CheckAndUpdate(fl, infoMM, assemblyVerString, (theFile, theVn) => {
             UpdateCSFileWithAttribute(fl, ASMFILE_INFVER_TAG, theVn);
         });
     }
 
     private bool CheckForWix(string fl) {
-        if (WixMM == null) { return false; }
+        if (wixMM == null) { return false; }
         string assemblyVerString = cv.GetVersionString(DisplayType.Short);
 
-        return CheckAndUpdate(fl, WixMM, assemblyVerString, (theFile, theVn) => {
+        return CheckAndUpdate(fl, wixMM, assemblyVerString, (theFile, theVn) => {
             // TODO : UpdateWixFileWithVersion(fl, theVn);
         });
     }
@@ -235,7 +235,7 @@ public class VersionFileUpdater {
         if ((result) && (File.Exists(fl))) {
             b.Info.Log($"Updating VersioningFile File ({fl}) to ({versionValue})");
 
-            hook?.PreUpdateFileAction(fl); 
+            hook?.PreUpdateFileAction(fl);
 
             p(fl, versionValue);
 
@@ -280,8 +280,8 @@ public class VersionFileUpdater {
             // introduced a compile error into the code.
             bool replacementMade = false;
 
-            Regex r = GetRegex(targetAttribute);
-            using (StreamReader sr = new StreamReader(fileName)) {
+            var r = GetRegex(targetAttribute);
+            using (var sr = new StreamReader(fileName)) {
                 string nextLine = null;
                 while ((nextLine = sr.ReadLine()) != null) {
                     if ((!nextLine.Trim().StartsWith("//")) && (r.IsMatch(nextLine))) {

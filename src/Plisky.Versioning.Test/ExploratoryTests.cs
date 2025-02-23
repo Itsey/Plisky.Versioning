@@ -78,18 +78,18 @@ public class Exploratory {
 
 
     [Theory]
-    [InlineData("1.2.3.4", "1.2.3.4", true, true)]
-    [InlineData("0.0.0.0", "0.0.0.0", true, true)]
-    [InlineData("0.0", "0.0", true, true)]
-    [InlineData("1.0", "1.0.0.0", true, true)]
-    [InlineData("2.2.3.4", "1.2.3.4", true, false)]
-    [InlineData("1.0.3.4", "1.2.3.4", false, true)]
-    public void DoVersionComparisonsWork2(string v1, string v2, bool v1IsGreaterOrEqual) {
+    [InlineData("1.2.3.4", "1.2.3.4", true)]
+    [InlineData("0.0.0.0", "0.0.0.0", true)]
+    [InlineData("0.0", "0.0", true)]
+    [InlineData("1.0", "1.0.0.0", true)]
+    [InlineData("2.2.3.4", "1.2.3.4", true)]
+    [InlineData("1.0.3.4", "1.2.3.4", false)]
+    public void DoVersionComparisonsWork2(string v1, string v2, bool isGreaterExpected) {
         var vn1 = VersionNumber.Parse(v1);
         var vn2 = VersionNumber.Parse(v2);
 
-        bool isGreater = vn1 >= vn2;
-        Assert.Equal(v1IsGreaterOrEqual, isGreater);
+        bool isGreaterActual = vn1 >= vn2;
+        Assert.Equal(isGreaterExpected, isGreaterActual);
     }
 
 
@@ -192,7 +192,7 @@ public class Exploratory {
         var sut = new VersioningTask();
         string directory = Path.GetDirectoryName(tfn1);
         sut.BaseSearchDir = directory;
-        sut.PersistanceValue = tfn2;
+        sut.SetPersistanceValue(tfn2);
         sut.AddUpdateType(tfn1, FileUpdateType.NetAssembly);
         sut.AddUpdateType(tfn1, FileUpdateType.NetFile);
         sut.AddUpdateType(tfn1, FileUpdateType.NetInformational);

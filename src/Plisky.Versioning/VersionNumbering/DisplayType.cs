@@ -1,4 +1,4 @@
-﻿namespace Plisky.CodeCraft; 
+﻿namespace Plisky.CodeCraft;
 
 /// <summary>
 /// Allows the version number to display in different formats, short version format, full version format or with no display.

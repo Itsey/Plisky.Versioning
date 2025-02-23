@@ -50,32 +50,32 @@ namespace Plisky.CodeCraft {
                 throw new ArgumentOutOfRangeException(nameof(value), "The versioned digit can not be less than zero");
             }
             if (digits[(int)digitPosition] == null) {
-                digits[(int)digitPosition] = new VersionableDigit(digitPosition,DigitIncremementBehaviour.Fixed,value);
+                digits[(int)digitPosition] = new VersionableDigit(digitPosition, DigitIncremementBehaviour.Fixed, value);
             } else {
                 digits[(int)digitPosition].DigitValue = value;
-            }            
+            }
         }
 
         public static VersionNumber Parse(string parseTxt) {
             if (string.IsNullOrEmpty(parseTxt)) {
                 throw new ArgumentOutOfRangeException(nameof(parseTxt), "The text to parse for a version number must be present");
             }
-          
+
             string[] values = parseTxt.Split('.');
             List<int> actualValues = new();
-            
-            for(int i=0; i<4; i++) {
-                if ((values.Length > i)&& (!string.IsNullOrEmpty(values[i]))){
+
+            for (int i = 0; i < 4; i++) {
+                if ((values.Length > i) && (!string.IsNullOrEmpty(values[i]))) {
                     try {
                         actualValues.Add(int.Parse(values[i]));
-                    } catch(FormatException) {
-                       actualValues.Add(0);
+                    } catch (FormatException) {
+                        actualValues.Add(0);
                     }
                 } else {
                     actualValues.Add(0);
-                }                
+                }
             }
-            
+
             try {
                 return new VersionNumber(actualValues[0], actualValues[1], actualValues[2], actualValues[3]);
             } catch (OverflowException ox) {
@@ -114,7 +114,7 @@ namespace Plisky.CodeCraft {
         }
 
         public static bool operator >(VersionNumber v1, VersionNumber v2) {
-            if(v1.Major>v2.Major) {
+            if (v1.Major > v2.Major) {
                 return true;
             }
             if (v1.Minor > v2.Minor) {
@@ -149,7 +149,7 @@ namespace Plisky.CodeCraft {
             if (v1.Equals(v2)) {
                 return true;
             }
-            if (v1< v2) {
+            if (v1 < v2) {
                 return true;
             }
             return false;
@@ -165,5 +165,8 @@ namespace Plisky.CodeCraft {
             return false;
         }
 
+        public override int GetHashCode() {
+            throw new NotImplementedException();
+        }
     }
 }

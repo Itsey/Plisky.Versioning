@@ -1,5 +1,4 @@
-﻿using Plisky.Diagnostics;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Plisky.CodeCraft.Test {
@@ -51,7 +50,7 @@ namespace Plisky.CodeCraft.Test {
             }
 
             internal string[] ReturnMinMatchers() {
-                List<string> result = new List<string>();
+                var result = new List<string>();
                 foreach (var l in parent.fileUpdateMinmatchers.Keys) {
                     result.AddRange(parent.fileUpdateMinmatchers[l]);
                 }
@@ -66,7 +65,7 @@ namespace Plisky.CodeCraft.Test {
 
         #endregion mocking implementation
 
-       
+
 
         public MockVersioning(VersionStorage vs) : base(vs) {
             Mock = new Mocking(this);

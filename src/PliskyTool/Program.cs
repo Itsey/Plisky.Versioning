@@ -1,14 +1,13 @@
 ﻿namespace PliskyTool;
 
-using Plisky.CodeCraft;
-using Plisky.CodeCraft.Test;
-using Plisky.Diagnostics;
-using Plisky.Diagnostics.Listeners;
-using Plisky.Plumbing;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using Plisky.CodeCraft;
+using Plisky.Diagnostics;
+using Plisky.Diagnostics.Listeners;
+using Plisky.Plumbing;
 
 
 internal class Program {
@@ -29,8 +28,8 @@ internal class Program {
             Console.WriteLine($"{aox.ParamName} - {aox.Message}");
             return;
         } catch (TargetInvocationException tox) {
-            if (tox.InnerException.GetType()==typeof(ArgumentOutOfRangeException)) {
-                ArgumentOutOfRangeException axx = (ArgumentOutOfRangeException)tox.InnerException;
+            if (tox.InnerException.GetType() == typeof(ArgumentOutOfRangeException)) {
+                var axx = (ArgumentOutOfRangeException)tox.InnerException;
                 Console.WriteLine("Fatal: Invalid Arguments Passed to Pliskytool.");
                 Console.WriteLine($"{axx.ParamName} - {axx.Message}");
             } else {
@@ -55,7 +54,7 @@ internal class Program {
 
             Bilge.SetConfigurationResolver((name, inLevel) => {
 
-                SourceLevels returnLvl = SourceLevels.Verbose;
+                var returnLvl = SourceLevels.Verbose;
 
                 if ((options.Trace != null) && (options.Trace.ToLowerInvariant() == "info")) {
                     returnLvl = SourceLevels.Information;
@@ -68,13 +67,13 @@ internal class Program {
             });
         }
 
-        Bilge b = new Bilge("Plisky-Tool");
+        var b = new Bilge("Plisky-Tool");
         Bilge.Alert.Online("Plisky-Tool");
         b.Verbose.Dump(options, "App Options");
 
         if (PerformActionsFromCommandline()) {
             if (versionerUsed != null) {
-                VersioningOutputter vo = new VersioningOutputter(versionerUsed);
+                var vo = new VersioningOutputter(versionerUsed);
                 vo.ConsoleTemplate = options.ConsoleTemplate;
                 vo.DoOutput(options.OutputsActive);
             }
@@ -96,13 +95,13 @@ internal class Program {
 
         if (!string.IsNullOrWhiteSpace(options.Root)) {
             if (!Directory.Exists(options.Root)) {
-                Console.WriteLine("Invalid Directory For Root:" + options.Root);
+                Console.WriteLine("Error >> Invalid Directory For Root:" + options.Root);
                 valid = false;
             }
         }
 
         if (string.IsNullOrWhiteSpace(options.VersionPersistanceValue)) {
-            Console.WriteLine("A versioning store must be selected.  Use -VS= and pass your initialisation data");
+            Console.WriteLine("Error >> A versioning store must be selected.  Use -VS= and pass your initialisation data");
             valid = false;
         }
 
@@ -113,61 +112,47 @@ internal class Program {
         Console.WriteLine("Performing Versioning Actions");
 
         GetVersionStorageFromCommandLine();
+        if (!storage.IsValid) {
+            return false;
+        }
 
-        switch (options.Command) {
-            case "CreateVersion":
+        string cmdCheck = options.Command.ToUpper();
+
+        switch (cmdCheck) {
+            case "CREATEVERSION":
                 CreateNewVersionStore();
                 return true;
 
-            case "Override":
+            case "OVERRIDE":
                 CreateNewPendingIncrement();
                 return true;
 
-            case "UpdateFiles":
+            case "UPDATEFILES":
                 ApplyVersionIncrement();
                 return true;
 
-            case "Passive":
+            case "PASSIVE":
                 LoadVersionStore();
                 return true;
 
             default:
-                Console.WriteLine("Unrecognised Command: " + options.Command);
+                Console.WriteLine("Error >> Unrecognised Command: " + options.Command);
                 return false;
         }
     }
-
-
 
     /// <summary>
     /// Most of the versioning approaches require a version store of some sort. This initialises the version store from the command line using the
     /// initialisation data that is passed in to determine which version store to load.
     /// </summary>
     private static void GetVersionStorageFromCommandLine() {
-        if (!options.VersionPersistanceValue.Contains("|")) {
-            // Default to file based using a filepath.
-            storage = new JsonVersionPersister(options.VersionPersistanceValue);
-        } else {
-
-            string pluginName = options.VersionPersistanceValue.Substring(0, options.VersionPersistanceValue.IndexOf('|'));
-            if (!pluginName.EndsWith("-plugin")) {
-                pluginName += "-plugin";
-            }
-            string assemblyName = Path.Combine(Environment.CurrentDirectory, pluginName);
-            assemblyName = Path.ChangeExtension(assemblyName, ".dll");
-            if (!File.Exists(assemblyName)) {
-                throw new FileNotFoundException($"The versioning plugin {pluginName} could not be found", assemblyName);
-            }
-        }
-
-
+        string vpv = Environment.ExpandEnvironmentVariables(options.VersionPersistanceValue);
+        storage = VersionStorage.CreateFromInitialisation(vpv);
     }
 
-
-
     private static void LoadVersionStore() {
-        var per = new JsonVersionPersister(Program.options.VersionPersistanceValue);
-        Versioning ver = new Versioning(per);
+
+        var ver = new Versioning(storage);
         versionerUsed = ver.Version;
 
         if (options.PerformIncrement) {
@@ -182,8 +167,8 @@ internal class Program {
     }
 
     private static void CreateNewPendingIncrement() {
-        var per = new JsonVersionPersister(Program.options.VersionPersistanceValue);
-        Versioning ver = new Versioning(per);
+
+        var ver = new Versioning(storage);
         versionerUsed = ver.Version;
 
         string verPendPattern = options.QuickValue;
@@ -192,7 +177,7 @@ internal class Program {
         ver.Version.ApplyPendingVersion(verPendPattern);
 
         if (!options.TestMode) {
-            per.Persist(ver.Version);
+            storage.Persist(ver.Version);
             ver.Increment();
             Console.WriteLine($"Saving Overriden Version [{ver.GetVersion()}]");
         } else {
@@ -202,9 +187,9 @@ internal class Program {
     }
 
     private static void ApplyVersionIncrement() {
-        Console.WriteLine("Apply Version Increment");
-        var per = new JsonVersionPersister(Program.options.VersionPersistanceValue);
-        Versioning ver = new Versioning(per, options.TestMode);
+
+
+        var ver = new Versioning(storage, options.TestMode);
         versionerUsed = ver.Version;
 
         ver.Logger = (v) => {
@@ -220,6 +205,8 @@ internal class Program {
         if (options.PerformIncrement) {
             Console.WriteLine("Version Increment Requested - Currently " + ver.GetVersion());
             ver.Increment(options.Release);
+        } else {
+            Console.WriteLine("No Version Increment Requested.");
         }
 
         Console.WriteLine("Version To Write: " + ver.GetVersion());
@@ -229,7 +216,12 @@ internal class Program {
             ver.LoadMiniMatches(options.VersionTargetMinMatch);
         }
 
-        ver.SearchForAllFiles(options.Root);
+        if (!string.IsNullOrEmpty(options.Root) && Directory.Exists(options.Root)) {
+            ver.SearchForAllFiles(options.Root);
+        } else {
+            Console.WriteLine($"WARNING >> Path {options.Root} is invalid, skipping.");
+        }
+
 
         ver.UpdateAllRegisteredFiles();
 
@@ -275,14 +267,14 @@ internal class Program {
         }
         Console.WriteLine($"Creating New Version Store: {startVer}");
 
-        CompleteVersion cv = new CompleteVersion(startVer);
+        var cv = new CompleteVersion(startVer);
         versionerUsed = cv;
 
         cv.ReleaseName = options.Release;
-        VersionStorage vs = new JsonVersionPersister(options.VersionPersistanceValue);
+
 
         Console.WriteLine($"Saving {cv.GetVersionString()}");
-        vs.Persist(cv);
+        storage.Persist(cv);
 
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Plisky.CodeCraft.Test; 
+﻿namespace Plisky.CodeCraft.Test;
 
 using System;
 using System.IO;

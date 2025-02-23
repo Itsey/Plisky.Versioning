@@ -1,8 +1,8 @@
 ﻿namespace Plisky.CodeCraft;
 
-using Plisky.Diagnostics;
 using System;
 using System.Collections.Generic;
+using Plisky.Diagnostics;
 
 public class CompleteVersion {
     protected Bilge b = new Bilge("Plisky-Versioning");
@@ -42,16 +42,16 @@ public class CompleteVersion {
         DisplayTypes.Add(FileUpdateType.TextFile, DisplayType.Short);
     }
 
-    
+
 
     public bool IsDefault { get; set; }
-    public string ReleaseName { 
+    public string ReleaseName {
         get {
             return actualReleaseName;
         }
         set {
             actualReleaseName = value;
-            foreach(var l in Digits) {
+            foreach (var l in Digits) {
                 if (l.Behaviour == DigitIncremementBehaviour.ReleaseName) {
                     l.Value = actualReleaseName;
                 }
@@ -78,7 +78,7 @@ public class CompleteVersion {
             string[] parse = initialValue.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
             var vd = new List<VersionUnit>();
             string prefix = "";
-            foreach (var f in parse) {
+            foreach (string f in parse) {
                 vd.Add(new VersionUnit(f, prefix, DigitIncremementBehaviour.Fixed));
                 prefix = ".";
             }
@@ -102,7 +102,7 @@ public class CompleteVersion {
         for (int i = 0; i < changes.Length; i++) {
             if (Digits.Length > i) {
                 string currentDigitValue = Digits[i].Value;
-                var newDigitValue = ManipulateValueBasedOnPattern(changes[i], currentDigitValue);
+                string newDigitValue = ManipulateValueBasedOnPattern(changes[i], currentDigitValue);
 
                 // Only set this if it is not null, this allows for stacking patterns to work.  
                 if (newDigitValue != null) {
@@ -152,18 +152,18 @@ public class CompleteVersion {
     }
 
     public void Increment() {
-        
+
         bool lastChanged = false;
         bool anyChanged = false;
-        DateTime t1 = DateTime.Now;
-        
+        var t1 = DateTime.Now;
 
-        if (pendingReleaseName!=null) {                
+
+        if (pendingReleaseName != null) {
             ReleaseName = pendingReleaseName;
             pendingReleaseName = null;
         }
 
-        b.Verbose.Log("Incrementing Version.",ReleaseName);
+        b.Verbose.Log("Incrementing Version.", ReleaseName);
 
         foreach (var un in Digits) {
             string tmp = un.Value;

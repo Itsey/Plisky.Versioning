@@ -1,7 +1,7 @@
 ﻿namespace Plisky.CodeCraft;
 
-using Plisky.Diagnostics;
 using System;
+using Plisky.Diagnostics;
 
 public class VersionUnit {
     public DigitIncremementBehaviour Behaviour { get; set; }
@@ -64,7 +64,7 @@ public class VersionUnit {
             }
         }
 
-        if ((Behaviour == DigitIncremementBehaviour.Fixed)||(Behaviour==DigitIncremementBehaviour.ReleaseName)) {
+        if ((Behaviour == DigitIncremementBehaviour.Fixed) || (Behaviour == DigitIncremementBehaviour.ReleaseName)) {
             b.Verbose.Log($"Behaviour Set to {Behaviour}, not doing anything.");
             return false;
         }
@@ -135,8 +135,7 @@ public class VersionUnit {
     }
 
     private void ValidateForBehaviour() {
-        int i;
-        if ((Behaviour != DigitIncremementBehaviour.Fixed)&&(Behaviour!= DigitIncremementBehaviour.ReleaseName)) {
+        if ((Behaviour != DigitIncremementBehaviour.Fixed) && (Behaviour != DigitIncremementBehaviour.ReleaseName)) {
             try {
                 int.Parse(Value);
             } catch (Exception inr) {

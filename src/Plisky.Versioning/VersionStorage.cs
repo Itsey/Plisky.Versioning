@@ -1,18 +1,24 @@
 ﻿namespace Plisky.CodeCraft;
-
 using Plisky.Diagnostics;
 
 public abstract class VersionStorage {
     protected Bilge b = new Bilge("Plisky-Versioning");
 
-    protected VersionStorageOptions InitValue = null;
+    protected VersionStorageOptions InitValue { get; set; } = null;
 
     protected abstract void ActualPersist(CompleteVersion cv);
 
     protected abstract CompleteVersion ActualLoad();
 
+    public bool IsValid {
+        get {
+            return string.IsNullOrEmpty(StorageFailureMessage);
+        }
+    }
+
+    public string StorageFailureMessage { get; set; }
     protected VersionStorage() {
-        InitValue = null;    
+        InitValue = null;
     }
 
     /// <summary>
@@ -39,6 +45,7 @@ public abstract class VersionStorage {
     /// </summary>
     /// <param name="cv">The CompleteVerison to save to the storage system.</param>
     public void Persist(CompleteVersion cv) {
+        if (!IsValid) { return; }
         ActualPersist(cv);
     }
 
@@ -48,10 +55,27 @@ public abstract class VersionStorage {
     /// </summary>
     /// <returns>Version, or DefaultVersion where storage has not been used yet.</returns>
     public CompleteVersion GetVersion() {
-        var loaded = ActualLoad();
-        if (loaded == null) {
-            loaded = CompleteVersion.GetDefault();
+        CompleteVersion result = null;
+        if (!IsValid) { return result; }
+
+        result = ActualLoad();
+        if (result == null) {
+            result = CompleteVersion.GetDefault();
         }
-        return loaded;
+        return result;
+    }
+
+
+
+    public static VersionStorage CreateFromInitialisation(string vpv) {
+        VersionStorage result;
+
+        if (vpv.Length > 7 && vpv.Substring(0, 7).ToUpperInvariant().StartsWith("[NEXUS]")) {
+            result = new NexusVersionPersister(vpv);
+        } else {
+            result = new JsonVersionPersister(vpv);
+        }
+
+        return result;
     }
 }
