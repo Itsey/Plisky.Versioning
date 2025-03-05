@@ -187,7 +187,7 @@ internal class Program {
 
     private static void LoadVersionStore() {
 
-        var ver = new Versioning(storage);
+        var ver = new Versioning(storage, options.DryRunOnly);
         versionerUsed = ver.Version;
 
         if (options.PerformIncrement) {
@@ -207,7 +207,7 @@ internal class Program {
     private static void CreateNewPendingIncrement() {
         b.Verbose.Flow();
 
-        var ver = new Versioning(storage);
+        var ver = new Versioning(storage, options.DryRunOnly);
         versionerUsed = ver.Version;
 
         string verPendPattern = options.QuickValue;
@@ -215,7 +215,7 @@ internal class Program {
         Console.WriteLine($"Apply Delayed Incremenet. [{ver.ToString()}] using [{verPendPattern}]");
         ver.Version.ApplyPendingVersion(verPendPattern);
 
-        if (!options.TestMode) {
+        if (!options.DryRunOnly) {
             storage.Persist(ver.Version);
             ver.Increment();
             Console.WriteLine($"Saving Overriden Version [{ver.GetVersion()}]");
@@ -229,7 +229,7 @@ internal class Program {
         b.Verbose.Flow();
 
 
-        var ver = new Versioning(storage, options.TestMode);
+        var ver = new Versioning(storage, options.DryRunOnly);
         versionerUsed = ver.Version;
 
         ver.Logger = Console.WriteLine;

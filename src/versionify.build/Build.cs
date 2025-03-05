@@ -5,7 +5,6 @@ using Nuke.Common.Git;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Plisky.Diagnostics;
-using Plisky.Nuke.Fusion;
 using Serilog;
 
 partial class Build : NukeBuild {
@@ -22,6 +21,8 @@ partial class Build : NukeBuild {
     [Solution]
     readonly Solution? Solution;
 
+    [Parameter("Specifies a quick version command for the versioning quick step")]
+    readonly string QuickVersion = "";
 
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
@@ -90,23 +91,24 @@ partial class Build : NukeBuild {
                Bilge.Alert.Online("Versonify-Build");
                b.Info.Log("Versionify Build Process Initialised, preparing Initialisation section.");
 
-               settings = new LocalBuildConfig();
-               settings.NonDestructive = false;
-               settings.MainProjectName = "Versonify";
 
-               settings.DependenciesDirectory = Solution.Projects.First(x => x.Name == "_Dependencies").Directory;
-               settings.ArtifactsDirectory = @"D:\Scratch\_build\vsfbld\";
-
-               settings.MollyPrimaryToken = "%NEXUSCONFIG%[R::plisky[L::http://20.254.177.177:8081/repository/plisky/primaryfiles/XXVERSIONNAMEXX/";
-               settings.MollyRulesToken = "%NEXUSCONFIG%[R::plisky[L::http://20.254.177.177:8081/repository/plisky/molly/XXVERSIONNAMEXX/defaultrules.mollyset";
-               settings.MollyRulesVersion = "default";
-               settings.VersioningPersistanceToken = @"c:\temp\vs.store";
+               settings = new LocalBuildConfig() {
+                   DependenciesDirectory = Solution.Projects.First(x => x.Name == "_Dependencies").Directory,
+                   ArtifactsDirectory = @"D:\Scratch\_build\vsfbld\",
+                   NonDestructive = false,
+                   MainProjectName = "Versonify",
+                   MollyPrimaryToken = "%NEXUSCONFIG%[R::plisky[L::http://51.141.43.222:8081/repository/plisky/primaryfiles/XXVERSIONNAMEXX/",
+                   MollyRulesToken = "%NEXUSCONFIG%[R::plisky[L::http://51.141.43.222:8081/repository/plisky/molly/XXVERSIONNAMEXX/defaultrules.mollyset",
+                   MollyRulesVersion = "default",
+                   VersioningPersistanceToken = @"%NEXUSCONFIG%[R::plisky[L::http://51.141.43.222:8081/repository/plisky/vstore/versonify-version.store"
+               };
 
                if (settings.NonDestructive) {
-                   Log.Information("Build>Initialise>  Finish - In Non Destructive Mode.");
+                   Log.Information("Build > Initialise > Finish - In Non Destructive Mode.");
                } else {
                    Log.Information("Build>Initialise> Finish - In Destructive Mode.");
                }
+
            });
 
 
@@ -115,11 +117,11 @@ partial class Build : NukeBuild {
     public Target VersionSource => _ => _
         .Executes(() => {
 
-            var v = new VersonifyTasks();
-            v.PassiveExecute(s => s
-              .SetRoot(Solution.Directory)
-              .SetVersionPersistanceValue(@"c:\temp\vs.store")
-              .SetDebug(true));
+            //var v = new VersonifyTasks();
+            //v.PassiveCommand(s => s
+            //  .SetRoot(Solution.Directory)
+            //  .SetVersionPersistanceValue(@"c:\temp\vs.store")
+            //  .SetDebug(true));
 
 
             //VersonifyTasks.CommandPassive(s => s
@@ -127,14 +129,14 @@ partial class Build : NukeBuild {
             //  .SetVersionPersistanceValue(@"c:\temp\vs.store")
             //  .SetDebug(true));
 
-            v.PerformFileUpdate(s => s
-              .SetRoot(Solution.Directory)
-              .AddMultimatchFile($"{Solution.Directory}\\_Dependencies\\Automation\\AutoVersion.txt")
-              .PerformIncrement(true)
-              .SetVersionPersistanceValue(@"c:\temp\vs.store")
-              .SetDebug(true)
-              .AsDryRun(true)
-              .SetRelease(""));
+            //v.PerformFileUpdate(s => s
+            //  .SetRoot(Solution.Directory)
+            //  .AddMultimatchFile($"{Solution.Directory}\\_Dependencies\\Automation\\AutoVersion.txt")
+            //  .PerformIncrement(true)
+            //  .SetVersionPersistanceValue(@"c:\temp\vs.store")
+            //  .SetDebug(true)
+            //  .AsDryRun(true)
+            //  .SetRelease(""));
 
             //VersonifyTasks.IncrementAndUpdateFiles(s => s
             // .SetRoot(Solution.Directory)

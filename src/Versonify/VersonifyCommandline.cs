@@ -78,7 +78,7 @@ public class VersonifyCommandline {
     }
 
     [CommandLineArg("DryRun", Description = "Runs the tool in output mode only, no changes are made")]
-    public bool TestMode { get; set; }
+    public bool DryRunOnly { get; set; }
 
     [CommandLineArg("Trace", Description = "Enables Debug Tracing, set to Info,Verbose,Off")]
     public string Trace { get; set; }

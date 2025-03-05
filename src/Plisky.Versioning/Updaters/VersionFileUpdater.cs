@@ -9,7 +9,7 @@ using Plisky.Diagnostics;
 
 public class DryRunVersionFileUpdater : VersionFileUpdater {
     protected override void UpdateCSFileWithAttribute(string fileName, string targetAttribute, string versionValue) {
-        b.Verbose.Log($"DRYRUN - Would have updated {fileName} with {targetAttribute} to {versionValue}");
+        b.Info.Log($"DRYRUN - Would have updated {fileName} with {targetAttribute} to {versionValue}.  Instead Taking No Action.");
     }
 
     public DryRunVersionFileUpdater(CompleteVersion cv, IHookVersioningChanges? actions = null) : base(cv, actions) {

@@ -23,6 +23,7 @@
     <PackageReference Include="Nuke.Common" Version="9.0.3" />
     <PackageReference Include="Plisky.Diagnostics" Version="3.2.2" />
     <PackageReference Include="Plisky.Mollycoddle" Version="0.1.4" />
+    <PackageReference Include="Plisky.Versonify" Version="0.1.2" />
   </ItemGroup>
   <ItemGroup>
     <PackageDownload Include="Nuget.CommandLine" Version="[6.9.1]" />

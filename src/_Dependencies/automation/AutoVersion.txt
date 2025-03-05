@@ -1,4 +1,8 @@
-﻿**/PliskyVersioning/src/**/Plisky.Versioning.csproj|StdAssembly
-**/PliskyVersioning/src/**/Plisky.Versioning.csproj|StdInformational
-**/PliskyVersioning/src/**/Plisky.Versioning.csproj|StdFile
-
+﻿**/Plisky.Versioning/src/**/Plisky.Versioning.csproj|StdAssembly
+**/Plisky.Versioning/src/**/Plisky.Versioning.csproj|StdInformational
+**/Plisky.Versioning/src/**/Plisky.Versioning.csproj|StdFile
+**/Plisky.Versioning/src/**/Versonify.csproj|StdAssembly
+**/Plisky.Versioning/src/**/Versonify.csproj|StdInformational
+**/Plisky.Versioning/src/**/Versonify.csproj|StdFile
+**/versonify.nuspec|Nuspec
+**/versonify.nuspec|TextFile

@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package >
+<package>
   <metadata>
     <id>Plisky.Versonify</id>
-    <version>0.1.2</version>
+    <version>0.0.0</version>
     <authors>Itsey</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
     <projectUrl>https://itsey.github.io/</projectUrl>
     <description>Plisky Versonify, versioning command line tool.</description>
     <releaseNotes>
+      0.1.3
+        🐞 Critical Bug - Typo in exe name in package corrected.  0.1.2. Superceeded.
       0.1.2
         Added Nexus Support.
       0.1.1

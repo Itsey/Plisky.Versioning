@@ -24,6 +24,7 @@
     "ExecutableTarget": {
       "type": "string",
       "enum": [
+        "ApplyVersion",
         "ArrangeStep",
         "Clean",
         "Compile",
@@ -37,6 +38,7 @@
         "ReleaseStep",
         "TestStep",
         "UnitTest",
+        "VersionQuickStep",
         "VersionSource",
         "Wrapup"
       ]
@@ -119,6 +121,10 @@
             "Debug",
             "Release"
           ]
+        },
+        "QuickVersion": {
+          "type": "string",
+          "description": "Specifies a quick version command for the versioning quick step"
         },
         "Solution": {
           "type": "string",
