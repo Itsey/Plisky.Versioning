@@ -5,11 +5,15 @@ using System.IO;
 using Plisky.Diagnostics;
 
 public class VersioningOutputter {
+    public const string VERSIONING_PIPE_NAME = "plisky-versonify";
+    public const string VERSION_MSG_SUBJECT = "version";
+    public const string VERSION_REPLACE_TAG = "%VER%";
     protected Bilge b = new Bilge("Plisky-Tool-Output");
+    protected CompleteVersion versionToLog;
     protected string valToWrite;
 
-    public string FileTemplate { get; set; }
-    public string ConsoleTemplate { get; set; }
+    public string? FileTemplate { get; set; }
+    public string? ConsoleTemplate { get; set; }
 
 
     protected virtual void SetEnvironmentWithValue() {
@@ -18,6 +22,7 @@ public class VersioningOutputter {
     }
 
     public VersioningOutputter(CompleteVersion ver, DisplayType dt = DisplayType.Full) {
+        versionToLog = ver;
         valToWrite = ver.GetVersionString(dt);
     }
 
@@ -33,16 +38,29 @@ public class VersioningOutputter {
             SetFileValue();
         }
 
-
         if ((oo & OutputPossibilities.Console) == OutputPossibilities.Console) {
+            string outputString;
+            if (ConsoleTemplate != null) {
+                outputString = ConsoleTemplate.Replace(VERSION_REPLACE_TAG, valToWrite);
+            } else {
+                outputString = valToWrite;
+            }
 
-            string outputString = ConsoleTemplate.Replace("%VER%", valToWrite);
-            //b.Verbose.Log($"Console Output: {outputString}");            
+
             WriteToConsole(outputString);
         }
 
-
+        if ((oo & OutputPossibilities.NukeFusion) == OutputPossibilities.NukeFusion) {
+            b.Verbose.Log("Named Pipe output requested");
+            string outputString = $"PNFV]{valToWrite}";
+            WriteToConsole(outputString);
+            WriteToConsole($"PNF4]{versionToLog.GetVersionString(DisplayType.Full)}");
+            WriteToConsole($"PNF2]{versionToLog.GetVersionString(DisplayType.Short)}");
+            WriteToConsole($"PNFN]{versionToLog.ReleaseName}");
+        }
     }
+
+
 
     protected virtual void SetFileValue() {
         string fn = Path.Combine(Environment.CurrentDirectory, "pver-latest.txt");

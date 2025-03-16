@@ -24,6 +24,7 @@
     "ExecutableTarget": {
       "type": "string",
       "enum": [
+        "ApplyGitTag",
         "ApplyVersion",
         "ArrangeStep",
         "Clean",
@@ -35,6 +36,7 @@
         "MollyCheck",
         "PackageStep",
         "Publish",
+        "QueryNextVersion",
         "ReleaseStep",
         "TestStep",
         "UnitTest",

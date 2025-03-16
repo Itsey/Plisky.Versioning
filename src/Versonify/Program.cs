@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Diagnostics.Listeners;
@@ -15,8 +16,10 @@ internal class Program {
     private static VersionStorage storage;
     private static Bilge b = new Bilge();
 
-    private static int Main(string[] args) {
+    private static async Task<int> Main(string[] args) {
         Console.WriteLine("Versonify - Online.");
+
+
 
         CommandArgumentSupport clas = null;
         try {
@@ -63,9 +66,11 @@ internal class Program {
         }
 
         b.Verbose.Log("Versonify - Exit.");
-        b.Flush();
+        await b.Flush();
         return 0;
     }
+
+
 
     private static CommandArgumentSupport GetCommandLineArguments(string[] args) {
         b.Verbose.Flow();
@@ -303,7 +308,7 @@ internal class Program {
             Console.WriteLine($"Using Value From Command Line: {options.QuickValue}");
             startVer = options.QuickValue;
         }
-        if (!string.IsNullOrEmpty(options.QuickValue)) {
+        if (!string.IsNullOrEmpty(options.Release)) {
             Console.WriteLine($"Setting Release From Command Line: {options.Release}");
         }
         Console.WriteLine($"Creating New Version Store: {startVer}");

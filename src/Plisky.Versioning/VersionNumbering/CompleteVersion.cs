@@ -8,7 +8,7 @@ public class CompleteVersion {
     protected Bilge b = new Bilge("Plisky-Versioning");
 
     private string actualReleaseName;
-    private string pendingReleaseName;
+    private string? pendingReleaseName;
 
     /// <summary>
     /// Returns the default, empty, version instance which is four digits and all fixed except the
@@ -26,9 +26,9 @@ public class CompleteVersion {
         };
     }
 
-    public VersionUnit[] Digits;
+    public VersionUnit[] Digits { get; set; }
 
-    public Dictionary<FileUpdateType, DisplayType> DisplayTypes = new Dictionary<FileUpdateType, DisplayType>();
+    public Dictionary<FileUpdateType, DisplayType> DisplayTypes { get; set; } = new Dictionary<FileUpdateType, DisplayType>();
 
     public CompleteVersion() {
         DisplayTypes.Add(FileUpdateType.NetAssembly, DisplayType.Short);
@@ -112,7 +112,7 @@ public class CompleteVersion {
         }
     }
 
-    protected string ManipulateValueBasedOnPattern(string pattern, string currentValue) {
+    protected string? ManipulateValueBasedOnPattern(string pattern, string currentValue) {
         if (string.IsNullOrEmpty(pattern)) { return null; }
 
         if (int.TryParse(currentValue, out int currentInteger)) {

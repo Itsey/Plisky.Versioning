@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Plisky.Versonify</id>
-    <version>0.0.0</version>
+    <version>0.1.8</version>
     <authors>Itsey</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>

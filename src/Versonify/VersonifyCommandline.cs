@@ -34,7 +34,7 @@ public class VersonifyCommandline {
     public bool NoOverride { get; set; }
 
     [CommandLineArg("O")]
-    [CommandLineArg("Output", Description = "Specifies output options supports:  Env,Con,AzDo,File")]
+    [CommandLineArg("Output", Description = "Specifies output options supports:  Env,Con,AzDo,File,Np,Npo")]
     public string RawOutputOptions { get; set; }
 
     public string OutputOptions {
@@ -94,26 +94,35 @@ public class VersonifyCommandline {
     private void ParseOutputOptions() {
         b.Verbose.Flow();
 
+        outOpts = outOpts.Trim().ToLowerInvariant();
+        if (outOpts.EndsWith("-nf")) {
+            outOpts = outOpts.Substring(0, outOpts.Length - 3);
+            outcache = OutputPossibilities.NukeFusion;
+        } else {
+            outcache = OutputPossibilities.None;
+        }
+
+
         if (string.IsNullOrEmpty(outOpts)) {
             b.Verbose.Log("No output options specified, defaulting to none.");
-            outcache = OutputPossibilities.None;
+            outcache |= OutputPossibilities.None;
             return;
         }
 
         if (outOpts == "env") {
-            outcache = OutputPossibilities.Environment;
+            outcache |= OutputPossibilities.Environment;
             return;
         }
 
         if (outOpts == "file") {
-            outcache = OutputPossibilities.File;
+            outcache |= OutputPossibilities.File;
             return;
         }
 
         if (outOpts.StartsWith("vsts") || (outOpts.StartsWith("azdo"))) {
             b.Verbose.Log("VSTS/AzDo output options specified.");
 
-            outcache = OutputPossibilities.Console;
+            outcache |= OutputPossibilities.Console;
 
             string varToReplace = "CodeVersionNumber";
             string outputTemplate = "##vso[task.setvariable variable=XXVARIABLENAMEXX;isOutput=true]%VER%";
@@ -132,7 +141,7 @@ public class VersonifyCommandline {
         }
 
         if (outOpts.StartsWith("con")) {
-            outcache = OutputPossibilities.Console;
+            outcache |= OutputPossibilities.Console;
             ConsoleTemplate = "%VER%";
             return;
         }

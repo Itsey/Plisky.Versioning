@@ -19,18 +19,18 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Flurl.Http" Version="4.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.2" />
     <PackageReference Include="Nuke.Common" Version="9.0.3" />
     <PackageReference Include="Plisky.Diagnostics" Version="3.2.2" />
     <PackageReference Include="Plisky.Mollycoddle" Version="0.1.4" />
-    <PackageReference Include="Plisky.Versonify" Version="0.1.2" />
+    <PackageReference Include="Plisky.Versonify" Version="0.1.7" />
   </ItemGroup>
   <ItemGroup>
     <PackageDownload Include="Nuget.CommandLine" Version="[6.9.1]" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Plisky.Nuke.Fusion">
-      <HintPath>D:\Scratch\_publishing\pnf\Plisky.Nuke.Fusion.dll</HintPath>
+      <HintPath>C:\files\code\git\plisky-nuke-fusion\src\Plisky.Nuke.Fusion\bin\Debug\Plisky.Nuke.Fusion.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

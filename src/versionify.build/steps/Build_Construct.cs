@@ -10,7 +10,7 @@ public partial class Build : NukeBuild {
     public Target ConstructStep => _ => _
         .Before(ExamineStep, Wrapup)
         .After(ArrangeStep)
-        .Triggers(Compile)
+        .Triggers(Compile, ApplyVersion)
         .DependsOn(Initialise, ArrangeStep)
         .Executes(() => {
         });
@@ -24,6 +24,7 @@ public partial class Build : NukeBuild {
 
           if (!string.IsNullOrEmpty(QuickVersion)) {
               var vc = new VersonifyTasks();
+
               vc.OverrideCommand(s => s
                 .SetVersionPersistanceValue(settings.VersioningPersistanceToken)
                 .SetDebug(true)
@@ -32,8 +33,26 @@ public partial class Build : NukeBuild {
               );
           }
 
+
       });
 
+    public Target QueryNextVersion => _ => _
+      .After(ConstructStep)
+      .DependsOn(Initialise)
+      .Before(Compile)
+      .Executes(() => {
+
+
+          var vc = new VersonifyTasks();
+          vc.PassiveCommand(s => s
+          .SetVersionPersistanceValue(settings.VersioningPersistanceToken)
+          .SetOutputStyle("azdo-nf")
+          .SetRoot(Solution.Directory));
+
+          Log.Information($"Version Is:{vc.VersionLiteral}");
+      });
+
+    public string FullVersionNumber { get; set; }
 
     public Target ApplyVersion => _ => _
       .After(ConstructStep)
@@ -41,19 +60,19 @@ public partial class Build : NukeBuild {
       .Before(Compile)
       .Executes(() => {
 
+          bool dryRunMode = false;
+
           if (IsLocalBuild) {
               // Passive Get Current Version
-              Log.Information("Local Build - Skipping Versioning");
-              //return;
+              Log.Information("Local Build - Versioning Set To Dry Run");
+              dryRunMode = true;
           }
-
-
           Log.Information($"Versioning Token : {settings.VersioningPersistanceToken}");
 
           var vc = new VersonifyTasks();
           vc.PassiveCommand(s => s
               .SetVersionPersistanceValue(settings.VersioningPersistanceToken)
-              .SetDebug(true)
+              .SetOutputStyle("azdo")
               .SetRoot(Solution.Directory)
           );
 
@@ -64,12 +83,12 @@ public partial class Build : NukeBuild {
               .SetVersionPersistanceValue(settings.VersioningPersistanceToken)
               .AddMultimatchFile(mmPath)
               .PerformIncrement(true)
-              .SetDebug(true)
+              .SetOutputStyle("azdo-nf")
+              .AsDryRun(dryRunMode)
               .SetRoot(Solution.Directory)
-
           );
-
-
+          FullVersionNumber = vc.VersionLiteral;
+          Log.Information($"Version applied:{vc.VersionLiteral}");
 
       });
 

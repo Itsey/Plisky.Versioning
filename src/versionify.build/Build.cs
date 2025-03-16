@@ -24,13 +24,11 @@ partial class Build : NukeBuild {
     [Parameter("Specifies a quick version command for the versioning quick step")]
     readonly string QuickVersion = "";
 
-
     AbsolutePath SourceDirectory => RootDirectory / "src";
-    //AbsolutePath ArtifactsDirectory => Path.GetTempPath() + "\\artifacts";
+
     AbsolutePath ArtifactsDirectory => @"D:\Scratch\_build\vsfbld\";
 
     LocalBuildConfig? settings;
-
 
     public Target Wrapup => _ => _
         .DependsOn(Initialise)
@@ -43,31 +41,7 @@ partial class Build : NukeBuild {
         });
 
     protected override void OnBuildFinished() {
-        //string discordHook = settings.Config.BuildSection.DiscordHookUrl;
-        //if (!string.IsNullOrWhiteSpace(discordHook)) {
 
-        //    string buildTypeMessage = Build.IsLocalBuild ? $"Local [{settings.Config.ExecutingMachineName}]" : $"Server [{settings.Config.ExecutingMachineName}]";
-
-        //    string buildSuccessMessage = string.Empty;
-        //    if (IsSucceeding) {
-        //        buildSuccessMessage = "Succeeded";
-        //        if (NoSuccessNotify) {
-        //            return;
-        //        }
-        //    } else {
-        //        buildSuccessMessage = "Failed (";
-        //        FailedTargets.ForEach(x => {
-        //            buildSuccessMessage += x.Name + ", ";
-        //        });
-        //        buildSuccessMessage += ")";
-        //    }
-        //    var ressy = discordHook.PostJsonAsync(new {
-        //        content = $"{buildTypeMessage} Listify Build {buildSuccessMessage} for {EnvironmentId} @ {DateTime.Now.Hour}:{DateTime.Now.Minute}"
-        //    });
-        //    ressy.Wait();
-        //} else {
-        //    Log.Information("Build>Wrapup>  Discord Hook URL is not set, skipping notification.");
-        //}
     }
 
     public Target Initialise => _ => _
