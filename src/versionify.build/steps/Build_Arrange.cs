@@ -26,6 +26,17 @@ public partial class Build : NukeBuild {
         .Executes(() => {
             b.Info.Log("Clean Step in Arrange Starts");
 
+            if (settings == null) {
+                Log.Error("Build>ApplyVersion>Settings is null.");
+                throw new InvalidOperationException("The settings must be set");
+            }
+
+            if (Solution == null) {
+                Log.Error("Build>ApplyVersion>Solution is null.");
+                throw new InvalidOperationException("The solution must be set");
+            }
+
+
             DotNetTasks.DotNetClean(s => s.SetProject(Solution));
 
             b.Verbose.Log("Clean completed, cleaning artefact directory");
@@ -43,8 +54,11 @@ public partial class Build : NukeBuild {
            if (settings == null) {
                throw new InvalidOperationException("The settings are not configured, Mollycoddle cannot run.");
            }
+           if (GitRepository == null) {
+               throw new InvalidOperationException("The Git Repository is not configured, Mollycoddle cannot run.");
+           }
 
-           var mcOk = ValidateMollySettings(settings?.MollyRulesToken, GitRepository.LocalDirectory.Exists());
+           var mcOk = ValidateMollySettings(settings.MollyRulesToken, GitRepository.LocalDirectory.Exists());
            if (mcOk != ValidationResult.Success) {
                Log.Error("Mollycoddle Structure Linting Skipped - Validation Failed.");
                foreach (string item in mcOk.MemberNames) {
@@ -53,18 +67,26 @@ public partial class Build : NukeBuild {
                return;
            }
 
-           Log.Verbose($"MC ({settings?.MollyRulesToken}) ({settings?.MollyPrimaryToken}) ({GitRepository.LocalDirectory})");
+
+           Log.Verbose($"MC ({settings.MollyRulesToken}) ({settings.MollyPrimaryToken}) ({GitRepository.LocalDirectory})");
            var mc = new MollycoddleTasks();
 
-           string formatter = IsLocalBuild ? "plain" : "azdo";
-           mc.PerformScan(s => s
-               .AddRuleHelp(true)
-               .AddRulesetVersion(settings.MollyRulesVersion)
-               .SetRulesFile(settings.MollyRulesToken)
-               .SetPrimaryRoot(settings.MollyPrimaryToken)
-               .SetFormatter(formatter)
-               .SetDirectory(GitRepository.LocalDirectory));
 
+           string formatter = IsLocalBuild ? "plain" : "azdo";
+
+           var mcs = new MollycoddleSettings();
+           mcs.AddRuleHelp(true);
+
+           if (!string.IsNullOrEmpty(settings.MollyRulesVersion)) {
+               mcs.AddRulesetVersion(settings.MollyRulesVersion);
+           }
+
+           mcs.SetRulesFile(settings.MollyRulesToken);
+           mcs.SetPrimaryRoot(settings.MollyPrimaryToken);
+           mcs.SetFormatter(formatter);
+           mcs.SetDirectory(GitRepository.LocalDirectory);
+
+           mc.PerformScan(mcs);
 
            Log.Information("Mollycoddle Structure Linting Completes.");
        });

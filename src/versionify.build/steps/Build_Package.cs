@@ -15,10 +15,15 @@ public partial class Build : NukeBuild {
         .DependsOn(Initialise, ExamineStep)
         .Executes(() => {
 
+            if (Solution == null) {
+                Log.Error("Build>PackageStep>Solution is null.");
+                throw new InvalidOperationException("The solution must be set");
+            }
 
-
-
-
+            if (settings == null) {
+                Log.Error("Build>PackageStep>Settings is null.");
+                throw new InvalidOperationException("The settings must be set");
+            }
 
             var project = Solution.GetProject("Versonify");
             if (project == null) { throw new InvalidOperationException("Project not found"); }
@@ -44,28 +49,21 @@ public partial class Build : NukeBuild {
             );
 
             publishDirectory.CopyToDirectory(nugetTools, ExistsPolicy.MergeAndOverwrite);
-            //FileSystemTasks.CopyDirectoryRecursively(publishDirectory, nugetTools, DirectoryExistsPolicy.Merge, FileExistsPolicy.Overwrite);
 
-            AbsolutePath readmeFile = settings.DependenciesDirectory + "\\supportingFiles\\readme.md";
+            var readmeFile = settings.DependenciesDirectory + "\\supportingFiles\\readme.md";
             var targetdir = nugetStructure + "\\readme.md";
 
             Log.Debug($"Copying file {readmeFile} > {targetdir}");
             readmeFile.Copy(targetdir, ExistsPolicy.FileOverwrite);
-            //nugetStructure.Copy(readmeFile, ExistsPolicy.FileOverwrite);
-            //FileSystemTasks.CopyFile(readmeFile, targetdir, FileExistsPolicy.Overwrite);
 
             var nugetPackageFile = Solution.GetProject("_Dependencies").Directory + "\\supportingFiles\\versonify.nuspec";
             var nugetPackageTarget = ArtifactsDirectory + "\\versonify.nuspec";
             Log.Debug($"Copying {nugetPackageFile} > {nugetPackageTarget}");
             nugetPackageFile.Copy(nugetPackageTarget, ExistsPolicy.FileOverwrite);
 
-            //FileSystemTasks.CopyFile(nugetPackageFile, ArtifactsDirectory + "\\versonify.nuspec", FileExistsPolicy.Overwrite);
-
-
-
-
 
             /*
+            Commented due to bug in Versonify which needs to be released before I can add it back.
 
             var v = new VersonifyTasks();
 

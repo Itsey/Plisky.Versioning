@@ -8,11 +8,11 @@ public class VersionUnit {
     private Bilge b = new Bilge("Plisky-VersionUnit");
     private const int DAYS_IN_A_WEEK = 7;
 
-    private string actualValue = null;
+    private string? actualValue = null;
 
-    public string IncrementOverride { get; set; }
+    public string? IncrementOverride { get; set; }
 
-    public string Value {
+    public string? Value {
         get { return actualValue; }
         set { actualValue = value; ValidateForBehaviour(); }
     }
@@ -48,7 +48,7 @@ public class VersionUnit {
 
         #endregion entry code
 
-        b.Verbose.Log($"VersioningSupport, Applying version change to {Value} using {Behaviour.ToString()}");
+        b.Verbose.Log($"VersioningSupport, Applying version change to {Value ?? "null"} using {Behaviour.ToString()}");
 
         if (!string.IsNullOrEmpty(IncrementOverride)) {
             b.Verbose.Log($"Override Value Present {IncrementOverride} - All Other considerations ignored.");

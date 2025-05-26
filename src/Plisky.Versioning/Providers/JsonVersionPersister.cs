@@ -27,11 +27,18 @@ public class JsonVersionPersister : VersionStorage {
     }
 
     protected override CompleteVersion ActualLoad() {
+        if (InitValue == null) {
+            return CompleteVersion.GetDefault();
+        }
+
         if (File.Exists(InitValue.InitialisationString)) {
             string txt = File.ReadAllText(InitValue.InitialisationString);
-            return JsonConvert.DeserializeObject<CompleteVersion>(txt);
+            var cv = JsonConvert.DeserializeObject<CompleteVersion>(txt);
+            if (cv != null) {
+                return cv;
+            }
         }
-        return null;
+        return CompleteVersion.GetDefault();
     }
 
     protected override void ActualPersist(CompleteVersion cv) {

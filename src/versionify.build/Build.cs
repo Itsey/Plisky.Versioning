@@ -15,14 +15,17 @@ partial class Build : NukeBuild {
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
+    [Parameter("Specifies a quick version command for the versioning quick step")]
+    readonly string QuickVersion = "";
+
+
     [GitRepository]
     readonly GitRepository? GitRepository;
 
     [Solution]
     readonly Solution? Solution;
 
-    [Parameter("Specifies a quick version command for the versioning quick step")]
-    readonly string QuickVersion = "";
+
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
 
@@ -52,8 +55,6 @@ partial class Build : NukeBuild {
                    Log.Error("Build>Initialise>Solution is null.");
                    throw new InvalidOperationException("The solution must be set");
                }
-
-
                //Bilge.AddHandler(new TCPHandler("127.0.0.1", 9060, true));
 
                Bilge.SetConfigurationResolver((a, b) => {
@@ -84,59 +85,5 @@ partial class Build : NukeBuild {
                }
 
            });
-
-
-
-
-    public Target VersionSource => _ => _
-        .Executes(() => {
-
-            //var v = new VersonifyTasks();
-            //v.PassiveCommand(s => s
-            //  .SetRoot(Solution.Directory)
-            //  .SetVersionPersistanceValue(@"c:\temp\vs.store")
-            //  .SetDebug(true));
-
-
-            //VersonifyTasks.CommandPassive(s => s
-            //  .SetRoot(Solution.Directory)
-            //  .SetVersionPersistanceValue(@"c:\temp\vs.store")
-            //  .SetDebug(true));
-
-            //v.PerformFileUpdate(s => s
-            //  .SetRoot(Solution.Directory)
-            //  .AddMultimatchFile($"{Solution.Directory}\\_Dependencies\\Automation\\AutoVersion.txt")
-            //  .PerformIncrement(true)
-            //  .SetVersionPersistanceValue(@"c:\temp\vs.store")
-            //  .SetDebug(true)
-            //  .AsDryRun(true)
-            //  .SetRelease(""));
-
-            //VersonifyTasks.IncrementAndUpdateFiles(s => s
-            // .SetRoot(Solution.Directory)
-            // .AddMultimatchFile($"{Solution.Directory}\\_Dependencies\\Automation\\AutoVersion.txt")
-            // .PerformIncrement(true)
-            // .SetVersionPersistanceValue(@"c:\temp\vs.store")
-            // .SetDebug(true)
-            // .AsDryRun(true)
-            // .SetRelease(""));
-
-            // Logger.Info($"Version is {version}");
-        });
-
-
-
-
-    [Obsolete]
-    Target Publish => _ => _
-        .DependsOn(Compile)
-        .Executes(() => {
-
-
-        });
-
-
-
-
 
 }

@@ -35,13 +35,11 @@
         "IntegrationTest",
         "MollyCheck",
         "PackageStep",
-        "Publish",
         "QueryNextVersion",
         "ReleaseStep",
         "TestStep",
         "UnitTest",
         "VersionQuickStep",
-        "VersionSource",
         "Wrapup"
       ]
     },

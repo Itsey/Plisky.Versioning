@@ -7,7 +7,7 @@ using Plisky.Diagnostics;
 public class CompleteVersion {
     protected Bilge b = new Bilge("Plisky-Versioning");
 
-    private string actualReleaseName;
+    private string? actualReleaseName;
     private string? pendingReleaseName;
 
     /// <summary>
@@ -45,7 +45,7 @@ public class CompleteVersion {
 
 
     public bool IsDefault { get; set; }
-    public string ReleaseName {
+    public string? ReleaseName {
         get {
             return actualReleaseName;
         }
@@ -101,8 +101,8 @@ public class CompleteVersion {
 
         for (int i = 0; i < changes.Length; i++) {
             if (Digits.Length > i) {
-                string currentDigitValue = Digits[i].Value;
-                string newDigitValue = ManipulateValueBasedOnPattern(changes[i], currentDigitValue);
+                string? currentDigitValue = Digits[i].Value;
+                string? newDigitValue = ManipulateValueBasedOnPattern(changes[i], currentDigitValue);
 
                 // Only set this if it is not null, this allows for stacking patterns to work.  
                 if (newDigitValue != null) {
@@ -112,7 +112,7 @@ public class CompleteVersion {
         }
     }
 
-    protected string? ManipulateValueBasedOnPattern(string pattern, string currentValue) {
+    protected string? ManipulateValueBasedOnPattern(string pattern, string? currentValue) {
         if (string.IsNullOrEmpty(pattern)) { return null; }
 
         if (int.TryParse(currentValue, out int currentInteger)) {

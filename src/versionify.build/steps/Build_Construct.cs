@@ -1,4 +1,5 @@
 ﻿
+using System;
 using Nuke.Common;
 using Nuke.Common.Tools.DotNet;
 using Plisky.Nuke.Fusion;
@@ -7,6 +8,10 @@ using Serilog;
 public partial class Build : NukeBuild {
 
     // Standard entrypoint for compiling the app.  Arrange [Construct] Examine Package Release Test
+
+
+
+    public string FullVersionNumber { get; set; } = string.Empty;
     public Target ConstructStep => _ => _
         .Before(ExamineStep, Wrapup)
         .After(ArrangeStep)
@@ -21,6 +26,17 @@ public partial class Build : NukeBuild {
       .Before(Compile)
       .Executes(() => {
           Log.Information($"Manual Quick Step QV:{QuickVersion}");
+
+          if (settings == null) {
+              Log.Error("Build>ApplyVersion>Settings is null.");
+              throw new InvalidOperationException("The settings must be set");
+          }
+
+          if (Solution == null) {
+              Log.Error("Build>ApplyVersion>Solution is null.");
+              throw new InvalidOperationException("The solution must be set");
+          }
+
 
           if (!string.IsNullOrEmpty(QuickVersion)) {
               var vc = new VersonifyTasks();
@@ -42,23 +58,43 @@ public partial class Build : NukeBuild {
       .Before(Compile)
       .Executes(() => {
 
+          if (settings == null) {
+              Log.Error("Build>ApplyVersion>Settings is null.");
+              throw new InvalidOperationException("The settings must be set");
+          }
+
+          if (Solution == null) {
+              Log.Error("Build>ApplyVersion>Solution is null.");
+              throw new InvalidOperationException("The solution must be set");
+          }
+
 
           var vc = new VersonifyTasks();
           vc.PassiveCommand(s => s
           .SetVersionPersistanceValue(settings.VersioningPersistanceToken)
-          .SetOutputStyle("azdo-nf")
+          .SetOutputStyle("con-nf")
           .SetRoot(Solution.Directory));
 
           Log.Information($"Version Is:{vc.VersionLiteral}");
       });
 
-    public string FullVersionNumber { get; set; }
+
 
     public Target ApplyVersion => _ => _
       .After(ConstructStep)
       .DependsOn(Initialise)
       .Before(Compile)
       .Executes(() => {
+
+          if (settings == null) {
+              Log.Error("Build>ApplyVersion>Settings is null.");
+              throw new InvalidOperationException("The settings must be set");
+          }
+
+          if (Solution == null) {
+              Log.Error("Build>ApplyVersion>Solution is null.");
+              throw new InvalidOperationException("The solution must be set");
+          }
 
           bool dryRunMode = false;
 

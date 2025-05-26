@@ -4,7 +4,7 @@ using Plisky.Diagnostics;
 public abstract class VersionStorage {
     protected Bilge b = new Bilge("Plisky-Versioning");
 
-    protected VersionStorageOptions InitValue { get; set; } = null;
+    protected VersionStorageOptions? InitValue { get; set; } = null;
 
     protected abstract void ActualPersist(CompleteVersion cv);
 
@@ -16,7 +16,7 @@ public abstract class VersionStorage {
         }
     }
 
-    public string StorageFailureMessage { get; set; }
+    public string? StorageFailureMessage { get; set; }
     protected VersionStorage() {
         InitValue = null;
     }
@@ -55,7 +55,7 @@ public abstract class VersionStorage {
     /// </summary>
     /// <returns>Version, or DefaultVersion where storage has not been used yet.</returns>
     public CompleteVersion GetVersion() {
-        CompleteVersion result = null;
+        var result = CompleteVersion.GetDefault();
         if (!IsValid) { return result; }
 
         result = ActualLoad();

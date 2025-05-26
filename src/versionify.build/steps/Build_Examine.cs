@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Linq;
 using Nuke.Common;
 using Nuke.Common.Tools.DotNet;
@@ -20,6 +21,11 @@ public partial class Build : NukeBuild {
       .After(ExamineStep)
       .Before(PackageStep)
       .Executes(() => {
+          if (Solution == null) {
+              Log.Error("Build>UnitTest>Solution is null.");
+              throw new InvalidOperationException("The solution must be set");
+          }
+
           var testProjects = Solution.GetAllProjects("*.Test");
           if (testProjects.Any()) {
               DotNetTasks.DotNetTest(s => s

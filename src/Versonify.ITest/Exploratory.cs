@@ -17,6 +17,8 @@ public class Exploratory {
 
         var p = Process.Start(psi);
 
+        Assert.NotNull(p);
+
         string s = await p.StandardOutput.ReadToEndAsync();
 
         s.Should().Contain("PNFV]");
@@ -37,13 +39,19 @@ public class Exploratory {
         psi.RedirectStandardOutput = true;
 
         var p = Process.Start(psi);
+        Assert.NotNull(p);
 
         string s = await p.StandardOutput.ReadToEndAsync();
+
 
         s.Should().NotContain("PNFV]");
         await p.WaitForExitAsync();
         b.Info.Log("Std" + s);
         p.ExitCode.Should().Be(0);
 
+    }
+
+    [Fact]
+    public void Get_from_nexus_returns_release_name() {
     }
 }
