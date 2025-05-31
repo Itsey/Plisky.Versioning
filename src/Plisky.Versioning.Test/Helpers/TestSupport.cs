@@ -9,6 +9,14 @@ namespace Plisky.CodeCraft.Test {
     public class TestSupport {
         private Bilge b = new Bilge();
         private UnitTestHelper uth;
+        public CompleteVersion GetDefaultVersion() {
+            return new CompleteVersion(
+                new VersionUnit("0", "", DigitIncremementBehaviour.ContinualIncrement),
+                new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement),
+                new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement),
+                new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement)
+            );
+        }
 
         public string GetVersion(FileUpdateType fut, string srcFile) {
             switch (fut) {

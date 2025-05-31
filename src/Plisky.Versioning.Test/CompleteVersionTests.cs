@@ -406,45 +406,67 @@ public class CompleteVersionTests {
         Assert.Equal("Fish", sut.GetVersionString(DisplayType.Full));
     }
 
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void ToString_Equals_GetVersionString() {
-        var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-        Assert.Equal(sut.ToString(), sut.GetVersionString(DisplayType.Full));
-    }
+    public class DisplayTypes {
 
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void GetVersionString_Short_ShowsCorrect() {
-        var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-        var dt = DisplayType.Short;
-        Assert.Equal("1.0", sut.GetVersionString(dt));
-    }
+        [Fact]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void ToString_equals_getversionstring() {
+            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
+            Assert.Equal(sut.ToString(), sut.GetVersionString(DisplayType.Full));
+        }
 
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void GetVersionString_Short_EvenWhenMoreDigits() {
-        var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."), new VersionUnit("1", "."));
-        var dt = DisplayType.Short;
-        Assert.Equal("1.0", sut.GetVersionString(dt));
-    }
+        [Fact]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Short_returns_two_digits() {
+            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
+            var dt = DisplayType.Short;
+            Assert.Equal("1.0", sut.GetVersionString(dt));
+        }
 
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void GetString_Respects_AlternativeFormatter() {
-        var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "-"), new VersionUnit("1", "-"));
-        Assert.Equal("1-0-1", sut.ToString());
-    }
+        [Fact]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Short_returns_two_digits_when_more_present() {
+            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."), new VersionUnit("1", "."));
+            var dt = DisplayType.Short;
+            Assert.Equal("1.0", sut.GetVersionString(dt));
+        }
 
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void BasicTwoDigitToString_ReturnsCorrectly() {
-        var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-        Assert.True(sut.ToString() == "1.0");
+        [Fact]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void ToString_respects_alternative_separator_characters() {
+            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "-"), new VersionUnit("1", "-"));
+            Assert.Equal("1-0-1", sut.ToString());
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Default_display_is_correct_for_two_digits() {
+            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
+            Assert.True(sut.ToString() == "1.0");
+        }
+
+    }
+    public class UseCases {
+        [Fact]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Plisky_semantic_versioning_is_supported() {
+            var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."),
+                new VersionUnit("Unicorn", "-"),
+                new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement));
+            string verString = sut.GetVersionString();
+            Assert.Equal("2.0-Unicorn.0", verString); //,"The initial string is not correct");
+            sut.Increment();
+            verString = sut.GetVersionString();
+            Assert.Equal("2.0-Unicorn.1", verString); //, "The first increment string is not correct");
+            sut.Increment();
+            verString = sut.GetVersionString(DisplayType.Full);
+            Assert.Equal("2.0-Unicorn.2", verString); //, "The second increment string is not correct");
+        }
     }
 }

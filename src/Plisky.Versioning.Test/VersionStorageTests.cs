@@ -9,18 +9,21 @@ public class VersionStorageTests {
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void ManualExportVersionFile() {
-        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."),
-            new VersionUnit("Unicorn", "-"),
-            new VersionUnit("0", ".", DigitIncremementBehaviour.AutoIncrementWithResetAny));
-        VersionStorage vs = new JsonVersionPersister(@"c:\temp\output.json");
-        vs.Persist(cv);
+    public void Basic_save_works() {
+        var msut = new MockVersionStorage("itsamock");
+        VersionStorage sut = msut;
+
+        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"));
+        sut.Persist(cv);
+        Assert.True(msut.PersistWasCalled, "The persist method was not called");
+        Assert.Equal("1111", msut.VersionStringPersisted);
     }
 
-    [Fact(DisplayName = nameof(VersionStorage_CreatesDefaultIfNotPresent))]
+
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void VersionStorage_CreatesDefaultIfNotPresent() {
+    [Fact]
+    public void When_created_valid_version_marked_as_default() {
         b.Info.Flow();
 
         VersionStorage vs = new MockVersionStorage("default");
@@ -31,10 +34,11 @@ public class VersionStorageTests {
         Assert.Equal("0.0.0.0", ver.ToString());
     }
 
-    [Fact(DisplayName = nameof(VersionStorage_NotDefaultWhenPresent))]
+
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void VersionStorage_NotDefaultWhenPresent() {
+    [Fact]
+    public void When_created_not_default_if_value_passed() {
         b.Info.Flow();
 
         VersionStorage vs = new MockVersionStorage("0.0.0.0");

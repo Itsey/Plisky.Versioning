@@ -28,77 +28,23 @@ public class Exploratory {
         foreach (var v in mtchs) {
             i++;
             bool isMatch = mm.IsMatch(v.Item1);
-            Assert.Equal(v.Item2, isMatch); //, "Mismatch " + i.ToString());
+            Assert.Equal(v.Item2, isMatch);
         }
     }
 
     private string CreateStoredVersionNumer() {
         string fn = uth.NewTemporaryFileName(true);
-        var cv = GetDefaultVersion();
+        var cv = ts.GetDefaultVersion();
         var jvp = new JsonVersionPersister(fn);
         jvp.Persist(cv);
         return fn;
     }
 
-    private static CompleteVersion GetDefaultVersion() {
-        return new CompleteVersion(
-            new VersionUnit("0", "", DigitIncremementBehaviour.ContinualIncrement),
-            new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement),
-            new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement),
-            new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement)
-        );
-    }
-
-    [Theory]
-    [InlineData("0.0.0.0", "0.0.0.0")]
-    [InlineData("1.2.3.4", "1.2.3.4")]
-    [InlineData("1234.1234.1234.1234", "1234.1234.1234.1234")]
-    [InlineData("0", "0.0.0.0")]
-    [InlineData("1.2.3", "1.2.3.0")]
-    public void VersionNumberParseTests(string parseString, string expected) {
-        var vnd = VersionNumber.Parse(parseString);
-        Assert.Equal(expected, vnd.ToString());
-    }
-
-    [Theory]
-    [InlineData("1.2.3.4", "1.2.3.4", false)]
-    [InlineData("2.2.3.4", "1.2.3.4", true)]
-    [InlineData("0.2.3.4", "1.2.3.4", false)]
-    [InlineData("0.2.4.0", "0.2.3.400", true)]
-    [InlineData("1.0.0.0", "0.999.999.999", true)]
-    [InlineData("0.0.1.0", "0.0.0.400", true)]
-    [InlineData("1.0", "0.0.0.400", true)]
-    public void DoVersionComparisonsWork(string v1, string v2, bool v1IsGreater) {
-        var vn1 = VersionNumber.Parse(v1);
-        var vn2 = VersionNumber.Parse(v2);
-
-        bool isGreater = vn1 > vn2;
-        Assert.Equal(v1IsGreater, isGreater);
-    }
-
-
-    [Theory]
-    [InlineData("1.2.3.4", "1.2.3.4", true, true)]
-    [InlineData("0.0.0.0", "0.0.0.0", true, true)]
-    [InlineData("0.0", "0.0", true, true)]
-    [InlineData("1.0", "1.0.0.0", true, true)]
-    [InlineData("2.2.3.4", "1.2.3.4", true, false)]
-    [InlineData("1.0.3.4", "1.2.3.4", false, false)]
-    public void DoVersionComparisonsWork2(string v1, string v2, bool v1IsGreaterOrEqual, bool isEqual) {
-        var vn1 = VersionNumber.Parse(v1);
-        var vn2 = VersionNumber.Parse(v2);
-
-        bool isGreater = vn1 >= vn2;
-        bool isActuallyEqual = vn1 == vn2;
-
-        Assert.Equal(isEqual, isActuallyEqual);
-        Assert.Equal(v1IsGreaterOrEqual, isGreater);
-    }
-
-
     [Fact]
+
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Developer)]
+    [Trait("Cause", "Bug:464")]
     public void Bug464_BuildVersionsNotUpdatedDuringBuild() {
         string ident = TestResources.GetIdentifiers(TestResourcesReferences.Bug464RefContent);
 
@@ -119,62 +65,7 @@ public class Exploratory {
         Assert.True(ts.DoesFileContainThisText(fn, "AssemblyVersion(\"2.0\")"), "the assembly version should be two digits and present.");
     }
 
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void BuildTask_InvalidRuleType_Throws() {
-        _ = Assert.Throws<InvalidOperationException>(() => {
-            var sut = new TestableVersioningTask();
-            string verItemsSimple = "**/assemblyinfo.cs;ASSXXEMBLY";
-            sut.SetAllVersioningItems(verItemsSimple);
-        });
-    }
 
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void BuildTask_PassInRules_Works() {
-        var v = GetDefaultVersion();
-        var sut = new TestableVersioningTask();
-        sut.SetVersionNumber(v);
-        string verItemsSimple = "**/assemblyinfo.cs!ASSEMBLY";
-        sut.SetAllVersioningItems(verItemsSimple);
-
-        Assert.True(sut.IsThisMinimatchIncluded("**/assemblyinfo.cs"), "The minimatch was not included");
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void BuildTask_PassInMultipleRules_Works() {
-        var v = GetDefaultVersion();
-        var sut = new TestableVersioningTask();
-        sut.SetVersionNumber(v);
-        string verItemsSimple =
-            $"**/assemblyinfo.cs!ASSEMBLY{Environment.NewLine}xxMonkey!FILE{Environment.NewLine}yyzzxxbannana!WIX{Environment.NewLine}";
-        sut.SetAllVersioningItems(verItemsSimple);
-
-        Assert.True(sut.IsThisMinimatchIncluded("**/assemblyinfo.cs"), "The minimatch was not included");
-        Assert.True(sut.IsThisMinimatchIncluded("xxMonkey"), "The second minimatch was not included");
-        Assert.True(sut.IsThisMinimatchIncluded("yyzzxxbannana"), "The third minimatch was not included");
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void UseCase_Plisky_Works() {
-        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."),
-            new VersionUnit("Unicorn", "-"),
-            new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement));
-        string verString = sut.GetVersionString();
-        Assert.Equal("2.0-Unicorn.0", verString); //,"The initial string is not correct");
-        sut.Increment();
-        verString = sut.GetVersionString();
-        Assert.Equal("2.0-Unicorn.1", verString); //, "The first increment string is not correct");
-        sut.Increment();
-        verString = sut.GetVersionString(DisplayType.Full);
-        Assert.Equal("2.0-Unicorn.2", verString); //, "The second increment string is not correct");
-    }
 
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
@@ -201,9 +92,9 @@ public class Exploratory {
         sut.AddUpdateType(tfn1, FileUpdateType.NetInformational);
         sut.IncrementAndUpdateAll();
 
-        Assert.Equal("1.1.1.1", sut.VersionString); //, "The version string should be set post update");
+        Assert.Equal("1.1.1.1", sut.VersionString);
         var jp = new JsonVersionPersister(tfn2);
-        Assert.Equal(sut.VersionString, jp.GetVersion().GetVersionString()); //, "The update should be persisted");
+        Assert.Equal(sut.VersionString, jp.GetVersion().GetVersionString());
         Assert.True(ts.DoesFileContainThisText(tfn1, "AssemblyVersion(\"1.1"), "The target filename was not updated");
         Assert.True(ts.DoesFileContainThisText(tfn1, "AssemblyInformationalVersion(\"1.1.1.1"), "The target filename was not updated");
         Assert.True(ts.DoesFileContainThisText(tfn1, "AssemblyFileVersion(\"1.1.1.1"), "The target filename was not updated");
@@ -242,18 +133,6 @@ public class Exploratory {
         Assert.True(mm2.IsMatch(@"C:\temp\test\testfile.tst"), "Cant match on full filename");
     }
 
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void VersionStorage_SavesCorrectly() {
-        var msut = new MockVersionStorage("itsamock");
-        VersionStorage sut = msut;
-
-        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"));
-        sut.Persist(cv);
-        Assert.True(msut.PersistWasCalled, "The persist method was not called");
-        Assert.Equal("1111", msut.VersionStringPersisted);
-    }
 
 
 
@@ -294,7 +173,7 @@ public class Exploratory {
 
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
+    [Trait(Traits.Style, Traits.Integration)]
     public void VersionStoreAndLoad_StoresUpdatedValues() {
         string fn = uth.NewTemporaryFileName(true);
         var sut = new JsonVersionPersister(fn);
@@ -317,7 +196,7 @@ public class Exploratory {
 
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
+    [Trait(Traits.Style, Traits.Integration)]
     public void VersionStoreAndLoad_StoresDisplayTypes() {
         string fn = uth.NewTemporaryFileName(true);
         var sut = new JsonVersionPersister(fn);

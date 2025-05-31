@@ -14,25 +14,12 @@ public class VersioningTask {
 
     public delegate void LogEventHandler(object sender, LogEventArgs e);
 
-    public event LogEventHandler Logger = null;
+    public event LogEventHandler? Logger = null;
 
     public string[] LogMessages {
         get {
             return messageLog.ToArray();
         }
-    }
-
-    private string Test(string thisone) {
-        int idx = thisone.IndexOf("]}#");
-        string write = thisone[(idx + 7)..];
-        //Console.WriteLine("Calling logger 3");
-        Logger?.Invoke(this, new LogEventArgs() {
-            Severity = "INFO",
-            Text = "LOGGER" + write
-        });
-        Console.WriteLine("CW " + write);
-        //messageLog.Add("LG " + write);
-        return thisone;
     }
 
     public VersioningTask() {
