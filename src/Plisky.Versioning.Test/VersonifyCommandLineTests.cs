@@ -1,29 +1,27 @@
-﻿namespace Plisky.Versioning.Test;
+﻿namespace Plisky.CodeCraft.Test;
 
 using System;
-using Plisky.CodeCraft;
-using Plisky.CodeCraft.Test;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Versonify;
 using Xunit;
 
-public class PliskyToolTests {
+public class VersonifyCommandLineTests {
     private readonly Bilge b = new();
     private readonly UnitTestHelper uth;
     private readonly TestSupport ts;
 
-    public PliskyToolTests() {
+    public VersonifyCommandLineTests() {
         uth = new UnitTestHelper();
         ts = new TestSupport(uth);
     }
 
 
 
-    [Fact(DisplayName = nameof(ParseOptions_EnvSelected_Works))]
+    [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void ParseOptions_EnvSelected_Works() {
+    public void Output_environment_selected_works() {
         b.Info.Flow();
 
         var sut = new VersonifyCommandline {
@@ -33,10 +31,10 @@ public class PliskyToolTests {
         Assert.True((sut.OutputsActive & OutputPossibilities.Environment) == OutputPossibilities.Environment);
     }
 
-    [Fact(DisplayName = nameof(ParseOptions_FileSelected_Works))]
+    [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void ParseOptions_FileSelected_Works() {
+    public void Output_file_selected_works() {
         b.Info.Flow();
 
         var sut = new VersonifyCommandline {
@@ -47,10 +45,10 @@ public class PliskyToolTests {
     }
 
 
-    [Fact(DisplayName = nameof(ParseOptions_Invalid_ThrowsError))]
+    [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void ParseOptions_Invalid_ThrowsError() {
+    public void Output_incorrect_value_throws() {
         b.Info.Flow();
 
         _ = Assert.Throws<ArgumentOutOfRangeException>(() => {
@@ -61,10 +59,10 @@ public class PliskyToolTests {
     }
 
 
-    [Fact(DisplayName = nameof(ParseOptions_DefaultsToNone))]
+    [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void ParseOptions_DefaultsToNone() {
+    public void Output_defaults_to_none() {
         b.Info.Flow();
 
         var sut = new VersonifyCommandline();
@@ -72,10 +70,10 @@ public class PliskyToolTests {
     }
 
 
-    [Fact(DisplayName = nameof(ParseOptions_NullIsNone))]
+    [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void ParseOptions_NullIsNone() {
+    public void Output_null_is_same_as_none() {
         b.Info.Flow();
 
         var sut = new VersonifyCommandline {

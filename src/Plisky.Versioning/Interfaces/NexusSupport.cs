@@ -77,7 +77,14 @@ public class NexusSupport {
                 if (item.TryGetProperty("path", out var pathElement)) {
                     if (item.TryGetProperty("id", out var idElement)) {
                         b.Verbose.Log($"Found file {pathElement} {idElement}");
-                        files.Add(new Tuple<string, string>(pathElement.GetString(), idElement.GetString()));
+
+                        string? pt = pathElement.GetString();
+                        string? id = idElement.GetString();
+                        if (string.IsNullOrEmpty(pt) || string.IsNullOrEmpty(id)) {
+                            b.Warning.Log($"Skipping file with empty path or id: {pt} {id}");
+                        } else {
+                            files.Add(new Tuple<string, string>(pt, id));
+                        }
                     }
                 }
             }

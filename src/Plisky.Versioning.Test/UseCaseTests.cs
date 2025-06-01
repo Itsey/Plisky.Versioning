@@ -4,20 +4,17 @@ using System;
 using System.IO;
 using CodeCraft;
 using Plisky.Diagnostics;
-using Plisky.Diagnostics.Listeners;
 using Plisky.Test;
 using Xunit;
 
 public class UseCaseTests {
     private readonly Bilge b = new();
     private readonly UnitTestHelper uth = new();
+    private readonly TestSupport ts;
 
-    [Obsolete]
     public UseCaseTests() {
-        Bilge.AddMessageHandler(new TCPHandler("127.0.0.1", 9060));
-        Bilge.SetConfigurationResolver((a, b) => {
-            return System.Diagnostics.SourceLevels.Verbose;
-        });
+        uth = new UnitTestHelper();
+        ts = new TestSupport(uth);
     }
 
     [Fact(DisplayName = nameof(Versioning_MultiMMSameFile_UpdatesMultipleTimes))]
@@ -129,5 +126,28 @@ public class UseCaseTests {
         _ = Assert.Throws<ArgumentNullException>(() => { sut.AddNugetFile(null); });
         _ = Assert.Throws<FileNotFoundException>(() => { sut.AddNugetFile(""); });
         _ = Assert.Throws<FileNotFoundException>(() => { sut.AddNugetFile("c:\\arflebarflegloop.txt"); });
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Integration)]
+    public void UseCase_BuildVersionger_Exploratory() {
+        string tfn1 = uth.NewTemporaryFileName(false);
+        string tfn2 = ts.CreateStoredVersionNumer();
+        var sut = new VersioningTask();
+        string directory = Path.GetDirectoryName(tfn1);
+        sut.BaseSearchDir = directory;
+        sut.SetPersistanceValue(tfn2);
+        sut.AddUpdateType(tfn1, FileUpdateType.NetAssembly);
+        sut.AddUpdateType(tfn1, FileUpdateType.NetFile);
+        sut.AddUpdateType(tfn1, FileUpdateType.NetInformational);
+        sut.IncrementAndUpdateAll();
+
+        Assert.Equal("1.1.1.1", sut.VersionString);
+        var jp = new JsonVersionPersister(tfn2);
+        Assert.Equal(sut.VersionString, jp.GetVersion().GetVersionString());
+        Assert.True(ts.DoesFileContainThisText(tfn1, "AssemblyVersion(\"1.1"), "The target filename was not updated");
+        Assert.True(ts.DoesFileContainThisText(tfn1, "AssemblyInformationalVersion(\"1.1.1.1"), "The target filename was not updated");
+        Assert.True(ts.DoesFileContainThisText(tfn1, "AssemblyFileVersion(\"1.1.1.1"), "The target filename was not updated");
     }
 }

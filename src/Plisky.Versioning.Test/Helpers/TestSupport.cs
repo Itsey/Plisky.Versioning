@@ -9,6 +9,16 @@ namespace Plisky.CodeCraft.Test {
     public class TestSupport {
         private Bilge b = new Bilge();
         private UnitTestHelper uth;
+
+        public string CreateStoredVersionNumer() {
+            string fn = uth.NewTemporaryFileName(true);
+            var cv = GetDefaultVersion();
+            var jvp = new JsonVersionPersister(fn);
+            jvp.Persist(cv);
+            return fn;
+        }
+
+
         public CompleteVersion GetDefaultVersion() {
             return new CompleteVersion(
                 new VersionUnit("0", "", DigitIncremementBehaviour.ContinualIncrement),
