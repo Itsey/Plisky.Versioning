@@ -52,7 +52,8 @@ internal class Program {
             if (versionerUsed != null) {
                 b.Verbose.Log($"All Actions - Complete - Outputting.");
                 var vo = new VersioningOutputter(versionerUsed) {
-                    ConsoleTemplate = options.ConsoleTemplate
+                    ConsoleTemplate = options.ConsoleTemplate,
+                    PverFileName = options.PverFileName
                 };
 
                 vo.DoOutput(options.OutputsActive);

@@ -86,6 +86,7 @@ public class Versioning {
             Log("Updated : " + s);
 
             b.Verbose.Log($"Update Completed {f.Item1} : {f.Item2}");
+            numberFilesUpdated++;
         }
 
         if (numberFilesUpdated == 0) {

@@ -21,6 +21,7 @@ public class VersonifyCommandline {
     public string Command { get; set; }
 
     public string ConsoleTemplate { get; private set; }
+    public string PverFileName { get; set; } = "pver-latest.txt";
 
     [CommandLineArg("Debug", Description = "Enables Debug Logging")]
     public bool Debug { get; set; }
@@ -114,8 +115,17 @@ public class VersonifyCommandline {
             return;
         }
 
-        if (outOpts == "file") {
+        if (outOpts.StartsWith("file")) {
             outcache |= OutputPossibilities.File;
+            if (outOpts.Contains(':')) {
+                int markerPos = outOpts.IndexOf(':') + 1;
+                if (markerPos < outOpts.Length) {
+                    PverFileName = outOpts.Substring(markerPos).Trim();
+                    if (!PverFileName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)) {
+                        PverFileName += ".txt";
+                    }
+                }
+            }
             return;
         }
 

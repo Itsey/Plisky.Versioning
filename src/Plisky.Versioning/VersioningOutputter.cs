@@ -14,6 +14,7 @@ public class VersioningOutputter {
 
     public string? FileTemplate { get; set; }
     public string? ConsoleTemplate { get; set; }
+    public string? PverFileName { get; set; }
 
 
     protected virtual void SetEnvironmentWithValue() {
@@ -63,8 +64,9 @@ public class VersioningOutputter {
 
 
     protected virtual void SetFileValue() {
-        string fn = Path.Combine(Environment.CurrentDirectory, "pver-latest.txt");
-        File.WriteAllText(fn, valToWrite);
+        string fileName = string.IsNullOrWhiteSpace(PverFileName) ? "pver-latest.txt" : PverFileName;
+        string filePath = Path.Combine(Environment.CurrentDirectory, fileName);
+        File.WriteAllText(filePath, valToWrite);
     }
 
     protected virtual void WriteToConsole(string outputString) {

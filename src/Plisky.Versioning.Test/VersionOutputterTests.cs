@@ -49,7 +49,21 @@ public class VersionOutputterTests {
 
         Assert.Contains(contains, cla.ConsoleTemplate);
     }
+    [Theory(DisplayName = nameof(Args_OutputterParseSetsFileName))]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("file:myfile.txt", "myfile.txt")]
+    [InlineData("file:myfile", "myfile.txt")]
+    [InlineData("file", "pver-latest.txt")]
+    public void Args_OutputterParseSetsFileName(string argument, string contains) {
+        b.Info.Flow();
 
+        var cla = new VersonifyCommandline {
+            OutputOptions = argument
+        };
+
+        Assert.Equal(contains, cla.PverFileName);
+    }
 
     [Fact(DisplayName = nameof(Outputter_Environment_WritesToEnvironment))]
     [Trait(Traits.Age, Traits.Regression)]
