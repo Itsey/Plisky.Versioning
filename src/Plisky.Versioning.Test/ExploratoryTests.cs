@@ -1,4 +1,6 @@
 ﻿namespace Plisky.CodeCraft.Test;
+
+using System;
 using System.IO;
 using Plisky.Diagnostics;
 using Plisky.Test;
@@ -17,6 +19,39 @@ public class Exploratory {
     ~Exploratory() {
         uth.ClearUpTestFiles();
     }
+
+    //[Fact]
+    //public void CommandLine_will_only_allow_asterisk_once() {
+    //    var sut = new VersonifyCommandline();
+    //    sut.DigitManipulations = new[] { "1", "*", "2", "*" };
+
+    //    var gd = sut.GetDigits();
+
+    //    Assert.Equal(gd.length, 1);
+    //    Assert.Equal(gd[0].Value, "*", StringComparer.OrdinalIgnoreCase);
+    //}
+
+
+    [Fact]
+
+    public void Validate_digitoptions_throws_when_invalid_digit_passed() {
+        var cv = CompleteVersion.GetDefault();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => {
+            _ = cv.ValidateDigitOptions(new[] { "monkey" });
+        });
+    }
+
+
+    [Fact]
+    public void Validate_digitoptions_returns_false_when_null_options() {
+        var cv = CompleteVersion.GetDefault();
+
+        bool result = cv.ValidateDigitOptions(null);
+
+        Assert.False(result);
+    }
+
 
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
