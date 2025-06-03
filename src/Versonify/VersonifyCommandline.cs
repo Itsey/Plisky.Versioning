@@ -121,9 +121,6 @@ public class VersonifyCommandline {
                 int markerPos = outOpts.IndexOf(':') + 1;
                 if (markerPos < outOpts.Length) {
                     PverFileName = outOpts.Substring(markerPos).Trim();
-                    if (!PverFileName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)) {
-                        PverFileName += ".txt";
-                    }
                 }
             }
             return;

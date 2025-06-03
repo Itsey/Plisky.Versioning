@@ -53,7 +53,6 @@ public class VersionOutputterTests {
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
     [InlineData("file:myfile.txt", "myfile.txt")]
-    [InlineData("file:myfile", "myfile.txt")]
     [InlineData("file", "pver-latest.txt")]
     public void Args_OutputterParseSetsFileName(string argument, string contains) {
         b.Info.Flow();

@@ -140,6 +140,14 @@ internal class Program {
             valid = false;
         }
 
+        if (!string.IsNullOrWhiteSpace(options.PverFileName)) {
+            char[] invalidChars = Path.GetInvalidFileNameChars();
+            if (options.PverFileName.IndexOfAny(invalidChars) >= 0) {
+                Console.WriteLine($"The output file name [{options.PverFileName}] contains invalid characters.");
+                valid = false;
+            }
+        }
+
         return valid;
     }
 
