@@ -194,13 +194,13 @@ public class CompleteVersion {
         pendingReleaseName = newReleaseName;
     }
     public bool ValidateDigitOptions(string[] digitsRequested) {
-        b.Verbose.Log($"Validating Digit Options [{string.Join(",", digitsRequested)}]");
         bool isValid = true;
 
         if (digitsRequested is null || digitsRequested.Length == 0) {
             Console.WriteLine("Error >> No digit specified, please use the -DG option.");
             return false;
         }
+        b.Verbose.Log($"Validating Digit Options [{string.Join(",", digitsRequested)}]");
 
         foreach (string d in digitsRequested) {
             if (string.IsNullOrWhiteSpace(d)) {

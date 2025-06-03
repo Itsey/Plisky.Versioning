@@ -17,7 +17,7 @@ public class VersonifyCommandline {
         VersionTargetMinMatch = null;
     }
 
-    [CommandLineArg("Command", Description = "Choose One of the following: CreateVersion,Override,UpdateFiles,Passive", IsSingleParameterDefault = true)]
+    [CommandLineArg("Command", Description = "Choose one of: CreateVersion,Override,UpdateFiles,Passive,Behaviour", IsSingleParameterDefault = true)]
     public string Command { get; set; }
 
     public string ConsoleTemplate { get; private set; }
