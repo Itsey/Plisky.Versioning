@@ -180,6 +180,10 @@ internal class Program {
                 LoadVersionStore();
                 return true;
 
+            case "BEHAVIOUR":
+                LoadDigitBehaviour();
+                return true;
+
             default:
                 Console.WriteLine("Error >> Unrecognised Command: " + options.Command);
                 return false;
@@ -331,5 +335,23 @@ internal class Program {
         Console.WriteLine($"Saving {cv.GetVersionString()}");
         storage.Persist(cv);
 
+    }
+    private static void LoadDigitBehaviour() {
+        string[] digitsToLoad = options.DigitManipulations;
+        var ver = new Versioning(storage, options.DryRunOnly);
+        versionerUsed = ver.Version;
+
+        if (!ver.Version.ValidateDigitOptions(digitsToLoad)) {
+            return;
+        }
+        //TODO: Sort hard coding of [0] - should multiple inputs be catered for or not?
+        //TODO: Add better handling for digit out of range
+        if (options.DigitManipulations[0] == "*") {
+            Console.WriteLine("Loading All Behaviours");
+            Console.WriteLine(ver.GetBehaviour(options.DigitManipulations));
+        } else {
+            Console.WriteLine($"Loaded Behaviour for Digit [{options.DigitManipulations[0]}]");
+            Console.WriteLine(ver.GetBehaviour(options.DigitManipulations));
+        }
     }
 }

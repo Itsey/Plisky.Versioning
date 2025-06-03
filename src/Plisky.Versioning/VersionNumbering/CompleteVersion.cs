@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Plisky.Diagnostics;
 
 public class CompleteVersion {
@@ -9,6 +10,7 @@ public class CompleteVersion {
 
     private string? actualReleaseName;
     private string? pendingReleaseName;
+    private const string ALLDIGITSWILDCARD = "*";
 
     /// <summary>
     /// Returns the default, empty, version instance which is four digits and all fixed except the
@@ -151,6 +153,21 @@ public class CompleteVersion {
         return GetVersionString(DisplayType.Full);
     }
 
+    public string GetBehaviourString(string[] digitRequested) {
+        string result = string.Empty;
+        if (digitRequested[0] == ALLDIGITSWILDCARD) {
+            var sb = new StringBuilder();
+            for (int i = 0; i < Digits.Length; i++) {
+                sb.AppendLine($"[{i}]:[{(int)Digits[i].Behaviour}]{Digits[i].Behaviour}");
+            }
+            result = sb.ToString();
+        } else {
+            int digitIndex = int.Parse(digitRequested[0]);
+            result = $"[{digitIndex}]:[{(int)Digits[digitIndex].Behaviour}]{Digits[digitIndex].Behaviour}";
+        }
+        return result;
+    }
+
     public void Increment() {
 
         bool lastChanged = false;
@@ -175,5 +192,27 @@ public class CompleteVersion {
 
     public void ApplyPendingRelease(string newReleaseName) {
         pendingReleaseName = newReleaseName;
+    }
+    public bool ValidateDigitOptions(string[] digitsRequested) {
+        b.Verbose.Log($"Validating Digit Options [{string.Join(",", digitsRequested)}]");
+        bool isValid = true;
+
+        if (digitsRequested is null || digitsRequested.Length == 0) {
+            Console.WriteLine("Error >> No digit specified, please use the -DG option.");
+            return false;
+        }
+
+        foreach (string d in digitsRequested) {
+            if (string.IsNullOrWhiteSpace(d)) {
+                continue;
+            }
+            if (d.Equals(ALLDIGITSWILDCARD) || (int.TryParse(d, out int result) && result >= 0 && result <= Digits.Length)) {
+                b.Verbose.Log($"Digit [{d}] is valid.");
+            } else {
+                Console.WriteLine($"Error >> The digit [{d}] is not a valid digit. It must be a positive integer or '*'");
+                isValid = false;
+            }
+        }
+        return isValid;
     }
 }

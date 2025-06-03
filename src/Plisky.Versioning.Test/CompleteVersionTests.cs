@@ -406,6 +406,56 @@ public class CompleteVersionTests {
         Assert.Equal("Fish", sut.GetVersionString(DisplayType.Full));
     }
 
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void GetBehaviourString_ReturnsCorrectBehaviourForSingleDigit() {
+        var behaviour = DigitIncremementBehaviour.ContinualIncrement;
+        int behaviourValue = (int)behaviour;
+        string expectedResult = $"[0]:[{behaviourValue}]{behaviour}";
+
+        var vu = new VersionUnit("1", "", behaviour);
+        var sut = new CompleteVersion(vu);
+
+        string result = sut.GetBehaviourString(["0"]);
+
+        Assert.Equal(expectedResult, result);
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void GetBehaviourString_ReturnsCorrectBehaviourForStar() {
+        var behaviourFixed = DigitIncremementBehaviour.Fixed;
+        int behaviourFixedValue = (int)behaviourFixed;
+        var behaviourInc = DigitIncremementBehaviour.ContinualIncrement;
+        int behaviourIncValue = (int)behaviourInc;
+        string expectedResult =
+            $"[0]:[{behaviourFixedValue}]{behaviourFixed}\r\n" +
+            $"[1]:[{behaviourIncValue}]{behaviourInc}\r\n" +
+            $"[2]:[{behaviourIncValue}]{behaviourInc}\r\n";
+
+        var vu1 = new VersionUnit("1", "");
+        var vu2 = new VersionUnit("0", ".", behaviourInc);
+        var vu3 = new VersionUnit("1", ".", behaviourInc);
+        var sut = new CompleteVersion(vu1, vu2, vu3);
+
+        string result = sut.GetBehaviourString(["*"]);
+
+        Assert.Equal(expectedResult, result);
+    }
+    [Theory]
+    [InlineData("0", true)]
+    [InlineData("*", true)]
+    [InlineData("not a valid digit", false)]
+    public void ValidateDigitOptions_ReturnsExpectedResult(string digitInput, bool expectedResult) {
+        b.Info.Flow();
+        var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
+        bool actualResult = sut.ValidateDigitOptions([digitInput]);
+
+        Assert.Equal(expectedResult, actualResult);
+    }
+
     public class DisplayTypes {
 
         [Fact]
