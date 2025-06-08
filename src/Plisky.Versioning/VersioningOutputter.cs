@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using Plisky.Diagnostics;
+using Plisky.Versioning;
 
 public class VersioningOutputter {
     public const string VERSIONING_PIPE_NAME = "plisky-versonify";
@@ -27,9 +28,27 @@ public class VersioningOutputter {
         valToWrite = ver.GetVersionString(dt);
     }
 
-    public void DoOutput(OutputPossibilities oo) {
+    public void DoOutput(OutputPossibilities oo, VersioningCommand command) {
         b.Verbose.Flow($"{oo}");
 
+        if (command == VersioningCommand.PassiveOutput) {
+            b.Verbose.Log("Passive output requested, writing to passive output");
+            WritePassiveOutput(oo);
+        } else if (command == VersioningCommand.BehaviourOutput) {
+            b.Verbose.Log("Behaviour output requested, writing to behaviour output");
+            WriteBehaviourOutput(oo);
+        } else {
+            b.Error.Log($"Invalid command for output: {command}");
+        }
+        WritePassiveOutput(oo);
+    }
+
+    private void WriteBehaviourOutput(OutputPossibilities oo) {
+        // TODO: Something Like  if output is console writ to console etc.
+        WriteToConsole("TODO: Correct Output");
+    }
+
+    private void WritePassiveOutput(OutputPossibilities oo) {
         if ((oo & OutputPossibilities.Environment) == OutputPossibilities.Environment) {
             b.Verbose.Log("Environment output requested");
             SetEnvironmentWithValue();
@@ -60,8 +79,6 @@ public class VersioningOutputter {
             WriteToConsole($"PNFN]{versionToLog.ReleaseName}");
         }
     }
-
-
 
     protected virtual void SetFileValue() {
         string fileName = string.IsNullOrWhiteSpace(PverFileName) ? "pver-latest.txt" : PverFileName;

@@ -9,6 +9,7 @@ using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Diagnostics.Listeners;
 using Plisky.Plumbing;
+using Plisky.Versioning;
 
 internal class Program {
     public static VersonifyCommandline options = new();
@@ -56,7 +57,7 @@ internal class Program {
                     PverFileName = options.PverFileName
                 };
 
-                vo.DoOutput(options.OutputsActive);
+                vo.DoOutput(options.OutputsActive, options.RequestedCommand);
             }
 
             b.Info.Log("All Actions - Complete - Exiting.");
@@ -161,26 +162,26 @@ internal class Program {
             return false;
         }
 
-        string cmdCheck = options.Command.ToUpper();
 
-        switch (cmdCheck) {
-            case "CREATEVERSION":
+
+        switch (options.RequestedCommand) {
+            case VersioningCommand.CreateNewVersion:
                 CreateNewVersionStore();
                 return true;
 
-            case "OVERRIDE":
+            case VersioningCommand.Override:
                 CreateNewPendingIncrement();
                 return true;
 
-            case "UPDATEFILES":
+            case VersioningCommand.UpdateFiles:
                 ApplyVersionIncrement();
                 return true;
 
-            case "PASSIVE":
+            case VersioningCommand.PassiveOutput:
                 LoadVersionStore();
                 return true;
 
-            case "BEHAVIOUR":
+            case VersioningCommand.BehaviourOutput:
                 LoadDigitBehaviour();
                 return true;
 

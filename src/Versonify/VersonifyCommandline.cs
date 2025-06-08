@@ -5,6 +5,7 @@ using System.IO;
 using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Plumbing;
+using Plisky.Versioning;
 
 [CommandLineArguments]
 public class VersonifyCommandline {
@@ -91,6 +92,32 @@ public class VersonifyCommandline {
     [CommandLineArg("MM")]
     [CommandLineArg("MinMatch", ArraySeparatorChar = ";", Description = "A series of minmatch path descriptions to files to update")]
     public string[] VersionTargetMinMatch { get; set; }
+
+    public VersioningCommand RequestedCommand {
+        get {
+            if (string.IsNullOrEmpty(Command)) {
+                return VersioningCommand.Invalid;
+            }
+            switch (Command.ToLowerInvariant()) {
+                case "createversion":
+                    return VersioningCommand.CreateNewVersion;
+                case "override":
+                    return VersioningCommand.Override;
+                case "updatefiles":
+                    return VersioningCommand.UpdateFiles;
+                case "passive":
+                    return VersioningCommand.PassiveOutput;
+                case "behaviour":
+                    return VersioningCommand.BehaviourOutput;
+                default:
+                    return VersioningCommand.Invalid;
+            }
+        }
+    }
+
+    public string[] GetDigits() {
+        return new string[] { "*" };
+    }
 
     private void ParseOutputOptions() {
         b.Verbose.Flow();

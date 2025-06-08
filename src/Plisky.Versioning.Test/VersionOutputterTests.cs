@@ -2,6 +2,7 @@
 using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Test;
+using Plisky.Versioning;
 using Versonify;
 using Xunit;
 
@@ -76,7 +77,7 @@ public class VersionOutputterTests {
         var v = sut.Version;
 
         var op = new MockVersioningOutputter(v);
-        op.DoOutput(OutputPossibilities.File);
+        op.DoOutput(OutputPossibilities.File, VersioningCommand.PassiveOutput);
 
         Assert.True(op.FileWasWritten);
         Assert.False(op.EnvWasSet);

@@ -1,8 +1,7 @@
-﻿namespace Plisky.Versioning.Test;
+﻿namespace Plisky.CodeCraft.Test;
 using System;
 using System.Collections.Generic;
 using Minimatch;
-using Plisky.CodeCraft.Test;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Xunit;
