@@ -346,7 +346,6 @@ internal class Program {
             return;
         }
         //TODO: Sort hard coding of [0] - should multiple inputs be catered for or not?
-        //TODO: Add better handling for digit out of range
         if (options.DigitManipulations[0] == "*") {
             Console.WriteLine("Loading All Behaviours");
             Console.WriteLine(ver.GetBehaviour(options.DigitManipulations));

@@ -154,16 +154,16 @@ public class CompleteVersion {
     }
 
     public string GetBehaviourString(string[] digitRequested) {
-        string result = string.Empty;
+        string result;
         if (digitRequested[0] == ALLDIGITSWILDCARD) {
             var sb = new StringBuilder();
             for (int i = 0; i < Digits.Length; i++) {
-                sb.AppendLine($"[{i}]:[{(int)Digits[i].Behaviour}]{Digits[i].Behaviour}");
+                sb.AppendLine($"[{i}]:{Digits[i].Behaviour}({(int)Digits[i].Behaviour})");
             }
             result = sb.ToString();
         } else {
             int digitIndex = int.Parse(digitRequested[0]);
-            result = $"[{digitIndex}]:[{(int)Digits[digitIndex].Behaviour}]{Digits[digitIndex].Behaviour}";
+            result = $"[{digitIndex}]:{Digits[digitIndex].Behaviour}({(int)Digits[digitIndex].Behaviour})";
         }
         return result;
     }

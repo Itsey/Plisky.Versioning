@@ -409,10 +409,10 @@ public class CompleteVersionTests {
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void GetBehaviourString_ReturnsCorrectBehaviourForSingleDigit() {
+    public void GetBehaviourString_ReturnsCorrectBehaviourForSingleDigit() {   // Expected format is [digit]:BehaviourName(behaviourvalue)
         var behaviour = DigitIncremementBehaviour.ContinualIncrement;
         int behaviourValue = (int)behaviour;
-        string expectedResult = $"[0]:[{behaviourValue}]{behaviour}";
+        string expectedResult = $"[0]:{behaviour}({behaviourValue})";
 
         var vu = new VersionUnit("1", "", behaviour);
         var sut = new CompleteVersion(vu);
@@ -425,15 +425,15 @@ public class CompleteVersionTests {
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void GetBehaviourString_ReturnsCorrectBehaviourForStar() {
+    public void GetBehaviourString_ReturnsCorrectBehaviourForStar() {   // Expected format is [digit]:BehaviourName(behaviourvalue)
         var behaviourFixed = DigitIncremementBehaviour.Fixed;
         int behaviourFixedValue = (int)behaviourFixed;
         var behaviourInc = DigitIncremementBehaviour.ContinualIncrement;
         int behaviourIncValue = (int)behaviourInc;
         string expectedResult =
-            $"[0]:[{behaviourFixedValue}]{behaviourFixed}\r\n" +
-            $"[1]:[{behaviourIncValue}]{behaviourInc}\r\n" +
-            $"[2]:[{behaviourIncValue}]{behaviourInc}\r\n";
+            $"[0]:{behaviourFixed}({behaviourFixedValue})\r\n" +
+            $"[1]:{behaviourInc}({behaviourIncValue})\r\n" +
+            $"[2]:{behaviourInc}({behaviourIncValue})\r\n";
 
         var vu1 = new VersionUnit("1", "");
         var vu2 = new VersionUnit("0", ".", behaviourInc);
