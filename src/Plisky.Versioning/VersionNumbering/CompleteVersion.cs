@@ -194,11 +194,11 @@ public class CompleteVersion {
         pendingReleaseName = newReleaseName;
     }
     public bool ValidateDigitOptions(string[] digitsRequested) {
-        bool isValid = true;
+        bool isValid = false;
 
         if (digitsRequested is null || digitsRequested.Length == 0) {
             Console.WriteLine("Error >> No digit specified, please use the -DG option.");
-            return false;
+            return isValid;
         }
         b.Verbose.Log($"Validating Digit Options [{string.Join(",", digitsRequested)}]");
 
@@ -208,9 +208,9 @@ public class CompleteVersion {
             }
             if (d.Equals(ALLDIGITSWILDCARD) || (int.TryParse(d, out int result) && result >= 0 && result <= Digits.Length)) {
                 b.Verbose.Log($"Digit [{d}] is valid.");
+                isValid = true;
             } else {
-                Console.WriteLine($"Error >> The digit [{d}] is not a valid digit. It must be a positive integer or '*'");
-                isValid = false;
+                throw new ArgumentOutOfRangeException(nameof(digitsRequested), $"The digit [{d}] is not a valid digit. It must be a positive integer or '*' (all digits).");
             }
         }
         return isValid;

@@ -53,7 +53,7 @@ public class Exploratory {
     }
 
 
-    [Fact(Skip = "Todo")]
+    [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     public void Validate_digitoptions_throws_when_invalid_digit_passed() {
         var cv = CompleteVersion.GetDefault();

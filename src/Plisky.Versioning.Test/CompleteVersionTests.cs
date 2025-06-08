@@ -445,10 +445,11 @@ public class CompleteVersionTests {
         Assert.Equal(expectedResult, result);
     }
     [Theory]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
     [InlineData("0", true)]
     [InlineData("*", true)]
-    [InlineData("not a valid digit", false)]
-    public void ValidateDigitOptions_ReturnsExpectedResult(string digitInput, bool expectedResult) {
+    public void ValidateDigitOptions_ReturnsTrueForValidInput(string digitInput, bool expectedResult) {
         b.Info.Flow();
         var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
         bool actualResult = sut.ValidateDigitOptions([digitInput]);
