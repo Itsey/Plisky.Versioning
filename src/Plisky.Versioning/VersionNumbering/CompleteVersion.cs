@@ -153,16 +153,16 @@ public class CompleteVersion {
         return GetVersionString(DisplayType.Full);
     }
 
-    public string GetBehaviourString(string[] digitRequested) {
+    public string GetBehaviourString(string digitRequested) {
         string result;
-        if (digitRequested[0] == ALLDIGITSWILDCARD) {
+        if (digitRequested == ALLDIGITSWILDCARD) {
             var sb = new StringBuilder();
             for (int i = 0; i < Digits.Length; i++) {
                 sb.AppendLine($"[{i}]:{Digits[i].Behaviour}({(int)Digits[i].Behaviour})");
             }
             result = sb.ToString();
         } else {
-            int digitIndex = int.Parse(digitRequested[0]);
+            int digitIndex = int.Parse(digitRequested);
             result = $"[{digitIndex}]:{Digits[digitIndex].Behaviour}({(int)Digits[digitIndex].Behaviour})";
         }
         return result;

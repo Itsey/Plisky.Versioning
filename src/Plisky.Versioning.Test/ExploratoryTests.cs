@@ -26,7 +26,7 @@ public class Exploratory {
 
 
 
-    [Fact(Skip = "Todo")]
+    [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     public void Commandline_digits_allows_multiple_digits() {
         var sut = new VersonifyCommandline();
@@ -40,7 +40,7 @@ public class Exploratory {
         gd[2].ShouldBe("3");
     }
 
-    [Fact(Skip = "Todo")]
+    [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     public void CommandLine_will_only_allow_asterisk_once() {
         var sut = new VersonifyCommandline();

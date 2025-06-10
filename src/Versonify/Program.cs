@@ -338,20 +338,21 @@ internal class Program {
 
     }
     private static void LoadDigitBehaviour() {
-        string[] digitsToLoad = options.DigitManipulations;
         var ver = new Versioning(storage, options.DryRunOnly);
         versionerUsed = ver.Version;
-
-        if (!ver.Version.ValidateDigitOptions(digitsToLoad)) {
+        if (!ver.Version.ValidateDigitOptions(options.DigitManipulations)) {
             return;
         }
-        //TODO: Sort hard coding of [0] - should multiple inputs be catered for or not?
-        if (options.DigitManipulations[0] == "*") {
+
+        string[] digitsToLoad = options.GetDigits();
+        if (digitsToLoad[0] == "*") {
             Console.WriteLine("Loading All Behaviours");
-            Console.WriteLine(ver.GetBehaviour(options.DigitManipulations));
+            Console.WriteLine(ver.GetBehaviour(digitsToLoad[0]));
         } else {
-            Console.WriteLine($"Loaded Behaviour for Digit [{options.DigitManipulations[0]}]");
-            Console.WriteLine(ver.GetBehaviour(options.DigitManipulations));
+            Console.WriteLine($"Loading Behaviour for Digits [{string.Join(',', digitsToLoad)}]");
+            foreach (string digit in digitsToLoad) {
+                Console.WriteLine(ver.GetBehaviour(digit));
+            }
         }
     }
 }

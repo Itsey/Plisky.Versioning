@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Plumbing;
@@ -27,7 +28,7 @@ public class VersonifyCommandline {
     [CommandLineArg("Debug", Description = "Enables Debug Logging")]
     public bool Debug { get; set; }
 
-    //-DG:
+    // TODO: The array separator ';' does not work and needs fixing. Only ',' works inside quotes for arrays.
     [CommandLineArg("DG")]
     [CommandLineArg("Digits", Description = "Separated characters to form digits for the version number", ArraySeparatorChar = ";")]
     public string[] DigitManipulations { get; set; }
@@ -116,7 +117,11 @@ public class VersonifyCommandline {
     }
 
     public string[] GetDigits() {
-        return new string[] { "*" };
+        if (DigitManipulations.Contains("*")) {
+            return new string[] { "*" };
+        }
+
+        return DigitManipulations;
     }
 
     private void ParseOutputOptions() {

@@ -105,7 +105,7 @@ public class Versioning {
         return result;
     }
 
-    public string GetBehaviour(string[] digit) {
+    public string GetBehaviour(string digit) {
         b.Verbose.Log($"Returning Behviours");
         string result = cv.GetBehaviourString(digit);
         return result; 

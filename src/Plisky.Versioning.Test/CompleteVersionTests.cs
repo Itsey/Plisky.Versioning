@@ -407,7 +407,7 @@ public class CompleteVersionTests {
     }
 
     [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
     public void GetBehaviourString_ReturnsCorrectBehaviourForSingleDigit() {   // Expected format is [digit]:BehaviourName(behaviourvalue)
         var behaviour = DigitIncremementBehaviour.ContinualIncrement;
@@ -417,13 +417,13 @@ public class CompleteVersionTests {
         var vu = new VersionUnit("1", "", behaviour);
         var sut = new CompleteVersion(vu);
 
-        string result = sut.GetBehaviourString(["0"]);
+        string result = sut.GetBehaviourString("0");
 
         Assert.Equal(expectedResult, result);
     }
 
     [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
     public void GetBehaviourString_ReturnsCorrectBehaviourForStar() {   // Expected format is [digit]:BehaviourName(behaviourvalue)
         var behaviourFixed = DigitIncremementBehaviour.Fixed;
@@ -440,7 +440,7 @@ public class CompleteVersionTests {
         var vu3 = new VersionUnit("1", ".", behaviourInc);
         var sut = new CompleteVersion(vu1, vu2, vu3);
 
-        string result = sut.GetBehaviourString(["*"]);
+        string result = sut.GetBehaviourString("*");
 
         Assert.Equal(expectedResult, result);
     }
