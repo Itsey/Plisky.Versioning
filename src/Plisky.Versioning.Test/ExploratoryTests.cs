@@ -74,7 +74,7 @@ public class Exploratory {
     }
 
 
-    [Theory(Skip = "Todo")]
+    [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
     [InlineData("88.99", 2)]
@@ -96,15 +96,15 @@ public class Exploratory {
     }
 
 
-    [Theory(Skip = "Todo")]
+    [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
     [InlineData("99", DigitIncremementBehaviour.Fixed, "Fixed", 0)]
-    [InlineData("5.6.7.8", DigitIncremementBehaviour.Fixed, "Fixed", 0)]
-    [InlineData("5.68", DigitIncremementBehaviour.AutoIncrementWithReset, "AutoIncrementWithReset", 4)]
-    [InlineData("0", DigitIncremementBehaviour.DaysSinceDate, "DaysSinceDate", 1)]
-    [InlineData("0", DigitIncremementBehaviour.MajorDeterminesVersionNumber, "MajorDeterminesVersionNumber", 2)]
-    [InlineData("0", DigitIncremementBehaviour.DailyAutoIncrement, "DailyAutoIncremement", 3)]
+    [InlineData("5", DigitIncremementBehaviour.Fixed, "Fixed", 0)]
+    [InlineData("68", DigitIncremementBehaviour.AutoIncrementWithReset, "AutoIncrementWithReset", 4)]
+    [InlineData("0", DigitIncremementBehaviour.MajorDeterminesVersionNumber, "MajorDeterminesVersionNumber", 1)]
+    [InlineData("0", DigitIncremementBehaviour.DaysSinceDate, "DaysSinceDate", 2)]
+    [InlineData("0", DigitIncremementBehaviour.DailyAutoIncrement, "DailyAutoIncrement", 3)]
     [InlineData("0", DigitIncremementBehaviour.AutoIncrementWithReset, "AutoIncrementWithReset", 4)]
     [InlineData("0", DigitIncremementBehaviour.AutoIncrementWithResetAny, "AutoIncrementWithResetAny", 5)]
     [InlineData("0", DigitIncremementBehaviour.ContinualIncrement, "ContinualIncrement", 6)]
@@ -119,12 +119,12 @@ public class Exploratory {
         var op = new MockVersioningOutputter(sut);
         op.DoOutput(OutputPossibilities.File, VersioningCommand.BehaviourOutput);
 
-        op.OutputLines.Length.ShouldBe(1, "There should be two lines of output for the behaviour output command.");
+        op.OutputLines.Length.ShouldBe(1, "There should be one line of output for the behaviour output command.");
         op.OutputLines[0].ShouldBe($"[0]:{expectedOutput}({behaviourValue})");
     }
 
 
-    [Fact(Skip = "Todo")]
+    [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Behaviour_output_does_not_have_digit_values() {
@@ -140,6 +140,7 @@ public class Exploratory {
         op.OutputLines[1].ShouldNotContain("89");
 
     }
+
 
     [Theory(Skip = "Todo")]
     [Trait(Traits.Age, Traits.Fresh)]
@@ -216,11 +217,20 @@ public class Exploratory {
             sut.IncrementAndUpdateAll();
         });
     }
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Behaviour_output_works_for_console_output_possibility() {
+        b.Info.Flow();
 
+        var sut = new CompleteVersion("1.2.3");
+        var op = new MockVersioningOutputter(sut);
 
+        op.DoOutput(OutputPossibilities.Console, VersioningCommand.BehaviourOutput);
 
-
-
-
-
+        op.OutputLines.Length.ShouldBe(3, "There should be three lines of output for the behaviour output command when using Console output.");
+        op.OutputLines[0].ShouldStartWith("[0]:");
+        op.OutputLines[1].ShouldStartWith("[1]:");
+        op.OutputLines[2].ShouldStartWith("[2]:");
+    }
 }

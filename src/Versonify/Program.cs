@@ -54,7 +54,8 @@ internal class Program {
                 b.Verbose.Log($"All Actions - Complete - Outputting.");
                 var vo = new VersioningOutputter(versionerUsed) {
                     ConsoleTemplate = options.ConsoleTemplate,
-                    PverFileName = options.PverFileName
+                    PverFileName = options.PverFileName,
+                    Digits = options.GetDigits()
                 };
 
                 vo.DoOutput(options.OutputsActive, options.RequestedCommand);

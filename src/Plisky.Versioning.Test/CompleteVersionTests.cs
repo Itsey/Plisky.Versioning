@@ -433,7 +433,7 @@ public class CompleteVersionTests {
         string expectedResult =
             $"[0]:{behaviourFixed}({behaviourFixedValue})\r\n" +
             $"[1]:{behaviourInc}({behaviourIncValue})\r\n" +
-            $"[2]:{behaviourInc}({behaviourIncValue})\r\n";
+            $"[2]:{behaviourInc}({behaviourIncValue})";
 
         var vu1 = new VersionUnit("1", "");
         var vu2 = new VersionUnit("0", ".", behaviourInc);

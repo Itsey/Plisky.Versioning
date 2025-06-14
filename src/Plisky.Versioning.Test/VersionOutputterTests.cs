@@ -3,6 +3,7 @@ using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Plisky.Versioning;
+using Shouldly;
 using Versonify;
 using Xunit;
 
@@ -50,19 +51,20 @@ public class VersionOutputterTests {
 
         Assert.Contains(contains, cla.ConsoleTemplate);
     }
-    [Theory(DisplayName = nameof(Args_OutputterParseSetsFileName))]
+    [Fact(DisplayName = nameof(Args_OutputterParseSetsFileName))]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
-    [InlineData("file:myfile.txt", "myfile.txt")]
-    [InlineData("file", "pver-latest.txt")]
-    public void Args_OutputterParseSetsFileName(string argument, string contains) {
+    public void Args_OutputterParseSetsFileName() {
         b.Info.Flow();
+
+        string argument = "file:myfile.txt";
+        string expectedFilename = "myfile.txt";
 
         var cla = new VersonifyCommandline {
             OutputOptions = argument
         };
 
-        Assert.Equal(contains, cla.PverFileName);
+        cla.PverFileName.ShouldBe(expectedFilename);
     }
 
     [Fact(DisplayName = nameof(Outputter_Environment_WritesToEnvironment))]

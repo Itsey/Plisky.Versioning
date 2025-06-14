@@ -23,7 +23,7 @@ public class VersonifyCommandline {
     public string Command { get; set; }
 
     public string ConsoleTemplate { get; private set; }
-    public string PverFileName { get; set; } = "pver-latest.txt";
+    public string PverFileName { get; set; }
 
     [CommandLineArg("Debug", Description = "Enables Debug Logging")]
     public bool Debug { get; set; }
@@ -117,8 +117,12 @@ public class VersonifyCommandline {
     }
 
     public string[] GetDigits() {
-        if (DigitManipulations.Contains("*")) {
-            return new string[] { "*" };
+        if (DigitManipulations == null || DigitManipulations.Length == 0) {
+            b.Verbose.Log("No digits specified");
+            return [];
+        }
+        else if (DigitManipulations.Contains("*")) {
+            return ["*"];
         }
 
         return DigitManipulations;

@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using Plisky.Diagnostics;
 using Plisky.Versioning;
 
@@ -9,6 +10,7 @@ public class VersioningOutputter {
     public const string VERSIONING_PIPE_NAME = "plisky-versonify";
     public const string VERSION_MSG_SUBJECT = "version";
     public const string VERSION_REPLACE_TAG = "%VER%";
+    public const string ALLDIGITSWILDCARD = "*";
     protected Bilge b = new Bilge("Plisky-Tool-Output");
     protected CompleteVersion versionToLog;
     protected string valToWrite;
@@ -16,6 +18,16 @@ public class VersioningOutputter {
     public string? FileTemplate { get; set; }
     public string? ConsoleTemplate { get; set; }
     public string? PverFileName { get; set; }
+    public string[] Digits { get; set; } = [ALLDIGITSWILDCARD];
+    public string BehToWrite {
+        get {
+            if (Digits == null || Digits.Length == 0) {
+                return string.Empty;
+            }
+            return string.Concat(Digits.Select(digit => versionToLog.GetBehaviourString(digit)));
+        }
+        set { }
+    }
 
 
     protected virtual void SetEnvironmentWithValue() {
@@ -40,12 +52,18 @@ public class VersioningOutputter {
         } else {
             b.Error.Log($"Invalid command for output: {command}");
         }
-        WritePassiveOutput(oo);
     }
 
     private void WriteBehaviourOutput(OutputPossibilities oo) {
-        // TODO: Something Like  if output is console writ to console etc.
-        WriteToConsole("TODO: Correct Output");
+        if ((oo & OutputPossibilities.File) == OutputPossibilities.File) {
+            b.Verbose.Log("File output requested");
+            PverFileName ??= "pbeh-latest.txt"; // Default file name if not set
+            SetFileValue(BehToWrite);
+        }
+        if ((oo & OutputPossibilities.Console) == OutputPossibilities.Console) {
+            b.Verbose.Log("Console output requested");
+            WriteToConsole(BehToWrite);
+        }
     }
 
     private void WritePassiveOutput(OutputPossibilities oo) {
@@ -55,7 +73,7 @@ public class VersioningOutputter {
         }
         if ((oo & OutputPossibilities.File) == OutputPossibilities.File) {
             b.Verbose.Log("File output requested");
-            SetFileValue();
+            SetFileValue(valToWrite);
         }
 
         if ((oo & OutputPossibilities.Console) == OutputPossibilities.Console) {
@@ -80,10 +98,10 @@ public class VersioningOutputter {
         }
     }
 
-    protected virtual void SetFileValue() {
+    protected virtual void SetFileValue(string outputString) {
         string fileName = string.IsNullOrWhiteSpace(PverFileName) ? "pver-latest.txt" : PverFileName;
         string filePath = Path.Combine(Environment.CurrentDirectory, fileName);
-        File.WriteAllText(filePath, valToWrite);
+        File.WriteAllText(filePath, outputString);
     }
 
     protected virtual void WriteToConsole(string outputString) {

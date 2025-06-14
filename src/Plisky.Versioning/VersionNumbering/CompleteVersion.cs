@@ -160,7 +160,7 @@ public class CompleteVersion {
             for (int i = 0; i < Digits.Length; i++) {
                 sb.AppendLine($"[{i}]:{Digits[i].Behaviour}({(int)Digits[i].Behaviour})");
             }
-            result = sb.ToString();
+            result = sb.ToString().Trim();
         } else {
             int digitIndex = int.Parse(digitRequested);
             result = $"[{digitIndex}]:{Digits[digitIndex].Behaviour}({(int)Digits[digitIndex].Behaviour})";
