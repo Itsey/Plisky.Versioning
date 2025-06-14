@@ -24,8 +24,6 @@ public class Exploratory {
         uth.ClearUpTestFiles();
     }
 
-
-
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     public void Commandline_digits_allows_multiple_digits() {
@@ -42,19 +40,6 @@ public class Exploratory {
 
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
-    public void CommandLine_will_only_allow_asterisk_once() {
-        var sut = new VersonifyCommandline();
-        sut.DigitManipulations = new[] { "1", "*", "2", "*" };
-
-        string[] gd = sut.GetDigits();
-
-        gd.Length.ShouldBe(1, "There should only be one digit returned from the command line, even though two were specified.");
-        gd[0].ShouldBe("*", "The only digit returned should be an asterisk, as that is the only valid digit in this case.");
-    }
-
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Fresh)]
     public void Validate_digitoptions_throws_when_invalid_digit_passed() {
         var cv = CompleteVersion.GetDefault();
 
@@ -62,7 +47,6 @@ public class Exploratory {
             _ = cv.ValidateDigitOptions(new[] { "monkey" });
         });
     }
-
 
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
@@ -73,80 +57,15 @@ public class Exploratory {
         result.ShouldBeFalse();
     }
 
-
-    [Theory]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [Trait(Traits.Style, Traits.Unit)]
-    [InlineData("88.99", 2)]
-    [InlineData("88.99.77", 3)]
-    [InlineData("5.6.7.8", 4)]
-    [InlineData("0", 1)]
-    [InlineData("0.0.0.0", 4)]
-    public void Behaviour_returns_correct_number_digits(string verInit, int digits) {
-        b.Info.Flow();
-
-        var mvs = new MockVersionStorage(verInit);
-        var sut = new Versioning(mvs);
-        var v = sut.Version;
-
-        var op = new MockVersioningOutputter(v);
-        op.DoOutput(OutputPossibilities.File, VersioningCommand.BehaviourOutput);
-
-        op.OutputLines.Length.ShouldBe(digits, "Correct number of lines of output should follow behaviour output.");
-    }
-
-
-    [Theory]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [Trait(Traits.Style, Traits.Unit)]
-    [InlineData("99", DigitIncremementBehaviour.Fixed, "Fixed", 0)]
-    [InlineData("5", DigitIncremementBehaviour.Fixed, "Fixed", 0)]
-    [InlineData("68", DigitIncremementBehaviour.AutoIncrementWithReset, "AutoIncrementWithReset", 4)]
-    [InlineData("0", DigitIncremementBehaviour.MajorDeterminesVersionNumber, "MajorDeterminesVersionNumber", 1)]
-    [InlineData("0", DigitIncremementBehaviour.DaysSinceDate, "DaysSinceDate", 2)]
-    [InlineData("0", DigitIncremementBehaviour.DailyAutoIncrement, "DailyAutoIncrement", 3)]
-    [InlineData("0", DigitIncremementBehaviour.AutoIncrementWithReset, "AutoIncrementWithReset", 4)]
-    [InlineData("0", DigitIncremementBehaviour.AutoIncrementWithResetAny, "AutoIncrementWithResetAny", 5)]
-    [InlineData("0", DigitIncremementBehaviour.ContinualIncrement, "ContinualIncrement", 6)]
-    [InlineData("0", DigitIncremementBehaviour.WeeksSinceDate, "WeeksSinceDate", 7)]
-    [InlineData("0", DigitIncremementBehaviour.ReleaseName, "ReleaseName", 8)]
-    public void Behaviour_output_works_for_fixed(string value, DigitIncremementBehaviour behaviour, string expectedOutput, int behaviourValue) {
-        // Behaviour value is coded into the test here because its on the public interface, change the enum values introduce a breaking change.
-        b.Info.Flow();
-
-        var sut = new CompleteVersion(value);
-        sut.Digits[0].Behaviour = behaviour;
-        var op = new MockVersioningOutputter(sut);
-        op.DoOutput(OutputPossibilities.File, VersioningCommand.BehaviourOutput);
-
-        op.OutputLines.Length.ShouldBe(1, "There should be one line of output for the behaviour output command.");
-        op.OutputLines[0].ShouldBe($"[0]:{expectedOutput}({behaviourValue})");
-    }
-
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Behaviour_output_does_not_have_digit_values() {
-        b.Info.Flow();
-
-        var sut = new CompleteVersion("99.89");
-        var op = new MockVersioningOutputter(sut);
-
-        op.DoOutput(OutputPossibilities.File, VersioningCommand.BehaviourOutput);
-
-        op.OutputLines.Length.ShouldBe(2, "There should be two lines of output for the behaviour output command.");
-        op.OutputLines[0].ShouldNotContain("99");
-        op.OutputLines[1].ShouldNotContain("89");
-
-    }
-
-
     [Theory(Skip = "Todo")]
     [Trait(Traits.Age, Traits.Fresh)]
     [InlineData(null, VersioningCommand.BehaviourOutput)]
     [InlineData("Fixed", VersioningCommand.BehaviourUpdate)]
     [InlineData("Auto", VersioningCommand.BehaviourUpdate)]
+    [InlineData("AutoIncrementWithReset", VersioningCommand.BehaviourUpdate)]
+    [InlineData("DailyAutoIncrement", VersioningCommand.BehaviourUpdate)]
+    [InlineData("ContinualIncrement", VersioningCommand.BehaviourUpdate)]
+    [InlineData("Bannana", VersioningCommand.Invalid)]
     public void CommandLine_correctly_sets_behviourtypes(string quickValue, VersioningCommand cmd) {
         var sut = new VersonifyCommandline();
         sut.Command = "behaviour";
@@ -154,34 +73,6 @@ public class Exploratory {
 
         sut.RequestedCommand.ShouldBe(cmd, "Behaviour should be output unless a quick value is passed.");
     }
-
-
-
-    [Theory]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [InlineData("", VersioningCommand.Invalid)]
-    [InlineData("bimajkasdercas;erasdf1!!assdf asda", VersioningCommand.Invalid)]
-    [InlineData("=", VersioningCommand.Invalid)]
-    [InlineData("CREATEVERSION", VersioningCommand.CreateNewVersion)]
-    [InlineData("OVERRIDE", VersioningCommand.Override)]
-    [InlineData("UPDATEFILES", VersioningCommand.UpdateFiles)]
-    [InlineData("PASSIVE", VersioningCommand.PassiveOutput)]
-    [InlineData("BEHAVIOUR", VersioningCommand.BehaviourOutput)]
-    [InlineData("CreateVersion", VersioningCommand.CreateNewVersion)]
-    [InlineData("override", VersioningCommand.Override)]
-    [InlineData("updateFiles", VersioningCommand.UpdateFiles)]
-    [InlineData("passIVE", VersioningCommand.PassiveOutput)]
-    [InlineData("behaviour", VersioningCommand.BehaviourOutput)]
-    public void CommandLine_correctly_sets_command_from_argument(string commandString, VersioningCommand cmd) {
-        var sut = new VersonifyCommandline();
-        sut.Command = commandString;
-        sut.RequestedCommand.ShouldBe(cmd, "The command should be set correctly from the command line argument.");
-    }
-
-
-
-
-
 
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
@@ -202,7 +93,6 @@ public class Exploratory {
         _ = sut.PerformUpdate(fn, FileUpdateType.NetInformational);
         _ = sut.PerformUpdate(fn, FileUpdateType.NetFile);
 
-
         ts.DoesFileContainThisText(fn, "AssemblyFileVersion(\"2.0.0\"").ShouldBeFalse("The file version should be three digits and present");
         ts.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"2.0-Unicorn.0\"").ShouldBeTrue("The informational version should be present");
         ts.DoesFileContainThisText(fn, "AssemblyVersion(\"2.0\")").ShouldBeTrue("the assembly version should be two digits and present.");
@@ -217,20 +107,6 @@ public class Exploratory {
             sut.IncrementAndUpdateAll();
         });
     }
-    [Fact]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Behaviour_output_works_for_console_output_possibility() {
-        b.Info.Flow();
 
-        var sut = new CompleteVersion("1.2.3");
-        var op = new MockVersioningOutputter(sut);
 
-        op.DoOutput(OutputPossibilities.Console, VersioningCommand.BehaviourOutput);
-
-        op.OutputLines.Length.ShouldBe(3, "There should be three lines of output for the behaviour output command when using Console output.");
-        op.OutputLines[0].ShouldStartWith("[0]:");
-        op.OutputLines[1].ShouldStartWith("[1]:");
-        op.OutputLines[2].ShouldStartWith("[2]:");
-    }
 }

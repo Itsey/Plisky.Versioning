@@ -3,6 +3,8 @@
 using System;
 using Plisky.Diagnostics;
 using Plisky.Test;
+using Plisky.Versioning;
+using Shouldly;
 using Versonify;
 using Xunit;
 
@@ -16,7 +18,38 @@ public class VersonifyCommandLineTests {
         ts = new TestSupport(uth);
     }
 
+    [Theory]
+    [Trait(Traits.Age, Traits.Regression)]
+    [InlineData("", VersioningCommand.Invalid)]
+    [InlineData("bimajkasdercas;erasdf1!!assdf asda", VersioningCommand.Invalid)]
+    [InlineData("=", VersioningCommand.Invalid)]
+    [InlineData("CREATEVERSION", VersioningCommand.CreateNewVersion)]
+    [InlineData("OVERRIDE", VersioningCommand.Override)]
+    [InlineData("UPDATEFILES", VersioningCommand.UpdateFiles)]
+    [InlineData("PASSIVE", VersioningCommand.PassiveOutput)]
+    [InlineData("BEHAVIOUR", VersioningCommand.BehaviourOutput)]
+    [InlineData("CreateVersion", VersioningCommand.CreateNewVersion)]
+    [InlineData("override", VersioningCommand.Override)]
+    [InlineData("updateFiles", VersioningCommand.UpdateFiles)]
+    [InlineData("passIVE", VersioningCommand.PassiveOutput)]
+    [InlineData("behaviour", VersioningCommand.BehaviourOutput)]
+    public void CommandLine_correctly_sets_command_from_argument(string commandString, VersioningCommand cmd) {
+        var sut = new VersonifyCommandline();
+        sut.Command = commandString;
+        sut.RequestedCommand.ShouldBe(cmd, "The command should be set correctly from the command line argument.");
+    }
 
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    public void CommandLine_will_only_allow_asterisk_once() {
+        var sut = new VersonifyCommandline();
+        sut.DigitManipulations = new[] { "1", "*", "2", "*" };
+
+        string[] gd = sut.GetDigits();
+
+        gd.Length.ShouldBe(1, "There should only be one digit returned from the command line, even though two were specified.");
+        gd[0].ShouldBe("*", "The only digit returned should be an asterisk, as that is the only valid digit in this case.");
+    }
 
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
@@ -44,7 +77,6 @@ public class VersonifyCommandLineTests {
         Assert.True((sut.OutputsActive & OutputPossibilities.File) == OutputPossibilities.File);
     }
 
-
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -58,7 +90,6 @@ public class VersonifyCommandLineTests {
         });
     }
 
-
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -68,7 +99,6 @@ public class VersonifyCommandLineTests {
         var sut = new VersonifyCommandline();
         Assert.Equal(OutputPossibilities.None, sut.OutputsActive);
     }
-
 
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
@@ -84,5 +114,4 @@ public class VersonifyCommandLineTests {
         sut.OutputOptions = null;
         Assert.Equal(OutputPossibilities.None, sut.OutputsActive);
     }
-
 }

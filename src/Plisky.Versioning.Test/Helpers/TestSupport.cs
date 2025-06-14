@@ -35,16 +35,6 @@ namespace Plisky.CodeCraft.Test {
                 case FileUpdateType.StdInformational: return GetVersionFromCSProj(srcFile, "Version");
                 case FileUpdateType.StdFile: return GetVersionFromCSProj(srcFile, "FileVersion");
             }
-            // case FileUpdateType.Wix:
-            //        break;
-            //default:
-            //        break;
-            //        case FileUpdateType.Assembly:
-            //    break;
-            //case FileUpdateType.AssemblyInformational:
-            //    break;
-            //case FileUpdateType.AssemblyFile:
-            //    break;
             throw new NotImplementedException();
         }
 

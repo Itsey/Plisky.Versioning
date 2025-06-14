@@ -11,12 +11,7 @@ public enum DigitIncremementBehaviour {
     /// </summary>
     Fixed = 0,
 
-    /// <summary>
-    /// MajorDeterminesVersionNumber is a special format used to support multiple paralell branches.  The version number does not change and remains
-    /// constant during increments, however the Major digit is also used to determine which version number to load.  It is invalid to set any digit
-    /// other than the Major digit to this number.
-    /// </summary>
-    MajorDeterminesVersionNumber = 1,
+    // MajorDeterminesVersionNumber = 1  has been removed.   It is no longer supported by versonify.
 
     /// <summary>
     /// DaysSinceDate will reflect the number of days that have elapsed since the BaseDate
