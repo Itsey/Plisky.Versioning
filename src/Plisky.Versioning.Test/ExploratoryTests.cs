@@ -57,11 +57,11 @@ public class Exploratory {
         result.ShouldBeFalse();
     }
 
-    [Theory(Skip = "Todo")]
+    [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
     [InlineData(null, VersioningCommand.BehaviourOutput)]
     [InlineData("Fixed", VersioningCommand.BehaviourUpdate)]
-    [InlineData("Auto", VersioningCommand.BehaviourUpdate)]
+    [InlineData("0", VersioningCommand.BehaviourUpdate)]
     [InlineData("AutoIncrementWithReset", VersioningCommand.BehaviourUpdate)]
     [InlineData("DailyAutoIncrement", VersioningCommand.BehaviourUpdate)]
     [InlineData("ContinualIncrement", VersioningCommand.BehaviourUpdate)]

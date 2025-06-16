@@ -118,7 +118,7 @@ public class VersionOutputterTests {
     }
 
     [Fact]
-    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Behaviour_output_works_for_console_output_possibility() {
         b.Info.Flow();

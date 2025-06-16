@@ -109,7 +109,12 @@ public class VersonifyCommandline {
                 case "passive":
                     return VersioningCommand.PassiveOutput;
                 case "behaviour":
-                    return VersioningCommand.BehaviourOutput;
+                    if (string.IsNullOrEmpty(QuickValue)) {
+                        return VersioningCommand.BehaviourOutput;
+                    } else if (Enum.TryParse(typeof(DigitIncremementBehaviour), QuickValue, out _)) {
+                        return VersioningCommand.BehaviourUpdate;
+                    }
+                    return VersioningCommand.Invalid;
                 default:
                     return VersioningCommand.Invalid;
             }
@@ -120,8 +125,7 @@ public class VersonifyCommandline {
         if (DigitManipulations == null || DigitManipulations.Length == 0) {
             b.Verbose.Log("No digits specified");
             return [];
-        }
-        else if (DigitManipulations.Contains("*")) {
+        } else if (DigitManipulations.Contains("*")) {
             return ["*"];
         }
 

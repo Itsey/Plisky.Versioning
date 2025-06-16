@@ -186,6 +186,10 @@ internal class Program {
                 LoadDigitBehaviour();
                 return true;
 
+            case VersioningCommand.BehaviourUpdate:
+                ApplyDigitBehaviour();
+                return true;
+
             default:
                 Console.WriteLine("Error >> Unrecognised Command: " + options.Command);
                 return false;
@@ -232,13 +236,13 @@ internal class Program {
 
         string verPendPattern = options.QuickValue;
 
-        Console.WriteLine($"Apply Delayed Incremenet. [{ver.ToString()}] using [{verPendPattern}]");
+        Console.WriteLine($"Apply Delayed Increment. [{ver.ToString()}] using [{verPendPattern}]");
         ver.Version.ApplyPendingVersion(verPendPattern);
 
         if (!options.DryRunOnly) {
             storage.Persist(ver.Version);
             ver.Increment();
-            Console.WriteLine($"Saving Overriden Version [{ver.GetVersion()}]");
+            Console.WriteLine($"Saving Overridden Version [{ver.GetVersion()}]");
         } else {
             ver.Version.Increment();
             Console.WriteLine($"DryRun - Would Save :" + ver.Version.ToString());
@@ -355,5 +359,8 @@ internal class Program {
                 Console.WriteLine(ver.GetBehaviour(digit));
             }
         }
+    }
+    private static void ApplyDigitBehaviour() {
+        throw new NotImplementedException();
     }
 }
