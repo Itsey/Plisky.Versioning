@@ -361,6 +361,48 @@ internal class Program {
         }
     }
     private static void ApplyDigitBehaviour() {
-        throw new NotImplementedException();
+        var ver = new Versioning(storage, options.DryRunOnly);
+        versionerUsed = ver.Version;
+
+        if (!ver.Version.ValidateDigitOptions(options.DigitManipulations)) {
+            return;
+        }
+
+        if (!TryParseDigitIncrementBehaviour(options.QuickValue, out var newBehaviour)) {
+            return;
+        }
+
+        string[] digitsToUpdate = options.GetDigits();
+        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == "*") {
+            Console.WriteLine($"Setting All Behaviours to {newBehaviour}");
+        } else {
+            Console.WriteLine($"Setting Behaviour for Digit[{string.Join(',', digitsToUpdate)}] to {newBehaviour}({(int)newBehaviour})");
+        }
+
+        foreach (string digit in digitsToUpdate) {
+            ver.UpdateBehaviour(digit, newBehaviour);
+        }
+
+        if (!options.DryRunOnly) {
+            Console.WriteLine("Saving Updated Behaviour");
+            ver.SaveUpdatedVersion();
+        } else {
+            DisplayDryRunBehaviours(ver, digitsToUpdate);
+        }
+    }
+
+    private static void DisplayDryRunBehaviours(Versioning ver, string[] digitsToUpdate) {
+        Console.WriteLine("DryRun - Would Save:");
+        foreach (string digit in digitsToUpdate) {
+            Console.WriteLine(ver.GetBehaviour(digit));
+        }
+    }
+    private static bool TryParseDigitIncrementBehaviour(string value, out DigitIncremementBehaviour behaviour) {
+        if (Enum.TryParse<DigitIncremementBehaviour>(value, out behaviour) &&
+            Enum.IsDefined(typeof(DigitIncremementBehaviour), behaviour)) {
+            return true;
+        }
+        Console.WriteLine($"Error: '{value}' is not a valid digit increment behaviour.");
+        return false;
     }
 }

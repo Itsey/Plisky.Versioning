@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using Plisky.Diagnostics;
 
@@ -166,6 +167,24 @@ public class CompleteVersion {
             result = $"[{digitIndex}]:{Digits[digitIndex].Behaviour}({(int)Digits[digitIndex].Behaviour})";
         }
         return result;
+    }
+
+    public void ApplyBehaviourUpdate(string digitToUpdate, DigitIncremementBehaviour newBehaviour) {
+        if (digitToUpdate == ALLDIGITSWILDCARD) {
+            b.Verbose.Log($"Applying behaviour update to all digits to {newBehaviour}");
+            foreach (var digit in Digits) {
+                digit.SetBehaviour(newBehaviour);
+            }
+            return;
+        }
+
+        Debug.Assert(int.TryParse(digitToUpdate, out _), "Digit to update is not a valid integer, this should not happen.");
+        Debug.Assert(Digits[int.Parse(digitToUpdate)] != null, "Digit to update is null, this should not happen.");
+        Debug.Assert(Digits.Length > int.Parse(digitToUpdate), "Digit to update is out of range of the digits available.");
+
+        b.Verbose.Log($"Applying behaviour update for digit {digitToUpdate} to behaviour {newBehaviour}");
+        int idx = int.Parse(digitToUpdate);
+        Digits[idx].SetBehaviour(newBehaviour);
     }
 
     public void Increment() {

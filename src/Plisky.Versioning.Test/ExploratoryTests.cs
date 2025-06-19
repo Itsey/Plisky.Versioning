@@ -108,5 +108,33 @@ public class Exploratory {
         });
     }
 
+    [Fact]
+    public void ApplyBehaviourUpdate_UpdatesSingleDigitBehaviour() {
+        var version = new CompleteVersion(
+            new VersionUnit("1"),
+            new VersionUnit("2"),
+            new VersionUnit("3")
+        );
+        // Precondition: All digits start as Fixed
+        version.Digits.ShouldAllBe(d => d.Behaviour == DigitIncremementBehaviour.Fixed);
 
+        version.ApplyBehaviourUpdate("1", DigitIncremementBehaviour.AutoIncrementWithReset);
+
+        version.Digits[0].Behaviour.ShouldBe(DigitIncremementBehaviour.Fixed);
+        version.Digits[1].Behaviour.ShouldBe(DigitIncremementBehaviour.AutoIncrementWithReset);
+        version.Digits[2].Behaviour.ShouldBe(DigitIncremementBehaviour.Fixed);
+    }
+
+    [Fact]
+    public void ApplyBehaviourUpdate_UpdatesAllDigitsWhenWildcard() {
+        var version = new CompleteVersion(
+            new VersionUnit("1"),
+            new VersionUnit("2"),
+            new VersionUnit("3")
+        );
+
+        version.ApplyBehaviourUpdate("*", DigitIncremementBehaviour.ContinualIncrement);
+
+        version.Digits.ShouldAllBe(d => d.Behaviour == DigitIncremementBehaviour.ContinualIncrement);
+    }
 }

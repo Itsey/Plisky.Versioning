@@ -106,11 +106,15 @@ public class Versioning {
     }
 
     public string GetBehaviour(string digit) {
-        b.Verbose.Log($"Returning Behviours");
+        b.Verbose.Log($"Returning Behaviours");
         string result = cv.GetBehaviourString(digit);
         return result; 
     }
 
+    public void UpdateBehaviour(string digitToUpdate, DigitIncremementBehaviour newBehaviour) {
+        b.Verbose.Log($"Updating Behaviour for digit {digitToUpdate} to behaviour {newBehaviour}");
+        cv.ApplyBehaviourUpdate(digitToUpdate, newBehaviour);
+    }
     public void LoadMiniMatches(params string[] srcFile) {
         b.Verbose.Dump(srcFile, "Load MiniMatchers from Array");
         if (srcFile.Length == 1) {
