@@ -4,7 +4,7 @@ using System;
 using Plisky.Diagnostics;
 
 public class VersionUnit {
-    public DigitIncremementBehaviour Behaviour { get; set; }
+    public DigitIncrementBehaviour Behaviour { get; set; }
     private Bilge b = new Bilge("Plisky-VersionUnit");
     private const int DAYS_IN_A_WEEK = 7;
 
@@ -19,13 +19,13 @@ public class VersionUnit {
 
     public string PreFix { get; set; }
 
-    public VersionUnit() : this(string.Empty, string.Empty, DigitIncremementBehaviour.Fixed) {
+    public VersionUnit() : this(string.Empty, string.Empty, DigitIncrementBehaviour.Fixed) {
     }
 
     public VersionUnit(string v) : this(v, string.Empty) {
     }
 
-    public VersionUnit(string versionValue, string versionPrefix, DigitIncremementBehaviour beh = DigitIncremementBehaviour.Fixed) {
+    public VersionUnit(string versionValue, string versionPrefix, DigitIncrementBehaviour beh = DigitIncrementBehaviour.Fixed) {
         this.Value = versionValue;
         this.PreFix = versionPrefix;
         SetBehaviour(beh);
@@ -64,7 +64,7 @@ public class VersionUnit {
             }
         }
 
-        if ((Behaviour == DigitIncremementBehaviour.Fixed) || (Behaviour == DigitIncremementBehaviour.ReleaseName)) {
+        if ((Behaviour == DigitIncrementBehaviour.Fixed) || (Behaviour == DigitIncrementBehaviour.ReleaseName)) {
             b.Verbose.Log($"Behaviour Set to {Behaviour}, not doing anything.");
             return false;
         }
@@ -76,7 +76,7 @@ public class VersionUnit {
         //unchecked to make it explicit that an overflow wraps around.
         unchecked {
             switch (Behaviour) {
-                case DigitIncremementBehaviour.DailyAutoIncrement:
+                case DigitIncrementBehaviour.DailyAutoIncrement:
                     if (DateTime.Today == lastBuildDate) {
                         versionPriorToIncrement++;
                     } else {
@@ -84,17 +84,17 @@ public class VersionUnit {
                     }
                     break;
 
-                case DigitIncremementBehaviour.DaysSinceDate:
+                case DigitIncrementBehaviour.DaysSinceDate:
                     ts = DateTime.Now - baseDate;
                     versionPriorToIncrement = (int)ts.TotalDays;
                     break;
 
-                case DigitIncremementBehaviour.WeeksSinceDate:
+                case DigitIncrementBehaviour.WeeksSinceDate:
                     ts = DateTime.Now - baseDate;
                     versionPriorToIncrement = (int)(ts.TotalDays / DAYS_IN_A_WEEK);
                     break;
 
-                case DigitIncremementBehaviour.AutoIncrementWithReset:
+                case DigitIncrementBehaviour.AutoIncrementWithReset:
                     if (higherDigitChanged) {
                         versionPriorToIncrement = 0;
                     } else {
@@ -102,7 +102,7 @@ public class VersionUnit {
                     }
                     break;
 
-                case DigitIncremementBehaviour.AutoIncrementWithResetAny:
+                case DigitIncrementBehaviour.AutoIncrementWithResetAny:
                     if (anyHigherDigitChanged) {
                         versionPriorToIncrement = 0;
                     } else {
@@ -110,7 +110,7 @@ public class VersionUnit {
                     }
                     break;
 
-                case DigitIncremementBehaviour.ContinualIncrement:
+                case DigitIncrementBehaviour.ContinualIncrement:
                     versionPriorToIncrement++;
                     break;
             }
@@ -128,14 +128,14 @@ public class VersionUnit {
         return false;
     }
 
-    public void SetBehaviour(DigitIncremementBehaviour newBehaviour) {
+    public void SetBehaviour(DigitIncrementBehaviour newBehaviour) {
         b.Verbose.Log($"New behaviour being set {newBehaviour}");
         Behaviour = newBehaviour;
         ValidateForBehaviour();
     }
 
     private void ValidateForBehaviour() {
-        if ((Behaviour != DigitIncremementBehaviour.Fixed) && (Behaviour != DigitIncremementBehaviour.ReleaseName)) {
+        if ((Behaviour != DigitIncrementBehaviour.Fixed) && (Behaviour != DigitIncrementBehaviour.ReleaseName)) {
             try {
                 int.Parse(Value);
             } catch (Exception inr) {

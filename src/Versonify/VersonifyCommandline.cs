@@ -111,7 +111,7 @@ public class VersonifyCommandline {
                 case "behaviour":
                     if (string.IsNullOrEmpty(QuickValue)) {
                         return VersioningCommand.BehaviourOutput;
-                    } else if (Enum.TryParse(typeof(DigitIncremementBehaviour), QuickValue, out _)) {
+                    } else if (Enum.TryParse(typeof(DigitIncrementBehaviour), QuickValue, out _)) {
                         return VersioningCommand.BehaviourUpdate;
                     }
                     return VersioningCommand.Invalid;

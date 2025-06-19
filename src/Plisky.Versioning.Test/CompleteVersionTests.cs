@@ -198,7 +198,7 @@ public class CompleteVersionTests {
         const string RELEASENAME = "Unicorn";
         b.Info.Flow();
 
-        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncremementBehaviour.ReleaseName));
+        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncrementBehaviour.ReleaseName));
         sut.ReleaseName = RELEASENAME;
 
         Assert.Equal(RELEASENAME, sut.ReleaseName);
@@ -214,7 +214,7 @@ public class CompleteVersionTests {
         const string RELEASENAME = "Unicorn";
         b.Info.Flow();
 
-        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncremementBehaviour.ReleaseName));
+        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncrementBehaviour.ReleaseName));
         sut.ReleaseName = RELEASENAME;
         sut.Increment();
 
@@ -232,7 +232,7 @@ public class CompleteVersionTests {
         const string NEWRELEASE = "Phoenix";
         b.Info.Flow();
 
-        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncremementBehaviour.ReleaseName));
+        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncrementBehaviour.ReleaseName));
         sut.ReleaseName = RELEASENAME;
         sut.ApplyPendingRelease(NEWRELEASE);
 
@@ -251,7 +251,7 @@ public class CompleteVersionTests {
         const string NEWRELEASE = "Phoenix";
         b.Info.Flow();
 
-        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncremementBehaviour.ReleaseName));
+        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncrementBehaviour.ReleaseName));
         sut.ReleaseName = RELEASENAME;
         sut.ApplyPendingRelease(NEWRELEASE);
 
@@ -274,7 +274,7 @@ public class CompleteVersionTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void PartiallyFixed_DoesIncrement() {
-        var sut = new CompleteVersion(new VersionUnit("1", "", DigitIncremementBehaviour.ContinualIncrement), new VersionUnit("Monkey", "."));
+        var sut = new CompleteVersion(new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement), new VersionUnit("Monkey", "."));
         sut.Increment();
         Assert.Equal("2.Monkey", sut.GetVersionString(DisplayType.Full)); //, "The increment for the first digit did not work in a mixed verison number");
     }
@@ -284,10 +284,10 @@ public class CompleteVersionTests {
     [Trait(Traits.Style, Traits.Unit)]
     public void Increment_ResetAnyWorks() {
         var sut = new CompleteVersion(
-            new VersionUnit("1", "", DigitIncremementBehaviour.ContinualIncrement),
+            new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement),
             new VersionUnit("0", "."),
             new VersionUnit("1", "."),
-            new VersionUnit("0", ".", DigitIncremementBehaviour.AutoIncrementWithResetAny));
+            new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny));
         sut.Increment();
         Assert.Equal("2.0.1.0", sut.GetVersionString(DisplayType.Full)); //, "The reset should prevent the last digit from incrementing");
     }
@@ -300,7 +300,7 @@ public class CompleteVersionTests {
            new VersionUnit("1", ""),
            new VersionUnit("0", "."),
            new VersionUnit("1", "."),
-           new VersionUnit("0", ".", DigitIncremementBehaviour.AutoIncrementWithResetAny));
+           new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny));
         Assert.Equal(sut.GetVersionString(DisplayType.Full), sut.GetVersionString()); //, "The default should be to display as full");
     }
 
@@ -313,7 +313,7 @@ public class CompleteVersionTests {
            new VersionUnit("1", ""),
            vu2,
            new VersionUnit("1", "."),
-           new VersionUnit("0", ".", DigitIncremementBehaviour.AutoIncrementWithResetAny));
+           new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny));
         Assert.Equal("1.0.1.0", sut.GetVersionString()); //, "Without an increment its wrong - invalid test");
 
         sut.Increment();
@@ -328,7 +328,7 @@ public class CompleteVersionTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Increment_OverrideReplacesIncrement() {
-        var vu = new VersionUnit("1", "", DigitIncremementBehaviour.ContinualIncrement);
+        var vu = new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement);
         vu.IncrementOverride = "9";
         var sut = new CompleteVersion(vu);
         sut.Increment();
@@ -349,7 +349,7 @@ public class CompleteVersionTests {
     [Trait(Traits.Style, Traits.Unit)]
     public void SimpleIncrement_Incrment_Works() {
         var vu = new VersionUnit("2", ".");
-        vu.SetBehaviour(DigitIncremementBehaviour.AutoIncrementWithReset);
+        vu.SetBehaviour(DigitIncrementBehaviour.AutoIncrementWithReset);
         var sut = new CompleteVersion(new VersionUnit("1"), vu);
         sut.Increment();
         Assert.Equal("1.3", sut.ToString()); //, "The verison increment should do nothing for fixed");
@@ -397,7 +397,7 @@ public class CompleteVersionTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Increment_OverrideWorksOnFixed() {
-        var vu = new VersionUnit("1", "", DigitIncremementBehaviour.Fixed);
+        var vu = new VersionUnit("1", "", DigitIncrementBehaviour.Fixed);
         vu.IncrementOverride = "Fish";
 
         var sut = new CompleteVersion(vu);
@@ -410,7 +410,7 @@ public class CompleteVersionTests {
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
     public void GetBehaviourString_ReturnsCorrectBehaviourForSingleDigit() {   // Expected format is [digit]:BehaviourName(behaviourvalue)
-        var behaviour = DigitIncremementBehaviour.ContinualIncrement;
+        var behaviour = DigitIncrementBehaviour.ContinualIncrement;
         int behaviourValue = (int)behaviour;
         string expectedResult = $"[0]:{behaviour}({behaviourValue})";
 
@@ -426,9 +426,9 @@ public class CompleteVersionTests {
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
     public void GetBehaviourString_ReturnsCorrectBehaviourForStar() {   // Expected format is [digit]:BehaviourName(behaviourvalue)
-        var behaviourFixed = DigitIncremementBehaviour.Fixed;
+        var behaviourFixed = DigitIncrementBehaviour.Fixed;
         int behaviourFixedValue = (int)behaviourFixed;
-        var behaviourInc = DigitIncremementBehaviour.ContinualIncrement;
+        var behaviourInc = DigitIncrementBehaviour.ContinualIncrement;
         int behaviourIncValue = (int)behaviourInc;
         string expectedResult =
             $"[0]:{behaviourFixed}({behaviourFixedValue})\r\n" +
@@ -509,7 +509,7 @@ public class CompleteVersionTests {
         public void Plisky_semantic_versioning_is_supported() {
             var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."),
                 new VersionUnit("Unicorn", "-"),
-                new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement));
+                new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement));
             string verString = sut.GetVersionString();
             Assert.Equal("2.0-Unicorn.0", verString); //,"The initial string is not correct");
             sut.Increment();

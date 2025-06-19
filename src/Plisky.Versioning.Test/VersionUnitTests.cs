@@ -13,15 +13,15 @@ public class VersionUnitTests {
     [Trait(Traits.Style, Traits.Unit)]
     public void DefaultBehaviour_IsFixed() {
         var vu = new VersionUnit("2", ".");
-        Assert.Equal(DigitIncremementBehaviour.Fixed, vu.Behaviour);
+        Assert.Equal(DigitIncrementBehaviour.Fixed, vu.Behaviour);
     }
 
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void SetBehaviour_OnConstructor_Works() {
-        var vu = new VersionUnit("2", ".", DigitIncremementBehaviour.AutoIncrementWithReset);
-        Assert.Equal(DigitIncremementBehaviour.AutoIncrementWithReset, vu.Behaviour);
+        var vu = new VersionUnit("2", ".", DigitIncrementBehaviour.AutoIncrementWithReset);
+        Assert.Equal(DigitIncrementBehaviour.AutoIncrementWithReset, vu.Behaviour);
     }
 
     [Fact]
@@ -32,7 +32,7 @@ public class VersionUnitTests {
 
         _ = Assert.Throws<InvalidOperationException>(() => {
             var sut = new VersionUnit("monkey");
-            sut.SetBehaviour(DigitIncremementBehaviour.AutoIncrementWithReset);
+            sut.SetBehaviour(DigitIncrementBehaviour.AutoIncrementWithReset);
         });
     }
 
@@ -44,7 +44,7 @@ public class VersionUnitTests {
 
         _ = Assert.Throws<InvalidOperationException>(() => {
             var sut = new VersionUnit("1");
-            sut.SetBehaviour(DigitIncremementBehaviour.AutoIncrementWithReset);
+            sut.SetBehaviour(DigitIncrementBehaviour.AutoIncrementWithReset);
             sut.Value = "Bannana";
         });
     }
@@ -87,7 +87,7 @@ public class VersionUnitTests {
     public void VersionUnit_DefaultsToIncrementWithNumber() {
         var sut = new VersionUnit("1");
         Assert.Equal("1", sut.Value); //, "The value should default correctly");
-        Assert.Equal(DigitIncremementBehaviour.Fixed, sut.Behaviour);
+        Assert.Equal(DigitIncrementBehaviour.Fixed, sut.Behaviour);
     }
 
     [Fact]

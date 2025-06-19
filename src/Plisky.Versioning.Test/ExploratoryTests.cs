@@ -86,7 +86,7 @@ public class Exploratory {
         string fn = ts.GetFileAsTemporary(srcFile);
         var cv = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."),
             new VersionUnit("Unicorn", "-"),
-            new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement));
+            new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement));
         var sut = new VersionFileUpdater(cv);
 
         _ = sut.PerformUpdate(fn, FileUpdateType.NetAssembly);
@@ -116,13 +116,13 @@ public class Exploratory {
             new VersionUnit("3")
         );
         // Precondition: All digits start as Fixed
-        version.Digits.ShouldAllBe(d => d.Behaviour == DigitIncremementBehaviour.Fixed);
+        version.Digits.ShouldAllBe(d => d.Behaviour == DigitIncrementBehaviour.Fixed);
 
-        version.ApplyBehaviourUpdate("1", DigitIncremementBehaviour.AutoIncrementWithReset);
+        version.ApplyBehaviourUpdate("1", DigitIncrementBehaviour.AutoIncrementWithReset);
 
-        version.Digits[0].Behaviour.ShouldBe(DigitIncremementBehaviour.Fixed);
-        version.Digits[1].Behaviour.ShouldBe(DigitIncremementBehaviour.AutoIncrementWithReset);
-        version.Digits[2].Behaviour.ShouldBe(DigitIncremementBehaviour.Fixed);
+        version.Digits[0].Behaviour.ShouldBe(DigitIncrementBehaviour.Fixed);
+        version.Digits[1].Behaviour.ShouldBe(DigitIncrementBehaviour.AutoIncrementWithReset);
+        version.Digits[2].Behaviour.ShouldBe(DigitIncrementBehaviour.Fixed);
     }
 
     [Fact]
@@ -133,8 +133,8 @@ public class Exploratory {
             new VersionUnit("3")
         );
 
-        version.ApplyBehaviourUpdate("*", DigitIncremementBehaviour.ContinualIncrement);
+        version.ApplyBehaviourUpdate("*", DigitIncrementBehaviour.ContinualIncrement);
 
-        version.Digits.ShouldAllBe(d => d.Behaviour == DigitIncremementBehaviour.ContinualIncrement);
+        version.Digits.ShouldAllBe(d => d.Behaviour == DigitIncrementBehaviour.ContinualIncrement);
     }
 }

@@ -1,10 +1,10 @@
 ﻿namespace Plisky.CodeCraft;
 
 /// <summary>
-/// The DigitIncremementBehaviour enum is the determining factor for how each element is incremented within the VersionSupport class.  Each element
+/// The DigitIncrementBehaviour enum is the determining factor for how each element is incremented within the VersionSupport class.  Each element
 /// of the version when incrememented will do so in a different way depending on its revision behaviour.
 /// </summary>
-public enum DigitIncremementBehaviour {
+public enum DigitIncrementBehaviour {
 
     /// <summary>
     /// Fixed values do not change.  They remain constant throuought a version increment.

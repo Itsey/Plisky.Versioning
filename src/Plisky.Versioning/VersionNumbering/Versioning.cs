@@ -111,7 +111,7 @@ public class Versioning {
         return result; 
     }
 
-    public void UpdateBehaviour(string digitToUpdate, DigitIncremementBehaviour newBehaviour) {
+    public void UpdateBehaviour(string digitToUpdate, DigitIncrementBehaviour newBehaviour) {
         b.Verbose.Log($"Updating Behaviour for digit {digitToUpdate} to behaviour {newBehaviour}");
         cv.ApplyBehaviourUpdate(digitToUpdate, newBehaviour);
     }

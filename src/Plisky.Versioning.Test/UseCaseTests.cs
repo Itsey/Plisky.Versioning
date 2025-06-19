@@ -93,7 +93,7 @@ public class UseCaseTests {
         var mvs = new MockVersionStorage(initial);
         var sut = new Versioning(mvs);
 
-        mvs.mock.SetBehaviours(DigitIncremementBehaviour.Fixed, DigitIncremementBehaviour.Fixed, DigitIncremementBehaviour.AutoIncrementWithResetAny, DigitIncremementBehaviour.AutoIncrementWithResetAny);
+        mvs.mock.SetBehaviours(DigitIncrementBehaviour.Fixed, DigitIncrementBehaviour.Fixed, DigitIncrementBehaviour.AutoIncrementWithResetAny, DigitIncrementBehaviour.AutoIncrementWithResetAny);
 
         sut.Increment();
         Assert.Equal(target, sut.ToString());

@@ -21,10 +21,10 @@ namespace Plisky.CodeCraft.Test {
 
         public CompleteVersion GetDefaultVersion() {
             return new CompleteVersion(
-                new VersionUnit("0", "", DigitIncremementBehaviour.ContinualIncrement),
-                new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement),
-                new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement),
-                new VersionUnit("0", ".", DigitIncremementBehaviour.ContinualIncrement)
+                new VersionUnit("0", "", DigitIncrementBehaviour.ContinualIncrement),
+                new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement),
+                new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement),
+                new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement)
             );
         }
 

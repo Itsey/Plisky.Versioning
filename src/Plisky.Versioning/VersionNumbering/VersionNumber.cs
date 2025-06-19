@@ -50,7 +50,7 @@ namespace Plisky.CodeCraft {
                 throw new ArgumentOutOfRangeException(nameof(value), "The versioned digit can not be less than zero");
             }
             if (digits[(int)digitPosition] == null) {
-                digits[(int)digitPosition] = new VersionableDigit(digitPosition, DigitIncremementBehaviour.Fixed, value);
+                digits[(int)digitPosition] = new VersionableDigit(digitPosition, DigitIncrementBehaviour.Fixed, value);
             } else {
                 digits[(int)digitPosition].DigitValue = value;
             }

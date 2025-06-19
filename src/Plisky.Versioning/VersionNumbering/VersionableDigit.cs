@@ -9,7 +9,7 @@ internal class VersionableDigit {
     private int? overrideValue;
     private int currentValue;
 
-    private DigitIncremementBehaviour behaviour = DigitIncremementBehaviour.Fixed;
+    private DigitIncrementBehaviour behaviour = DigitIncrementBehaviour.Fixed;
     private DigitName position;
 
     internal int DigitValue {
@@ -28,7 +28,7 @@ internal class VersionableDigit {
         set { position = value; }
     }
 
-    internal DigitIncremementBehaviour Behaviour {
+    internal DigitIncrementBehaviour Behaviour {
         get { return behaviour; }
         set { behaviour = value; }
     }
@@ -57,7 +57,7 @@ internal class VersionableDigit {
     internal string PromptValueDuringIncrement {
         get { return overrideValue.ToString(); }
         set {
-            // b.Assert.True(this.Behaviour == DigitIncremementBehaviour.Prompt, "Invalid operation when the behaviour is not prompt");
+            // b.Assert.True(this.Behaviour == DigitIncrementBehaviour.Prompt, "Invalid operation when the behaviour is not prompt");
 
             this.overrideValue = int.Parse(value, CultureInfo.CurrentUICulture);
 
@@ -76,7 +76,7 @@ internal class VersionableDigit {
         DigitValue = int.Parse(value, CultureInfo.CurrentUICulture);
     }
 
-    internal void Initialise(DigitName currentPosition, DigitIncremementBehaviour beh) {
+    internal void Initialise(DigitName currentPosition, DigitIncrementBehaviour beh) {
         this.position = currentPosition;
         this.behaviour = beh;
     }
@@ -84,12 +84,12 @@ internal class VersionableDigit {
     internal VersionableDigit() {
     }
 
-    internal VersionableDigit(DigitName currentPosition, DigitIncremementBehaviour beh) {
+    internal VersionableDigit(DigitName currentPosition, DigitIncrementBehaviour beh) {
         Initialise(currentPosition, beh);
         this.overrideValue = null;
     }
 
-    internal VersionableDigit(DigitName currentPosition, DigitIncremementBehaviour beh, int startValue)
+    internal VersionableDigit(DigitName currentPosition, DigitIncrementBehaviour beh, int startValue)
         : this(currentPosition, beh) {
         this.DigitValue = startValue;
     }
@@ -130,7 +130,7 @@ internal class VersionableDigit {
             unchecked {
                 switch (behaviour) {
                     // This will incremement by one each time its run on a specific day.
-                    case DigitIncremementBehaviour.DailyAutoIncrement:
+                    case DigitIncrementBehaviour.DailyAutoIncrement:
                         if (DateTime.Today == lastBuildDate) {
                             currentValue++;
                         } else {
@@ -138,18 +138,18 @@ internal class VersionableDigit {
                         }
                         break;
 
-                    case DigitIncremementBehaviour.DaysSinceDate:
+                    case DigitIncrementBehaviour.DaysSinceDate:
                         // This will take the number of days since a specified date
                         ts = DateTime.Now - baseDate;
                         currentValue = (int)ts.TotalDays;
                         break;
 
-                    case DigitIncremementBehaviour.WeeksSinceDate:
+                    case DigitIncrementBehaviour.WeeksSinceDate:
                         ts = DateTime.Now - baseDate;
                         currentValue = (int)(ts.TotalDays / DAYS_IN_A_WEEK);
                         break;
 
-                    case DigitIncremementBehaviour.AutoIncrementWithReset:
+                    case DigitIncrementBehaviour.AutoIncrementWithReset:
                         if (higherDigitChanged) {
                             currentValue = 0;
                         } else {
@@ -157,7 +157,7 @@ internal class VersionableDigit {
                         }
                         break;
 
-                    case DigitIncremementBehaviour.AutoIncrementWithResetAny:
+                    case DigitIncrementBehaviour.AutoIncrementWithResetAny:
                         if (anyHigherDigitChanged) {
                             currentValue = 0;
                         } else {
@@ -165,7 +165,7 @@ internal class VersionableDigit {
                         }
                         break;
 
-                    case DigitIncremementBehaviour.ContinualIncrement:
+                    case DigitIncrementBehaviour.ContinualIncrement:
                         currentValue++;
                         break;
                 }

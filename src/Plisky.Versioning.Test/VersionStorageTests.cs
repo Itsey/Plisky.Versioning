@@ -22,7 +22,7 @@ public class VersionStorageTests {
     public void VersionStorage_Json_Loads() {
         string fn = uth.NewTemporaryFileName(true);
         var sut = new JsonVersionPersister(fn);
-        var cv = new CompleteVersion(new VersionUnit("1", ".", DigitIncremementBehaviour.ContinualIncrement), new VersionUnit("Alpha", "-"), new VersionUnit("1"), new VersionUnit("1", "", DigitIncremementBehaviour.ContinualIncrement));
+        var cv = new CompleteVersion(new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement), new VersionUnit("Alpha", "-"), new VersionUnit("1"), new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement));
         sut.Persist(cv);
 
         var cv2 = sut.GetVersion();
@@ -39,10 +39,10 @@ public class VersionStorageTests {
     public void VersionStoreAndLoad_StoresUpdatedValues() {
         string fn = uth.NewTemporaryFileName(true);
         var sut = new JsonVersionPersister(fn);
-        var cv = new CompleteVersion(new VersionUnit("1", "", DigitIncremementBehaviour.ContinualIncrement),
-            new VersionUnit("1", ".", DigitIncremementBehaviour.ContinualIncrement),
-            new VersionUnit("1", ".", DigitIncremementBehaviour.ContinualIncrement),
-            new VersionUnit("1", ".", DigitIncremementBehaviour.ContinualIncrement));
+        var cv = new CompleteVersion(new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement),
+            new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement),
+            new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement),
+            new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement));
 
         cv.Increment();
         _ = cv.GetVersionString();
@@ -62,10 +62,10 @@ public class VersionStorageTests {
     public void VersionStoreAndLoad_StoresDisplayTypes() {
         string fn = uth.NewTemporaryFileName(true);
         var sut = new JsonVersionPersister(fn);
-        var cv = new CompleteVersion(new VersionUnit("1", "", DigitIncremementBehaviour.ContinualIncrement),
-            new VersionUnit("1", ".", DigitIncremementBehaviour.ContinualIncrement),
-            new VersionUnit("1", ".", DigitIncremementBehaviour.ContinualIncrement),
-            new VersionUnit("1", ".", DigitIncremementBehaviour.ContinualIncrement));
+        var cv = new CompleteVersion(new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement),
+            new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement),
+            new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement),
+            new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement));
 
         // None of the defaults are no display, therefore this should set all to a new value
         cv.SetDisplayTypeForVersion(FileUpdateType.NetAssembly, DisplayType.NoDisplay);

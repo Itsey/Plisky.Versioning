@@ -22,7 +22,7 @@ public class CompleteVersion {
         return new CompleteVersion(
             new VersionUnit("0"),
             new VersionUnit("0", "."),
-            new VersionUnit("0", ".", DigitIncremementBehaviour.AutoIncrementWithResetAny),
+            new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny),
             new VersionUnit("0", ".")
         ) {
             IsDefault = true
@@ -55,7 +55,7 @@ public class CompleteVersion {
         set {
             actualReleaseName = value;
             foreach (var l in Digits) {
-                if (l.Behaviour == DigitIncremementBehaviour.ReleaseName) {
+                if (l.Behaviour == DigitIncrementBehaviour.ReleaseName) {
                     l.Value = actualReleaseName;
                 }
             }
@@ -82,7 +82,7 @@ public class CompleteVersion {
             var vd = new List<VersionUnit>();
             string prefix = "";
             foreach (string f in parse) {
-                vd.Add(new VersionUnit(f, prefix, DigitIncremementBehaviour.Fixed));
+                vd.Add(new VersionUnit(f, prefix, DigitIncrementBehaviour.Fixed));
                 prefix = ".";
             }
 
@@ -169,7 +169,7 @@ public class CompleteVersion {
         return result;
     }
 
-    public void ApplyBehaviourUpdate(string digitToUpdate, DigitIncremementBehaviour newBehaviour) {
+    public void ApplyBehaviourUpdate(string digitToUpdate, DigitIncrementBehaviour newBehaviour) {
         if (digitToUpdate == ALLDIGITSWILDCARD) {
             b.Verbose.Log($"Applying behaviour update to all digits to {newBehaviour}");
             foreach (var digit in Digits) {

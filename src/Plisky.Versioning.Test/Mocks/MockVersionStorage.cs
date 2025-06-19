@@ -18,7 +18,7 @@
             public void Mock_MockingBird() {
             }
 
-            public void SetBehaviours(DigitIncremementBehaviour dig1, DigitIncremementBehaviour dig2, DigitIncremementBehaviour dig3, DigitIncremementBehaviour dig4) {
+            public void SetBehaviours(DigitIncrementBehaviour dig1, DigitIncrementBehaviour dig2, DigitIncrementBehaviour dig3, DigitIncrementBehaviour dig4) {
                 parent.loadedVersion.Digits[0].SetBehaviour(dig1);
                 parent.loadedVersion.Digits[1].SetBehaviour(dig2);
                 parent.loadedVersion.Digits[2].SetBehaviour(dig3);

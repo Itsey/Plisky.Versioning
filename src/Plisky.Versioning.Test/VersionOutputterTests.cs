@@ -62,17 +62,17 @@ public class VersionOutputterTests {
     [Theory]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    [InlineData("99", DigitIncremementBehaviour.Fixed, "Fixed", 0)]
-    [InlineData("5", DigitIncremementBehaviour.Fixed, "Fixed", 0)]
-    [InlineData("68", DigitIncremementBehaviour.AutoIncrementWithReset, "AutoIncrementWithReset", 4)]
-    [InlineData("0", DigitIncremementBehaviour.DaysSinceDate, "DaysSinceDate", 2)]
-    [InlineData("0", DigitIncremementBehaviour.DailyAutoIncrement, "DailyAutoIncrement", 3)]
-    [InlineData("0", DigitIncremementBehaviour.AutoIncrementWithReset, "AutoIncrementWithReset", 4)]
-    [InlineData("0", DigitIncremementBehaviour.AutoIncrementWithResetAny, "AutoIncrementWithResetAny", 5)]
-    [InlineData("0", DigitIncremementBehaviour.ContinualIncrement, "ContinualIncrement", 6)]
-    [InlineData("0", DigitIncremementBehaviour.WeeksSinceDate, "WeeksSinceDate", 7)]
-    [InlineData("0", DigitIncremementBehaviour.ReleaseName, "ReleaseName", 8)]
-    public void Behaviour_output_works_for_fixed(string value, DigitIncremementBehaviour behaviour, string expectedOutput, int behaviourValue) {
+    [InlineData("99", DigitIncrementBehaviour.Fixed, "Fixed", 0)]
+    [InlineData("5", DigitIncrementBehaviour.Fixed, "Fixed", 0)]
+    [InlineData("68", DigitIncrementBehaviour.AutoIncrementWithReset, "AutoIncrementWithReset", 4)]
+    [InlineData("0", DigitIncrementBehaviour.DaysSinceDate, "DaysSinceDate", 2)]
+    [InlineData("0", DigitIncrementBehaviour.DailyAutoIncrement, "DailyAutoIncrement", 3)]
+    [InlineData("0", DigitIncrementBehaviour.AutoIncrementWithReset, "AutoIncrementWithReset", 4)]
+    [InlineData("0", DigitIncrementBehaviour.AutoIncrementWithResetAny, "AutoIncrementWithResetAny", 5)]
+    [InlineData("0", DigitIncrementBehaviour.ContinualIncrement, "ContinualIncrement", 6)]
+    [InlineData("0", DigitIncrementBehaviour.WeeksSinceDate, "WeeksSinceDate", 7)]
+    [InlineData("0", DigitIncrementBehaviour.ReleaseName, "ReleaseName", 8)]
+    public void Behaviour_output_works_for_fixed(string value, DigitIncrementBehaviour behaviour, string expectedOutput, int behaviourValue) {
         // Behaviour value is coded into the test here because its on the public interface, change the enum values introduce a breaking change.
         b.Info.Flow();
 
