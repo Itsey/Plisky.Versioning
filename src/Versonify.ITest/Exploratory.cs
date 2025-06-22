@@ -1,57 +1,89 @@
 ﻿using System.Diagnostics;
-using FluentAssertions;
 using Plisky.Diagnostics;
+using Plisky.Test;
+using Shouldly;
 
 namespace Versonify.ITest;
+
 public class Exploratory {
     protected Bilge b = new Bilge("Versonify-ITest");
+    protected UnitTestHelper uth;
+    protected TestHelper th;
+
+    public Exploratory() {
+        b.Info.Flow();
+
+        uth = new UnitTestHelper();
+        th = new TestHelper(uth);
+    }
+
+    [Fact]
+    public async Task No_arguments_presents_default_help() {
+        b.Info.Flow();
+        string output = await th.ExecuteVersonify("");
+
+        output.ShouldContain("Parameter help for Versonify.");
+        th.LastExecutionExitCode.ShouldNotBe(0, "No Parameters is an error condition.");
+    }
+
+    [Fact]
+    public async Task Behaviour_command_shows_all_digits() {
+        b.Info.Flow();
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
+        string vStoreFilePath = uth.GetTestDataFile(resName);
+
+        string output = await th.ExecuteVersonify($"behaviour -vs={vStoreFilePath} -DG=*");
+
+        output.ShouldContain("[0]:Fixed(0)");
+        output.ShouldContain("[1]:DaysSinceDate(2)");
+        output.ShouldContain("[2]:DailyAutoIncrement(3)");
+        output.ShouldContain("[3]:AutoIncrementWithReset(4)");
+        output.ShouldContain("[4]:AutoIncrementWithResetAny(5)");
+        output.ShouldContain("[5]:ContinualIncrement(6)");
+        output.ShouldContain("[6]:WeeksSinceDate(7)");
+        output.ShouldContain("[7]:ReleaseName(8)");
+        th.LastExecutionExitCode.ShouldBe(0);
+    }
+
+    [Theory]
+    [InlineData("[0]:Fixed", "Increment", 0)]
+    [InlineData("[1]:DaysSinceDate", "Increment", 1)]
+    [InlineData("[4]:AutoIncrementWithResetAny", "Fixed", 4)]
+    public async Task Behaviour_command_shows_correct_digits(string outputData, string noOutputData, int digitPosition) {
+        b.Info.Flow();
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
+        string vStoreFilePath = uth.GetTestDataFile(resName);
+
+        string output = await th.ExecuteVersonify($"behaviour -vs={vStoreFilePath} -DG={digitPosition}");
+
+        output.ShouldContain(outputData);
+        output.ShouldNotContain(noOutputData);
+        th.LastExecutionExitCode.ShouldBe(0);
+    }
 
     [Fact]
     public async Task Console_with_nuke_has_markers() {
         b.Info.Flow();
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        var psi = new ProcessStartInfo();
-        psi.FileName = @"X:\Code\ghub\Plisky.Versioning\src\Versonify\bin\Debug\net8.0\versonify.exe";
-        psi.Arguments = "passive -vs=D:\\Scratch\\_build\\vstore\\mollycoddle-version.vstore -O=con-nf -Debug=v-** -Q=1.9.4.3";
-        psi.RedirectStandardOutput = true;
+        string args = $"passive -vs={vStoreFilePath} -O=con-nf -Debug=v-** -Q=1.9.4.3";
+        string s = await th.ExecuteVersonify(args);
 
-        var p = Process.Start(psi);
-
-        Assert.NotNull(p);
-
-        string s = await p.StandardOutput.ReadToEndAsync();
-
-        s.Should().Contain("PNFV]");
-        await p.WaitForExitAsync();
-        b.Info.Log("Std" + s);
-        p.ExitCode.Should().Be(0);
-
+        s.ShouldContain("PNFV]", customMessage: "Nuke Marker not found in output");
     }
-
 
     [Fact]
     public async Task Console_does_not_have_nuke_markers() {
         b.Info.Flow();
 
-        var psi = new ProcessStartInfo();
-        psi.FileName = @"X:\Code\ghub\Plisky.Versioning\src\Versonify\bin\Debug\net8.0\versonify.exe";
-        psi.Arguments = "passive -vs=D:\\Scratch\\_build\\vstore\\mollycoddle-version.vstore -O=con -Debug=v-** -Q=1.9.4.3";
-        psi.RedirectStandardOutput = true;
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        var p = Process.Start(psi);
-        Assert.NotNull(p);
+        string args = $"passive -vs={vStoreFilePath} -O=con -Debug=v-** -Q=1.9.4.3";
+        string s = await th.ExecuteVersonify(args);
 
-        string s = await p.StandardOutput.ReadToEndAsync();
-
-
-        s.Should().NotContain("PNFV]");
-        await p.WaitForExitAsync();
-        b.Info.Log("Std" + s);
-        p.ExitCode.Should().Be(0);
-
-    }
-
-    [Fact]
-    public void Get_from_nexus_returns_release_name() {
+        s.ShouldNotContain("PNFV]");
+        th.LastExecutionExitCode.ShouldBe(0);
     }
 }

@@ -29,7 +29,7 @@ public class CompleteVersion {
         };
     }
 
-    public VersionUnit[] Digits { get; set; }
+    public VersionUnit[] Digits { get; set; } = Array.Empty<VersionUnit>();
 
     public Dictionary<FileUpdateType, DisplayType> DisplayTypes { get; set; } = new Dictionary<FileUpdateType, DisplayType>();
 
@@ -202,6 +202,10 @@ public class CompleteVersion {
         b.Verbose.Log("Incrementing Version.", ReleaseName);
 
         foreach (var un in Digits) {
+            if (un.Value == null) {
+                b.Warning.Log($"Digit is null, skipping increment.");
+                continue;
+            }
             string tmp = un.Value;
             lastChanged = un.PerformIncrement(lastChanged, anyChanged, t1, t1);
             b.Verbose.Log($"{tmp}>{un.Value} using {un.Behaviour}");

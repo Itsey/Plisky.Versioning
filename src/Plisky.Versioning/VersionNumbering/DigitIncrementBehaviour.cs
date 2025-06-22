@@ -55,7 +55,7 @@ public enum DigitIncrementBehaviour {
     /// Will set this digit to be the release name as specified in the version.  Release names can change during an increment but are not
     /// incremented or decremented as such.  They are set to literal strings.
     /// </summary>
-    ReleaseName
+    ReleaseName = 8
 
 
 };

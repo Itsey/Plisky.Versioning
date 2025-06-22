@@ -103,7 +103,6 @@ public class CompleteVersionTests {
         Assert.Equal(d4Expected, cv.Digits[3].IncrementOverride);
     }
 
-
     [Theory(DisplayName = nameof(PendingIncrement_IsRemovedCorrectly))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -128,9 +127,6 @@ public class CompleteVersionTests {
         Assert.Null(cv.Digits[2].IncrementOverride);
         Assert.Null(cv.Digits[3].IncrementOverride);
     }
-
-
-
 
     [Theory(DisplayName = nameof(PendingIncrements_StackCorrectly))]
     [Trait(Traits.Age, Traits.Regression)]
@@ -172,13 +168,10 @@ public class CompleteVersionTests {
     public void ManipulateVersionTests(string value, string pattern, string result) {
         var sut = new CompleteVersionMock();
 
-        string res = sut.Mock.ManipulateVerisonBasedOnPattern(pattern, value);
+        string res = sut.Mock.ManipulateVersionBasedOnPattern(pattern, value);
 
         Assert.Equal(result, res);
     }
-
-
-
 
     [Fact(DisplayName = nameof(ReleaseVersion_StartsEmpty))]
     [Trait(Traits.Age, Traits.Regression)]
@@ -189,7 +182,6 @@ public class CompleteVersionTests {
         var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."));
         Assert.Null(sut.ReleaseName);
     }
-
 
     [Fact(DisplayName = nameof(SetReleaseName_Works))]
     [Trait(Traits.Age, Traits.Regression)]
@@ -205,8 +197,6 @@ public class CompleteVersionTests {
         Assert.Equal("2.0+" + RELEASENAME, sut.ToString());
     }
 
-
-
     [Fact(DisplayName = nameof(Increment_DoesNotChangeReleaseName))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -221,8 +211,6 @@ public class CompleteVersionTests {
         Assert.Equal(RELEASENAME, sut.ReleaseName);
         Assert.Equal("2.0+" + RELEASENAME, sut.ToString());
     }
-
-
 
     [Fact(DisplayName = nameof(PendingReleaseName_AppliedOnIncrement))]
     [Trait(Traits.Age, Traits.Regression)]
@@ -242,7 +230,6 @@ public class CompleteVersionTests {
         Assert.Equal("2.0+" + NEWRELEASE, sut.ToString());
     }
 
-
     [Fact(DisplayName = nameof(PendingReleaseName_IgnoredNoIncrement))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -254,7 +241,6 @@ public class CompleteVersionTests {
         var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncrementBehaviour.ReleaseName));
         sut.ReleaseName = RELEASENAME;
         sut.ApplyPendingRelease(NEWRELEASE);
-
 
         Assert.Equal(RELEASENAME, sut.ReleaseName);
         Assert.Equal("2.0+" + RELEASENAME, sut.ToString());
@@ -444,6 +430,7 @@ public class CompleteVersionTests {
 
         Assert.Equal(expectedResult, result);
     }
+
     [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -500,9 +487,10 @@ public class CompleteVersionTests {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
             Assert.True(sut.ToString() == "1.0");
         }
-
     }
+
     public class UseCases {
+
         [Fact]
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]

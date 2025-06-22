@@ -2,19 +2,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Minimatch;
 using Plisky.Diagnostics;
 
 public class VersioningTask {
     private readonly Bilge b = new();
+    private string? persistanceValue;
+
     protected Dictionary<string, List<FileUpdateType>> pendingUpdates = new();
-    protected CompleteVersion ver;
+    protected CompleteVersion? ver;
     protected List<string> messageLog = new();
 
     public delegate void LogEventHandler(object sender, LogEventArgs e);
 
     public event LogEventHandler? Logger = null;
+
+    protected VersionStorage? storage;
+    public string? VersionString { get; set; }
+    public string? BaseSearchDir { get; set; }
 
     public string[] LogMessages {
         get {
@@ -25,16 +32,10 @@ public class VersioningTask {
     public VersioningTask() {
     }
 
-    protected VersionStorage storage;
-    private string persistanceValue;
     public void SetPersistanceValue(string pv) {
         persistanceValue = pv;
         storage = VersionStorage.CreateFromInitialisation(pv);
     }
-
-
-    public string VersionString { get; set; }
-    public string BaseSearchDir { get; set; }
 
     public void AddUpdateType(string minmatchPattern, FileUpdateType updateToPerform) {
         b.Verbose.Log("Adding Update Type " + minmatchPattern);
@@ -74,8 +75,8 @@ public class VersioningTask {
 
     public void IncrementAndUpdateAll() {
         b.Verbose.Log("IncrementAndUpdateAll called");
-        ValidateForUpdate();
         LoadVersioningComponent();
+        ValidateForUpdate();
         b.Verbose.Log("Versioning Loaded ");
         ver.Increment();
         b.Verbose.Log("Saving");
@@ -116,16 +117,31 @@ public class VersioningTask {
     }
 
     private void SaveVersioningComponent() {
+        ValidateForUpdate();
+        ValidateStorageSet();
         storage.Persist(ver);
     }
 
+    [MemberNotNull(nameof(storage))]
+    private void ValidateStorageSet() {
+        if (storage == null) {
+            throw new InvalidOperationException("The storage component has not been set, please call SetPersistanceValue first.");
+        }
+    }
+
+    [MemberNotNull(nameof(ver))]
+    [MemberNotNull(nameof(BaseSearchDir))]
     private void ValidateForUpdate() {
         if (string.IsNullOrEmpty(BaseSearchDir) || !Directory.Exists(BaseSearchDir)) {
             throw new DirectoryNotFoundException("The BaseSearchDirectory has to be specified");
         }
+        if (ver == null) {
+            throw new InvalidOperationException("The versioning component has not been loaded correctly.");
+        }
     }
 
     private void LoadVersioningComponent() {
+        ValidateStorageSet();
         ver = storage.GetVersion();
     }
 }

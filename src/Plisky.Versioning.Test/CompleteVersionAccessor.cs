@@ -4,7 +4,7 @@ public class CompleteVersionMock : CompleteVersion {
 
     #region mocking implementation
 
-    public Mocking Mock;
+    public Mocking Mock { get; set; }
 
     public class Mocking {
         private CompleteVersionMock parent;
@@ -13,7 +13,7 @@ public class CompleteVersionMock : CompleteVersion {
             parent = p;
         }
 
-        public string ManipulateVerisonBasedOnPattern(string pattern, string currentValue) {
+        public string ManipulateVersionBasedOnPattern(string pattern, string currentValue) {
             return parent.ManipulateValueBasedOnPattern(pattern, currentValue);
         }
     }

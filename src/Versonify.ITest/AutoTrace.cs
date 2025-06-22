@@ -7,7 +7,6 @@ using Xunit.Sdk;
 
 namespace Versonify.ITest;
 
-
 public class XunitAutoTraceFixture : XunitTestFramework {
 
     public XunitAutoTraceFixture(IMessageSink messageSink)

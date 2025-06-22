@@ -15,7 +15,9 @@ public enum TestResourcesReferences {
     NetStdNone,
     ReleaseNameAndVerTxt,
     MultiReleaseNameAndVer,
-    VersionV3Txt
+    VersionV3Txt,
+    DefaultVersionStore,
+    OneEachBehaviourStore,
 }
 
 public static class TestResources {
@@ -37,6 +39,8 @@ public static class TestResources {
             TestResourcesReferences.VersionV3Txt => "ReleaseNameV3.txt",
             TestResourcesReferences.MultiReleaseNameAndVer => "ReleaseNameLorem.txt",
             TestResourcesReferences.BugNuspecUpdateFail => "B_NuspecUpdateFailed.nuspec",
+            TestResourcesReferences.DefaultVersionStore => "default_fxfxaifx.vstore",
+            TestResourcesReferences.OneEachBehaviourStore => "one_each_behaviour.vstore",
             _ => null,
         };
     }

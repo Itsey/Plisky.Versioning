@@ -5,9 +5,9 @@
     <AssemblyName>Plisky.Diagnostics</AssemblyName>
     <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>D:\Fsync\plisky_keyfile.snk</AssemblyOriginatorKeyFile>
-    <DelaySign>false</DelaySign>    
+    <DelaySign>false</DelaySign>
     <Description>Plisky Diagnostics - Net Standard Edition.</Description>
-    <Product>-= Plisky Diagnostics =-</Product>    
+    <Product>-= Plisky Diagnostics =-</Product>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

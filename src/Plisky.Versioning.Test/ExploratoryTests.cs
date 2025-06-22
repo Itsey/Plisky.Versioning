@@ -3,7 +3,6 @@
 namespace Plisky.CodeCraft.Test;
 
 using System;
-using System.IO;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Shouldly;
@@ -102,7 +101,7 @@ public class Exploratory {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void IncrementAndUpdateThrowsIfNoDirectory() {
-        _ = Assert.Throws<DirectoryNotFoundException>(() => {
+        _ = Assert.Throws<InvalidOperationException>(() => {
             var sut = new VersioningTask();
             sut.IncrementAndUpdateAll();
         });
