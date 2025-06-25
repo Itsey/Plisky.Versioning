@@ -36,7 +36,6 @@ public partial class Build : NukeBuild {
                 throw new InvalidOperationException("The solution must be set");
             }
 
-
             DotNetTasks.DotNetClean(s => s.SetProject(Solution));
 
             b.Verbose.Log("Clean completed, cleaning artefact directory");
@@ -46,7 +45,7 @@ public partial class Build : NukeBuild {
 
     private Target MollyCheck => _ => _
        .After(Clean, ArrangeStep)
-       .DependsOn(Initialise)
+       .DependsOn(Initialise, NexusLive)
        .Before(ConstructStep)
        .Executes(() => {
            Log.Information("Mollycoddle Structure Linting Starts.");

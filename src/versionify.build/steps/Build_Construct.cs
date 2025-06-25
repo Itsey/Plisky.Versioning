@@ -1,15 +1,11 @@
-﻿
-using System;
+﻿using System;
 using Nuke.Common;
 using Nuke.Common.Tools.DotNet;
 using Plisky.Nuke.Fusion;
 using Serilog;
 
 public partial class Build : NukeBuild {
-
     // Standard entrypoint for compiling the app.  Arrange [Construct] Examine Package Release Test
-
-
 
     public string FullVersionNumber { get; set; } = string.Empty;
     public Target ConstructStep => _ => _
@@ -48,8 +44,6 @@ public partial class Build : NukeBuild {
                 .SetQuickValue(QuickVersion)
               );
           }
-
-
       });
 
     public Target QueryNextVersion => _ => _
@@ -141,4 +135,3 @@ public partial class Build : NukeBuild {
         });
 
 }
-
