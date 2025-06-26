@@ -22,10 +22,10 @@ public partial class Build : NukeBuild {
     private readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
     [GitRepository]
-    private readonly GitRepository GitRepository;
+    private readonly GitRepository? GitRepository;
 
     [Solution]
-    private readonly Solution Solution;
+    private readonly Solution? Solution;
 
     [Parameter("Uses a simpler logging approach that adds stability if required.", Name = "SimplifyLogging")]
     private readonly bool SingleThreadedTrace = false;
@@ -34,9 +34,9 @@ public partial class Build : NukeBuild {
     readonly string QuickVersion = "";
 
     private AbsolutePath SourceDirectory => RootDirectory / "src";
-    private AbsolutePath ArtifactsDirectory;
+    private AbsolutePath? ArtifactsDirectory;
 
-    private LocalBuildConfig settings;
+    private LocalBuildConfig? settings;
 
     public Target Wrapup => _ => _
         .DependsOn(Initialise)
@@ -56,7 +56,7 @@ public partial class Build : NukeBuild {
       .After(Initialise)
       .DependsOn(Initialise)
       .Executes(() => {
-          string dotb = Environment.GetEnvironmentVariable("DOTB_BUILDTOOLS");
+          string? dotb = Environment.GetEnvironmentVariable("DOTB_BUILDTOOLS");
           if (!string.IsNullOrWhiteSpace(dotb)) {
               Log.Information($"Build> Ensure Nexus Is Live>  Build Tools Directory: {dotb}");
 
@@ -108,7 +108,7 @@ public partial class Build : NukeBuild {
                    MollyRulesToken = "%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.yellowwater-365987e0.uksouth.azurecontainerapps.io/repository/plisky/molly/XXVERSIONNAMEXX/defaultrules.mollyset",
                    MollyRulesVersion = "default",
                    VersioningPersistanceToken = @"%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.yellowwater-365987e0.uksouth.azurecontainerapps.io/repository/plisky/vstore/versonify-version.store",
-                   ArtifactsDirectory = RootDirectory / "artifacts",
+                   ArtifactsDirectory = "%TEMP%\\_build\\vsfbld\\",
                    DependenciesDirectory = Solution.Projects.First(x => x.Name == "_Dependencies").Directory
                };
 

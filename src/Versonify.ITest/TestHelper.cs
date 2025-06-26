@@ -30,7 +30,7 @@ public class TestHelper {
             return VersonifyPathCache;
         }
 
-        string solutionPath = GetSolutionPath();
+        string? solutionPath = GetSolutionPath();
         if (solutionPath == null) {
             throw new FileNotFoundException("Versonify executable not found.");
         }

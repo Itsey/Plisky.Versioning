@@ -123,10 +123,6 @@
             "Release"
           ]
         },
-        "NoSuccessNotify": {
-          "type": "boolean",
-          "description": "Disables alert notification when a build is successful"
-        },
         "QuickVersion": {
           "type": "string",
           "description": "Specifies a quick version command for the versioning quick step"

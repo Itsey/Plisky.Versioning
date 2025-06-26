@@ -91,7 +91,7 @@ public partial class Build : NukeBuild {
        });
 
     [Pure]
-    private ValidationResult ValidateMollySettings(string? mollyRulesToken, bool localDirectoryExists) {
+    private ValidationResult? ValidateMollySettings(string? mollyRulesToken, bool localDirectoryExists) {
         var errors = new List<string>();
 
         if (!localDirectoryExists) {
