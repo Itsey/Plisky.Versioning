@@ -34,7 +34,7 @@ public partial class Build : NukeBuild {
       .Executes(() => {
 
           NuGetTasks.NuGetPush(s => s
-           .SetTargetPath(ArtifactsDirectory + "\\Plisky.Versonify*.nupkg")
+           .SetTargetPath(settings.ArtifactsDirectory + "\\Plisky.Versonify*.nupkg")
            .SetSource("https://api.nuget.org/v3/index.json")
            .SetApiKey(Environment.GetEnvironmentVariable("PLISKY_PUBLISH_KEY")));
       });
