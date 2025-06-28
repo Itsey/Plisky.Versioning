@@ -13,7 +13,7 @@ $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
 # CONFIGURATION
 ###########################################################################
 
-$BuildProjectFile = "$PSScriptRoot\versionify.build\versionify.build.csproj"
+$BuildProjectFile = "$PSScriptRoot\versonify.build\versonify.build.csproj"
 $TempDirectory = "$PSScriptRoot\\.nuke\temp"
 
 $DotNetGlobalFile = "$PSScriptRoot\\global.json"
