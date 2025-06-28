@@ -38,6 +38,7 @@
         "PackageStep",
         "QueryNextVersion",
         "ReleaseStep",
+        "RestoreStep",
         "TestStep",
         "UnitTest",
         "VersionQuickStep",

@@ -14,7 +14,7 @@ public partial class Build : NukeBuild {
     public Target ArrangeStep => _ => _
         .Before(ConstructStep, Wrapup)
         .DependsOn(Initialise)
-        .Triggers(Clean, MollyCheck)
+        .Triggers(Clean, MollyCheck, RestoreStep)
         .Executes(() => {
             Log.Information("--> Arrange <-- ");
         });
@@ -36,9 +36,12 @@ public partial class Build : NukeBuild {
                 throw new InvalidOperationException("The solution must be set");
             }
 
-            DotNetTasks.DotNetClean(s => s.SetProject(Solution));
+            DotNetTasks.DotNetClean(s => s
+                .SetProject(Solution)
+                .SetConfiguration(Configuration)
+            );
 
-            b.Verbose.Log("Clean completed, cleaning artefact directory");
+            b.Verbose.Log("Clean completed, cleaning artifact directory");
 
             settings.ArtifactsDirectory.CreateOrCleanDirectory();
         });
@@ -60,7 +63,7 @@ public partial class Build : NukeBuild {
            var mcOk = ValidateMollySettings(settings.MollyRulesToken, GitRepository.LocalDirectory.Exists());
            if (mcOk != ValidationResult.Success) {
                Log.Error("Mollycoddle Structure Linting Skipped - Validation Failed.");
-               foreach (string item in mcOk.MemberNames) {
+               foreach (string item in mcOk!.MemberNames) {
                    Log.Error(item);
                }
                return;
@@ -89,6 +92,15 @@ public partial class Build : NukeBuild {
 
            Log.Information("Mollycoddle Structure Linting Completes.");
        });
+
+    public Target RestoreStep => _ => _
+        .After(ArrangeStep, Clean, MollyCheck)
+        .DependsOn(Initialise)
+        .Before(ConstructStep)
+        .Executes(() => {
+            Log.Information("--> NuGet Restore <--");
+            DotNetTasks.DotNetRestore(s => s.SetProjectFile(Solution));
+        });
 
     [Pure]
     private ValidationResult? ValidateMollySettings(string? mollyRulesToken, bool localDirectoryExists) {
