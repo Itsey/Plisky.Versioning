@@ -108,7 +108,7 @@ public partial class Build : NukeBuild {
                    MollyRulesToken = "%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.yellowwater-365987e0.uksouth.azurecontainerapps.io/repository/plisky/molly/XXVERSIONNAMEXX/defaultrules.mollyset",
                    MollyRulesVersion = "default",
                    VersioningPersistanceToken = @"%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.yellowwater-365987e0.uksouth.azurecontainerapps.io/repository/plisky/vstore/versonify-version.store",
-                   ArtifactsDirectory = "%TEMP%\\_build\\vsfbld\\",
+                   ArtifactsDirectory = Path.Combine(Path.GetTempPath(), "_build\\vsfbld\\"),
                    DependenciesDirectory = Solution.Projects.First(x => x.Name == "_Dependencies").Directory
                };
 
