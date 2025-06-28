@@ -23,14 +23,14 @@ stages:
           - task: CmdLine@2
             displayName: 'Run: ArrangeStep'
             inputs:
-              script: '.\src\build.cmd ArrangeStep Clean MollyCheck --root .\src\'
+              script: '.\src\build.cmd ArrangeStep --root .\src\'
 
           - task: CmdLine@2
             displayName: 'Run: ConstructStep'
             inputs:
-              script: '.\src\build.cmd ConstructStep Compile --skip ArrangeStep --root .\src\'
+              script: '.\src\build.cmd ConstructStep --skip ArrangeStep --root .\src\'
       
           - task: CmdLine@2
             displayName: 'Run: ExamineStep'
             inputs:
-              script: '.\src\build.cmd ExamineStep UnitTest --skip ArrangeStep ConstructStep --root .\src\'
+              script: '.\src\build.cmd ExamineStep --skip ArrangeStep ConstructStep --root .\src\'
