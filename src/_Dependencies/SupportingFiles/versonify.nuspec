@@ -28,7 +28,7 @@
       <packageType name="DotnetTool" />
     </packageTypes>
   </metadata>
-  <files>|
+  <files>
     <file src=".\nuget\readme.md" target="readme.md" />
     <file src=".\nuget\tools\publish\net8.0\*" target="tools\net8.0\" />
     <file src=".\nuget\tools\publish\net9.0\*" target="tools\net9.0\" />
