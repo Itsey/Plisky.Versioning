@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+﻿using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Shouldly;
@@ -58,6 +58,23 @@ public class Exploratory {
 
         output.ShouldContain(outputData);
         output.ShouldNotContain(noOutputData);
+        th.LastExecutionExitCode.ShouldBe(0);
+    }
+
+    [Theory]
+    [InlineData(1, "Fixed", DigitIncrementBehaviour.Fixed)]
+    [InlineData(2, "autoincrementwithreset", DigitIncrementBehaviour.AutoIncrementWithReset)]
+    [InlineData(3, "Weekssincedate", DigitIncrementBehaviour.WeeksSinceDate)]
+    [InlineData(4, "6", DigitIncrementBehaviour.ContinualIncrement)]
+    public async Task Behaviour_command_sets_correct_digits(int digitPosition, string quickValue, DigitIncrementBehaviour outputdata) {
+        b.Info.Flow();
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
+        string vStoreFilePath = uth.GetTestDataFile(resName);
+        string expectedOutput = $"Setting Behaviour for Digit[{digitPosition}] to {outputdata}({(int)outputdata})";
+
+        string output = await th.ExecuteVersonify($"behaviour -vs={vStoreFilePath} -DG={digitPosition} -Q={quickValue}");
+
+        output.ShouldContain(expectedOutput);
         th.LastExecutionExitCode.ShouldBe(0);
     }
 
