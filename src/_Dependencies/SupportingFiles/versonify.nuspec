@@ -3,11 +3,13 @@
   <metadata>
     <id>Plisky.Versonify</id>
     <version>0.0.0</version>
-    <authors>Itsey</authors>
+    <authors>https://github.com/Itsey</authors>
+    <owners>https://github.com/Itsey</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">MIT</license>
     <projectUrl>https://itsey.github.io/</projectUrl>
     <description>Plisky Versonify, versioning command line tool.</description>
+    <copyright>Copyright 2025</copyright>
     <releaseNotes>
       0.1.3
         🐞 Critical Bug - Typo in exe name in package corrected.  0.1.2. Superceeded.
@@ -22,14 +24,13 @@
     </releaseNotes>
     <readme>.\readme.md</readme>
     <tags>versioning ci build </tags>
-    <dependencies>
-      <group targetFramework=".NETStandard2.1">
-        <dependency id="SampleDependency" version="1.0.0" />
-      </group>
-    </dependencies>
+    <packageTypes>
+      <packageType name="DotnetTool" />
+    </packageTypes>
   </metadata>
-  <files>
-    <file src=".\nuget\readme.md" />
-    <file src=".\nuget\tools\**\*.*" exclude="**\*.log" />
+  <files>|
+    <file src=".\nuget\readme.md" target="readme.md" />
+    <file src=".\nuget\tools\publish\net8.0\*" target="tools\net8.0\" />
+    <file src=".\nuget\tools\publish\net9.0\*" target="tools\net9.0\" />
   </files>
 </package>

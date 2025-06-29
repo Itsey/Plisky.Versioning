@@ -9,7 +9,7 @@ using Serilog;
 
 public partial class Build : NukeBuild {
     // Package Step - Well known step for bundling prior to the app release.   Arrange Construct Examine [Package] Release Test
-    private static readonly Array TargetFrameworks = new[] { "net8.0"/*, "net9.0" */};
+    private static readonly Array TargetFrameworks = new[] { "net8.0", "net9.0" };
     private Target PackageStep => _ => _
         .After(ExamineStep)
         .Before(ReleaseStep, Wrapup)
@@ -28,7 +28,7 @@ public partial class Build : NukeBuild {
             var project = Solution.GetProject("Versonify");
             if (project == null) { throw new InvalidOperationException("Project not found"); }
 
-            var publishDirectory = settings.ArtifactsDirectory + "\\publish\\lib";
+            var publishDirectory = settings.ArtifactsDirectory + "\\publish\\";
             var nugetStructure = settings.ArtifactsDirectory + "\\nuget";
             var nugetTools = nugetStructure + "\\tools";
 
@@ -61,40 +61,6 @@ public partial class Build : NukeBuild {
             Log.Debug($"Copying {nugetPackageFile} > {nugetPackageTarget}");
             nugetPackageFile.Copy(nugetPackageTarget, ExistsPolicy.FileOverwrite);
 
-
-            /*
-            Commented due to bug in Versonify which needs to be released before I can add it back.
-
-            var v = new VersonifyTasks();
-
-            //VersonifyTasks.CommandPassive(s => s
-            //  .SetRoot(Solution.Directory)
-            //  .SetVersionPersistanceValue(@"c:\temp\vs.store")
-            //  .SetDebug(true));
-
-            v.PassiveExecute(s => s
-              .SetRoot(Solution.Directory)
-              .SetVersionPersistanceValue(@"c:\temp\vs.store")
-              .SetDebug(true));
-
-
-            v.PerformFileUpdate(v => v
-              .SetRoot(ArtifactsDirectory)
-              .AddMultimatchFile($"{Solution.Directory}\\_Dependencies\\Automation\\NuspecVersion.txt")
-              .SetVersionPersistanceValue(@"c:\temp\vs.store")
-              .SetDebug(true)
-              .AsDryRun(true)
-              .SetRelease(""));
-
-            //VersonifyTasks.IncrementAndUpdateFiles(s => s
-            // .SetRoot(ArtifactsDirectory)
-            // .AddMultimatchFile($"{Solution.Directory}\\_Dependencies\\Automation\\NuspecVersion.txt")
-            // .SetVersionPersistanceValue(@"c:\temp\vs.store")
-            // .SetDebug(true)
-            // .AsDryRun(true)
-            // .SetRelease(""));
-
-            */
 
             NuGetTasks.NuGetPack(s => s
               .SetTargetPath(settings.ArtifactsDirectory + "\\versonify.nuspec")
