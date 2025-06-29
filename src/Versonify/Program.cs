@@ -361,14 +361,11 @@ internal class Program {
         }
     }
     private static void ApplyDigitBehaviour() {
+        var newBehaviour = options.IncrementBehaviour;
         var ver = new Versioning(storage, options.DryRunOnly);
         versionerUsed = ver.Version;
 
         if (!ver.Version.ValidateDigitOptions(options.DigitManipulations)) {
-            return;
-        }
-
-        if (!TryParseDigitIncrementBehaviour(options.QuickValue, out var newBehaviour)) {
             return;
         }
 
@@ -396,13 +393,5 @@ internal class Program {
         foreach (string digit in digitsToUpdate) {
             Console.WriteLine(ver.GetBehaviour(digit));
         }
-    }
-    private static bool TryParseDigitIncrementBehaviour(string value, out DigitIncrementBehaviour behaviour) {
-        if (Enum.TryParse<DigitIncrementBehaviour>(value, out behaviour) &&
-            Enum.IsDefined(typeof(DigitIncrementBehaviour), behaviour)) {
-            return true;
-        }
-        Console.WriteLine($"Error: '{value}' is not a valid digit increment behaviour.");
-        return false;
     }
 }

@@ -24,6 +24,7 @@ public class VersonifyCommandline {
 
     public string ConsoleTemplate { get; private set; }
     public string PverFileName { get; set; }
+    public DigitIncrementBehaviour IncrementBehaviour { get; set; }
 
     [CommandLineArg("Debug", Description = "Enables Debug Logging")]
     public bool Debug { get; set; }
@@ -111,8 +112,11 @@ public class VersonifyCommandline {
                 case "behaviour":
                     if (string.IsNullOrEmpty(QuickValue)) {
                         return VersioningCommand.BehaviourOutput;
-                    } else if (Enum.TryParse(typeof(DigitIncrementBehaviour), QuickValue, out _)) {
-                        return VersioningCommand.BehaviourUpdate;
+                    } else {
+                        if (TryParseDigitIncrementBehaviour(QuickValue, out var parsedBehaviour)) {
+                            IncrementBehaviour = parsedBehaviour;
+                            return VersioningCommand.BehaviourUpdate;
+                        }
                     }
                     return VersioningCommand.Invalid;
                 default:
@@ -130,6 +134,15 @@ public class VersonifyCommandline {
         }
 
         return DigitManipulations;
+    }
+
+    public static bool TryParseDigitIncrementBehaviour(string value, out DigitIncrementBehaviour behaviour) {
+        if (Enum.TryParse<DigitIncrementBehaviour>(value, true, out behaviour) &&
+            Enum.IsDefined(typeof(DigitIncrementBehaviour), behaviour)) {
+            return true;
+        }
+        Console.WriteLine($"Error: '{value}' is not a valid digit increment behaviour.");
+        return false;
     }
 
     private void ParseOutputOptions() {

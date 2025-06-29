@@ -136,4 +136,26 @@ public class Exploratory {
 
         version.Digits.ShouldAllBe(d => d.Behaviour == DigitIncrementBehaviour.ContinualIncrement);
     }
+
+    [Theory]
+    [Trait("Cause", "Bug:LFY-17")]
+    [InlineData("FIXED", DigitIncrementBehaviour.Fixed, true)]
+    [InlineData("0", DigitIncrementBehaviour.Fixed, true)]
+    [InlineData("2", DigitIncrementBehaviour.DaysSinceDate, true)]
+    [InlineData("dailyautoincrement", DigitIncrementBehaviour.DailyAutoIncrement, true)]
+    [InlineData("autoIncreMentWithreset", DigitIncrementBehaviour.AutoIncrementWithReset, true)]
+    [InlineData("AutoIncrementWithReset", DigitIncrementBehaviour.AutoIncrementWithReset, true)]
+    [InlineData("AutoIncrementWithResetAny", DigitIncrementBehaviour.AutoIncrementWithResetAny, true)]
+    [InlineData("ContinualIncrement", DigitIncrementBehaviour.ContinualIncrement, true)]
+    [InlineData("NotAValidBehaviour", default(DigitIncrementBehaviour), false)]
+    [InlineData("", default(DigitIncrementBehaviour), false)]
+    public void TryParseDigitIncrementBehaviour_ParsesExpectedValues(string input, DigitIncrementBehaviour expected, bool shouldParse) {
+        
+        bool parseResult = VersonifyCommandline.TryParseDigitIncrementBehaviour(input, out var result);
+
+        parseResult.ShouldBe(shouldParse);
+        if (shouldParse) {
+            result.ShouldBe(expected);
+        }
+    }
 }
