@@ -9,7 +9,7 @@ using Serilog;
 
 public partial class Build : NukeBuild {
     // Package Step - Well known step for bundling prior to the app release.   Arrange Construct Examine [Package] Release Test
-    private static readonly Array TargetFrameworks = new[] { "net8.0", "net9.0" };
+
     private Target PackageStep => _ => _
         .After(ExamineStep)
         .Before(ReleaseStep, Wrapup)
@@ -30,40 +30,15 @@ public partial class Build : NukeBuild {
 
             var publishDirectory = settings.ArtifactsDirectory + "\\publish\\";
             var nugetStructure = settings.ArtifactsDirectory + "\\nuget";
-            var nugetTools = nugetStructure + "\\tools";
 
-            Log.Information($"Publishing to {publishDirectory}");
-
-            publishDirectory.CreateOrCleanDirectory();
-            nugetStructure.CreateOrCleanDirectory();
-            nugetTools.CreateOrCleanDirectory();
-
-            foreach (string l in TargetFrameworks) {
-                DotNetTasks.DotNetPublish(s => s
-                  .SetProject(project)
-                  .SetConfiguration(Configuration)
-                  .SetOutput(Path.Combine(publishDirectory, l))
-                  .SetFramework(l)
-                  .EnableNoRestore()
-                  .EnableNoBuild()
-                );
-            }
-            publishDirectory.CopyToDirectory(nugetTools, ExistsPolicy.MergeAndOverwrite);
-
-            var readmeFile = settings.DependenciesDirectory + "\\supportingFiles\\readme.md";
-            var targetdir = nugetStructure + "\\readme.md";
-
-            Log.Debug($"Copying file {readmeFile} > {targetdir}");
-            readmeFile.Copy(targetdir, ExistsPolicy.FileOverwrite);
-
-            var nugetPackageFile = Solution.GetProject("_Dependencies").Directory + "\\supportingFiles\\versonify.nuspec";
-            var nugetPackageTarget = settings.ArtifactsDirectory + "\\versonify.nuspec";
-            Log.Debug($"Copying {nugetPackageFile} > {nugetPackageTarget}");
-            nugetPackageFile.Copy(nugetPackageTarget, ExistsPolicy.FileOverwrite);
+            DotNetTasks.DotNetPack(s => s
+              .SetProject(project)
+              .SetConfiguration(Configuration)
+              .SetOutputDirectory(nugetStructure)
+              .EnableNoBuild()
+              .EnableNoRestore()
+            );
 
 
-            NuGetTasks.NuGetPack(s => s
-              .SetTargetPath(settings.ArtifactsDirectory + "\\versonify.nuspec")
-              .SetOutputDirectory(settings.ArtifactsDirectory));
         });
 }
