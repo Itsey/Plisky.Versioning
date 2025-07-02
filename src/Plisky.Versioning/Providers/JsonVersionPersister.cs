@@ -1,7 +1,7 @@
 ﻿namespace Plisky.CodeCraft;
 
 using System.IO;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 public class JsonVersionPersister : VersionStorage {
 
@@ -33,7 +33,7 @@ public class JsonVersionPersister : VersionStorage {
 
         if (File.Exists(InitValue.InitialisationString)) {
             string txt = File.ReadAllText(InitValue.InitialisationString);
-            var cv = JsonConvert.DeserializeObject<CompleteVersion>(txt);
+            var cv = JsonSerializer.Deserialize<CompleteVersion>(txt);
             if (cv != null) {
                 return cv;
             }
@@ -42,7 +42,7 @@ public class JsonVersionPersister : VersionStorage {
     }
 
     protected override void ActualPersist(CompleteVersion cv) {
-        string val = JsonConvert.SerializeObject(cv);
+        string val = JsonSerializer.Serialize(cv);
         File.WriteAllText(InitValue.InitialisationString, val);
     }
 }

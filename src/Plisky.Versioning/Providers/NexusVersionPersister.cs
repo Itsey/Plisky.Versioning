@@ -2,7 +2,7 @@
 
 using System.IO;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 
 public class NexusVersionPersister : VersionStorage {
@@ -30,7 +30,7 @@ public class NexusVersionPersister : VersionStorage {
         var tsk = remote.DownloadFileAsync(config.Url, (byteArray, fileName) => {
 
             string json = Encoding.UTF8.GetString(byteArray);
-            result = JsonConvert.DeserializeObject<CompleteVersion>(json);
+            result = JsonSerializer.Deserialize<CompleteVersion>(json);
 
         }, InitValue.InitialisationString, config.Username, config.Password);
 
@@ -42,7 +42,7 @@ public class NexusVersionPersister : VersionStorage {
     protected override void ActualPersist(CompleteVersion cv) {
         if (!IsValid) { return; }
 
-        byte[] val = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(cv));
+        byte[] val = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(cv));
         var t = remote.UploadFileAsync(new MemoryStream(val), config.Url, config.Username, config.Password);
         t.Wait();
 
