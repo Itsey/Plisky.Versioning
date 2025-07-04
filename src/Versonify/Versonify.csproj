@@ -6,40 +6,48 @@
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <AssemblyVersion>0.0</AssemblyVersion>    
     <FileVersion>0.0.0.0</FileVersion>
+    <Version>0.0.0</Version>
     <AssemblyName>Versonify</AssemblyName>
   </PropertyGroup>
-
   <PropertyGroup>
+    <Summary>Versioning By Versonify, a dotnet versioning tool supporting different versioning approaches.</Summary>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>versonify</ToolCommandName>
     <ReleaseNotesFile>..\_Dependencies\SupportingFiles\release-notes.md</ReleaseNotesFile>
     <PackageId>Plisky.Versonify</PackageId>
-    <Version>0.0.0</Version>
     <Authors>https://github.com/Itsey</Authors>
-    <Owners>https://github.com/Itsey</Owners>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://itsey.github.io/</PackageProjectUrl>
+    <PackageIcon>heart-icon.png</PackageIcon>
     <Description>Plisky Versonify, versioning command line tool.</Description>
     <Copyright>Copyright 2025</Copyright>
+    <PackageTags>versioning;cli;build</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>portable</DebugType>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
-
   <ItemGroup>
+    <None Include="..\_Dependencies\SupportingFiles\heart-icon.png" Pack="true" PackagePath="" />
     <None Include="..\_Dependencies\SupportingFiles\readme.md" Pack="true" PackagePath="" />
   </ItemGroup>
-  
   <Target Name="AddReleaseNotesToPackage" BeforeTargets="GenerateNuspec">
     <Message Importance="high" Text="Creating Custom Release Notes." />
     <PropertyGroup>
       <PackageReleaseNotes>$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)\..\_Dependencies\SupportingFiles\changelog.md"))</PackageReleaseNotes>
     </PropertyGroup>
   </Target>
-
   <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Plisky.Diagnostics" Version="3.2.5" />
-    <PackageReference Include="Plisky.Listeners" Version="3.2.5" />
-    <PackageReference Include="Plisky.Plumbing" Version="1.7.0" />
+    <PackageReference Include="Plisky.Listeners" Version="3.2.2" />
+    <PackageReference Include="Plisky.Plumbing" Version="1.7.25" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Text.Json" Version="9.0.6" />
   </ItemGroup>

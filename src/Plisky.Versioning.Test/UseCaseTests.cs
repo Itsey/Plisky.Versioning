@@ -23,7 +23,8 @@ public class UseCaseTests {
     public void Versioning_MultiMMSameFile_UpdatesMultipleTimes() {
         b.Info.Flow();
 
-        // Get the Std CSroj with no attributes.
+        // Early cut of versioning only made a single update to a file, once it had been updated it was not updated again. Test case
+        // ensures that this is no longer the case and now every MM based match is respected and triggers its correspoing update.
         string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone);
         string srcFile = uth.GetTestDataFile(reid);
 
@@ -36,6 +37,7 @@ public class UseCaseTests {
 
         string s = File.ReadAllText(srcFile);
 
+        // Use the presence of the tags to ensure that all updates have been made.
         Assert.Contains("<Version>", s);
         Assert.Contains("<AssemblyVersion>", s);
         Assert.Contains("<FileVersion>", s);
