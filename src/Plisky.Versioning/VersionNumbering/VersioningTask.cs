@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using Minimatch;
+using GlobExpressions;
 using Plisky.Diagnostics;
 
 public class VersioningTask {
@@ -93,7 +93,7 @@ public class VersioningTask {
 
                     // Check every file that we have returned.
                     foreach (string chk in pendingUpdates.Keys) {
-                        var mm = new Minimatcher(chk, new Options { AllowWindowsPaths = true, IgnoreCase = true });
+                        var mm = new Glob(chk.Replace('\\', '/'), GlobOptions.CaseInsensitive);
                         b.Verbose.Log($"Checking {chk} against {v}");
                         if (mm.IsMatch(v)) {
                             b.Info.Log("Match...");

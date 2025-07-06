@@ -1,7 +1,7 @@
 ﻿namespace Plisky.CodeCraft.Test;
 using System;
 using System.Collections.Generic;
-using Minimatch;
+using GlobExpressions;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Xunit;
@@ -17,7 +17,7 @@ public class MinmatchTests {
     }
 
     private static void CheckTheseMatches(List<Tuple<string, bool>> mtchs, string againstThis) {
-        var mm = new Minimatcher(againstThis, new Options { AllowWindowsPaths = true, IgnoreCase = true });
+        var mm = new Glob(againstThis.Replace('\\', '/'), GlobOptions.CaseInsensitive);
         int i = 0;
         foreach (var v in mtchs) {
             i++;
@@ -55,7 +55,7 @@ public class MinmatchTests {
         string againstThis = @"**\properties\assemblyinfo.cs";
         CheckTheseMatches(mtchs, againstThis);
 
-        var mm2 = new Minimatcher(@"C:\temp\test\testfile.tst", new Options { AllowWindowsPaths = true });
+        var mm2 = new Glob((@"C:\temp\test\testfile.tst").Replace('\\', '/'));
         Assert.True(mm2.IsMatch(@"C:\temp\test\testfile.tst"), "Cant match on full filename");
     }
 

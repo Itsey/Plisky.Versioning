@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Minimatch;
+using GlobExpressions;
 using Plisky.Diagnostics;
 
 public class Versioning {
@@ -108,7 +108,7 @@ public class Versioning {
     public string GetBehaviour(string digit) {
         b.Verbose.Log($"Returning Behaviours");
         string result = cv.GetBehaviourString(digit);
-        return result; 
+        return result;
     }
 
     public void UpdateBehaviour(string digitToUpdate, DigitIncrementBehaviour newBehaviour) {
@@ -168,11 +168,11 @@ public class Versioning {
 
         Log($"Searching in [{root}]");
 
-        var mm = new List<Tuple<Minimatcher, FileUpdateType>>();
+        var mm = new List<Tuple<Glob, FileUpdateType>>();
 
         foreach (var regmm in fileUpdateMinmatchers.Keys) {
             foreach (string m in fileUpdateMinmatchers[regmm]) {
-                mm.Add(new Tuple<Minimatcher, FileUpdateType>(new Minimatcher(m, new Options { AllowWindowsPaths = true, NoCase = true }), regmm));
+                mm.Add(new Tuple<Glob, FileUpdateType>(new Glob(m.Replace('\\', '/'), GlobOptions.CaseInsensitive), regmm));
             }
         }
 
@@ -185,11 +185,10 @@ public class Versioning {
             foreach (string l in fls) {
                 totalNoFiles++;
 
-                for (int j = 0; j < mm.Count; j++) {
-
-                    if (mm[j].Item1.IsMatch(l)) {
-                        Log($"MM Match {l} - {mm[j].Item2}, queued for update.");
-                        filenamesRegistered.Add(new Tuple<string, FileUpdateType>(l, mm[j].Item2));
+                foreach (var t in mm) {
+                    if (t.Item1.IsMatch(l)) {
+                        Log($"MM Match {l} - {t.Item2}, queued for update.");
+                        filenamesRegistered.Add(new Tuple<string, FileUpdateType>(l, t.Item2));
                         registered++;
                         result.Add(l);
                     } else {
@@ -214,8 +213,6 @@ public class Versioning {
             Log("DryRun enabled, not updating version storage.");
         }
     }
-
-
 
 
     public void SetMiniMatches(FileUpdateType target, params string[] versionTargetMinMatch) {
