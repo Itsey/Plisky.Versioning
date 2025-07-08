@@ -75,7 +75,7 @@ public class Versioning {
         filenamesRegistered.Add(new Tuple<string, FileUpdateType>(targetCSFile, FileUpdateType.NetAssembly));
     }
 
-    public void UpdateAllRegisteredFiles() {
+    public int UpdateAllRegisteredFiles() {
         Log("Update All Files");
 
         int numberFilesUpdated = 0;
@@ -92,6 +92,7 @@ public class Versioning {
         if (numberFilesUpdated == 0) {
             Log("Warning - No files found to update.");
         }
+        return numberFilesUpdated;
     }
 
     private void Log(string v) {

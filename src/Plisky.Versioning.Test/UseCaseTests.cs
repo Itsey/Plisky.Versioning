@@ -5,6 +5,7 @@ using System.IO;
 using CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Test;
+using Shouldly;
 using Xunit;
 
 public class UseCaseTests {
@@ -33,14 +34,16 @@ public class UseCaseTests {
         v.mock.AddFilenameToFind(srcFile);
         v.LoadMiniMatches("**/csproj|StdFile", srcFile + "|StdFile", srcFile + "|StdAssembly", srcFile + "|StdInformational");
         _ = v.SearchForAllFiles("");
-        v.UpdateAllRegisteredFiles();
+        int numberFilesUpdated = v.UpdateAllRegisteredFiles();
 
         string s = File.ReadAllText(srcFile);
 
+        // 3 matches, so file should have been updated 3 times.
         // Use the presence of the tags to ensure that all updates have been made.
-        Assert.Contains("<Version>", s);
-        Assert.Contains("<AssemblyVersion>", s);
-        Assert.Contains("<FileVersion>", s);
+        numberFilesUpdated.ShouldBe(3, "The number of files updated was not as expected");
+        s.ShouldContain("<Version>");
+        s.ShouldContain("<AssemblyVersion>");
+        s.ShouldContain("<FileVersion>");
     }
 
 
