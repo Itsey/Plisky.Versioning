@@ -238,4 +238,22 @@ public class CompleteVersion {
         }
         return isValid;
     }
+
+    public void ApplyValueUpdate(string digitToUpdate, string newValue) {
+        if (digitToUpdate == ALLDIGITSWILDCARD) {
+            b.Verbose.Log($"Applying value update to all digits to {newValue}");
+            for (int i = 0; i < Digits.Length; i++) {
+                Digits[i].Value = newValue;
+            }
+            return;
+        }
+
+        Debug.Assert(int.TryParse(digitToUpdate, out _), "Digit to update is not a valid integer, this should not happen.");
+        Debug.Assert(Digits[int.Parse(digitToUpdate)] != null, "Digit to update is null, this should not happen.");
+        Debug.Assert(Digits.Length > int.Parse(digitToUpdate), "Digit to update is out of range of the digits available.");
+
+        b.Verbose.Log($"Applying value update for digit {digitToUpdate} to value {newValue}");
+        int idx = int.Parse(digitToUpdate);
+        Digits[idx].Value = newValue;
+    }
 }

@@ -6,6 +6,7 @@
         PassiveOutput,
         BehaviourOutput,
         BehaviourUpdate,
-        Override
+        Override,
+        SetDigitValue
     }
 }

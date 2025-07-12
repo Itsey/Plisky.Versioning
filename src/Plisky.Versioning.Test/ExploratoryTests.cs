@@ -150,12 +150,100 @@ public class Exploratory {
     [InlineData("NotAValidBehaviour", default(DigitIncrementBehaviour), false)]
     [InlineData("", default(DigitIncrementBehaviour), false)]
     public void TryParseDigitIncrementBehaviour_ParsesExpectedValues(string input, DigitIncrementBehaviour expected, bool shouldParse) {
-        
+
         bool parseResult = VersonifyCommandline.TryParseDigitIncrementBehaviour(input, out var result);
 
         parseResult.ShouldBe(shouldParse);
         if (shouldParse) {
             result.ShouldBe(expected);
         }
+    }
+
+    [Fact]
+    public void ApplyValueUpdate_SetsAllDigitsToValue() {
+        var version = new CompleteVersion(
+            new VersionUnit("1"),
+            new VersionUnit("2"),
+            new VersionUnit("3")
+        );
+        string valueToSet = "42";
+
+        version.ApplyValueUpdate("*", valueToSet);
+
+        version.Digits.ShouldAllBe(d => d.Value == valueToSet, $"All digits should be set to '{valueToSet}' after wildcard value update.");
+    }
+
+    [Fact]
+    public void ApplyValueUpdate_SetsSingleDigitToValue() {
+        var version = new CompleteVersion(
+            new VersionUnit("1"),
+            new VersionUnit("2"),
+            new VersionUnit("3")
+        );
+        string valueToSet = "99";
+
+        version.ApplyValueUpdate("1", valueToSet);
+
+        version.Digits[0].Value.ShouldBe("1", "First digit should remain unchanged after single digit update.");
+        version.Digits[1].Value.ShouldBe(valueToSet, $"Second digit should be updated to '{valueToSet}'.");
+        version.Digits[2].Value.ShouldBe("3", "Third digit should remain unchanged after single digit update.");
+    }
+
+    [Fact]
+    public void ApplyValueUpdate_SetsMultipleDigitsToSameValue() {
+        var version = new CompleteVersion(
+            new VersionUnit("1"),
+            new VersionUnit("2"),
+            new VersionUnit("3")
+        );
+        string valueToSet = "7";
+
+        foreach (string idx in new[] { "0", "2" }) {
+            version.ApplyValueUpdate(idx, valueToSet);
+        }
+
+        version.Digits[0].Value.ShouldBe(valueToSet, $"First digit should be updated to '{valueToSet}'.");
+        version.Digits[1].Value.ShouldBe("2", "Second digit should remain unchanged after multiple digit update.");
+        version.Digits[2].Value.ShouldBe(valueToSet, $"Third digit should be updated to '{valueToSet}'.");
+    }
+
+    [Theory]
+    [InlineData(DigitIncrementBehaviour.ReleaseName, "ReleaseA")]
+    [InlineData(DigitIncrementBehaviour.Fixed, "123")]
+    [InlineData(DigitIncrementBehaviour.DaysSinceDate, "77")]
+    public void ApplyValueUpdate_SetsValueForBehaviour(DigitIncrementBehaviour behaviour, string valueToSet) {
+        var version = new CompleteVersion(
+            new VersionUnit("1", "", behaviour),
+            new VersionUnit("2")
+        );
+
+        version.ApplyValueUpdate("0", valueToSet);
+
+        version.Digits[0].Value.ShouldBe(valueToSet, $"Digit with behaviour {behaviour} should be set to '{valueToSet}'.");
+    }
+
+    [Theory]
+    [InlineData("-1")]
+    [InlineData("2")]
+    [InlineData("5")]
+    public void ApplyValueUpdate_InvalidIndex_Throws(string index) {
+        var version = new CompleteVersion(
+            new VersionUnit("1"),
+            new VersionUnit("2")
+        );
+
+        Should.Throw<Exception>(() => version.ApplyValueUpdate(index, "100"), $"Should throw for invalid digit index '{index}'.");
+    }
+
+    [Theory]
+    [InlineData(DigitIncrementBehaviour.DaysSinceDate, "NotANumber")]
+    [InlineData(DigitIncrementBehaviour.DailyAutoIncrement, "NotANumber")]
+    public void ApplyValueUpdate_NonIntegerValueForIntegerBehaviour_Throws(DigitIncrementBehaviour behaviour, string valueToSet) {
+        var version = new CompleteVersion(
+            new VersionUnit("1", "", behaviour),
+            new VersionUnit("2")
+        );
+
+        Should.Throw<Exception>(() => version.ApplyValueUpdate("0", valueToSet), $"Non-integer value '{valueToSet}' provided for behaviour '{behaviour}' should throw an exception.");
     }
 }

@@ -150,6 +150,24 @@ internal class Program {
             }
         }
 
+        if (options.RequestedCommand == VersioningCommand.BehaviourOutput || options.RequestedCommand == VersioningCommand.BehaviourUpdate) {
+            if (options.DigitManipulations is null || options.DigitManipulations.Length == 0) {
+                Console.WriteLine("Error >> The Behaviour command requires at least one digit to be specified. Use -DG=<digit> or -DG=* .");
+                valid = false;
+            }
+        }
+
+        if (options.RequestedCommand == VersioningCommand.SetDigitValue) {
+            if (string.IsNullOrWhiteSpace(options.QuickValue)) {
+                Console.WriteLine("Error >> The Set command requires a value to set. Use -Q=<value>.");
+                valid = false;
+            }
+            if (options.DigitManipulations == null || options.DigitManipulations.Length == 0) {
+                Console.WriteLine("Error >> The Set command requires at least one digit to update. Use -DG=<digit> or -DG=*.");
+                valid = false;
+            }
+        }
+
         return valid;
     }
 
@@ -188,6 +206,10 @@ internal class Program {
 
             case VersioningCommand.BehaviourUpdate:
                 ApplyDigitBehaviour();
+                return true;
+
+            case VersioningCommand.SetDigitValue:
+                ApplyDigitValueUpdate();
                 return true;
 
             default:
@@ -392,6 +414,38 @@ internal class Program {
         Console.WriteLine("DryRun - Would Save:");
         foreach (string digit in digitsToUpdate) {
             Console.WriteLine(ver.GetBehaviour(digit));
+        }
+    }
+
+    private static void ApplyDigitValueUpdate() {
+        var ver = new Versioning(storage, options.DryRunOnly);
+        versionerUsed = ver.Version;
+
+        string[] digitsToUpdate = options.GetDigits();
+        string valueToSet = options.QuickValue;
+
+        if (!ver.Version.ValidateDigitOptions(digitsToUpdate)) {
+            Console.WriteLine("Error >> Invalid digit selection for value update.");
+            return;
+        }
+
+        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == "*") {
+            Console.WriteLine($"Setting all digits to value: {valueToSet}");
+            ver.Version.ApplyValueUpdate("*", valueToSet);
+        } else {
+            Console.WriteLine($"Setting digit(s) [{string.Join(',', digitsToUpdate)}] to value: {valueToSet}");
+            foreach (string digit in digitsToUpdate) {
+                ver.Version.ApplyValueUpdate(digit, valueToSet);
+            }
+        }
+
+        if (!options.DryRunOnly) {
+            Console.WriteLine("Saving Updated Digit Values");
+            ver.SaveUpdatedVersion();
+            Console.WriteLine($"[{ver.Version.GetVersionString()}]");
+        } else {
+            Console.WriteLine("DryRun - Would Save:");
+            Console.WriteLine($"[{ver.Version.GetVersionString()}]");
         }
     }
 }
