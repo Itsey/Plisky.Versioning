@@ -246,4 +246,18 @@ public class Exploratory {
 
         Should.Throw<Exception>(() => version.ApplyValueUpdate("0", valueToSet), $"Non-integer value '{valueToSet}' provided for behaviour '{behaviour}' should throw an exception.");
     }
+
+    [Fact]
+    public void ApplyValueUpdate_FixedBehaviour_ReleaseNameValue_SetsToReleaseName() {
+        var version = new CompleteVersion(
+            new VersionUnit("1", "", DigitIncrementBehaviour.Fixed),
+            new VersionUnit("2")
+        );
+        string expectedReleaseName = "MyRelease";
+        version.ReleaseName = expectedReleaseName;
+
+        version.ApplyValueUpdate("0", "ReleaseName");
+
+        version.Digits[0].Value.ShouldBe(expectedReleaseName, "Digit with Fixed behaviour and value 'ReleaseName' should be set to the ReleaseName property value.");
+    }
 }

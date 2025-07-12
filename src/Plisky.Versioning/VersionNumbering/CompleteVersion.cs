@@ -239,11 +239,18 @@ public class CompleteVersion {
         return isValid;
     }
 
+    private string? GetValueForDigit(VersionUnit digit, string newValue) {
+        if (string.Equals(newValue, "ReleaseName", StringComparison.OrdinalIgnoreCase) && digit.Behaviour == DigitIncrementBehaviour.Fixed) {
+            return ReleaseName;
+        }
+        return newValue;
+    }
+
     public void ApplyValueUpdate(string digitToUpdate, string newValue) {
         if (digitToUpdate == ALLDIGITSWILDCARD) {
             b.Verbose.Log($"Applying value update to all digits to {newValue}");
             for (int i = 0; i < Digits.Length; i++) {
-                Digits[i].Value = newValue;
+                Digits[i].Value = GetValueForDigit(Digits[i], newValue);
             }
             return;
         }
@@ -254,6 +261,6 @@ public class CompleteVersion {
 
         b.Verbose.Log($"Applying value update for digit {digitToUpdate} to value {newValue}");
         int idx = int.Parse(digitToUpdate);
-        Digits[idx].Value = newValue;
+        Digits[idx].Value = GetValueForDigit(Digits[idx], newValue);
     }
 }

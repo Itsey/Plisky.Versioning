@@ -424,16 +424,24 @@ internal class Program {
         string[] digitsToUpdate = options.GetDigits();
         string valueToSet = options.QuickValue;
 
+        // Check if valueToSet can be parsed as DigitIncrementBehaviour.ReleaseName
+        bool releaseNameSet = false;
+        if (VersonifyCommandline.TryParseDigitIncrementBehaviour(valueToSet, out var behaviour)
+            && behaviour == DigitIncrementBehaviour.ReleaseName) {
+            releaseNameSet = true;
+        }
+        string displayValue = releaseNameSet ? ver.Version.ReleaseName : valueToSet;
+
         if (!ver.Version.ValidateDigitOptions(digitsToUpdate)) {
             Console.WriteLine("Error >> Invalid digit selection for value update.");
             return;
         }
 
         if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == "*") {
-            Console.WriteLine($"Setting all digits to value: {valueToSet}");
+            Console.WriteLine($"Setting all digits to value: {displayValue}");
             ver.Version.ApplyValueUpdate("*", valueToSet);
         } else {
-            Console.WriteLine($"Setting digit(s) [{string.Join(',', digitsToUpdate)}] to value: {valueToSet}");
+            Console.WriteLine($"Setting digit(s) [{string.Join(',', digitsToUpdate)}] to value: {displayValue}");
             foreach (string digit in digitsToUpdate) {
                 ver.Version.ApplyValueUpdate(digit, valueToSet);
             }
