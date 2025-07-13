@@ -135,6 +135,8 @@ public class CompleteVersion {
     }
 
     public string GetVersionString(DisplayType dt = DisplayType.Full) {
+        b.Info.Flow();
+
         string result = string.Empty;
         int stopPoint = Digits.Length;
         if ((dt == DisplayType.Short) && (Digits.Length > 2)) {
@@ -147,6 +149,7 @@ public class CompleteVersion {
         for (int i = 0; i < stopPoint; i++) {
             result += Digits[i].ToString();
         }
+        b.Verbose.Log($"DisplayType - Stop {stopPoint} |{result}|");
         return result;
     }
 

@@ -124,6 +124,10 @@
             "Release"
           ]
         },
+        "PreRelease": {
+          "type": "boolean",
+          "description": "PreRelease will only release a pre-release verison of the package.  Uses pre-release versioning"
+        },
         "QuickVersion": {
           "type": "string",
           "description": "Specifies a quick version command for the versioning quick step"

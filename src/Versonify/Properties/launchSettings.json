@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "PliskyTool": {
-      "commandName": "Project",
-      "commandLineArgs": "-Command=Passive -vs=\"D:\\Scratch\\_build\\vstore\\bdgateway.vstore\" -Root=X:\\Code\\ghub\\Plisky.Versioning\\src -O=azdo-nf"
-    }
-  }
-}

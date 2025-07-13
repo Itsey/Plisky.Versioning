@@ -5,6 +5,12 @@
 # </auto-generated>
 # Code has been manually modified, auto-generation comment above retained for reference.
 
+parameters:
+  - name: PreRelease
+    displayName: 'PreRelease'
+    type: boolean
+    default: true  
+
 trigger:
   - none
 
@@ -29,7 +35,7 @@ stages:
           - task: CmdLine@2
             displayName: 'Run: ConstructStep'
             inputs:
-              script: '.\src\build.cmd ConstructStep Compile --skip ArrangeStep --root .\src\'
+              script: '.\src\build.cmd ConstructStep Compile --skip ArrangeStep --root .\src\ --PreRelease ${{ parameters.PreRelease }}'
       
           - task: CmdLine@2
             displayName: 'Run: ExamineStep'

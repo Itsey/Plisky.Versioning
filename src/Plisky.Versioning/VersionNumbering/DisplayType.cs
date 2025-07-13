@@ -9,5 +9,7 @@ public enum DisplayType {
     Full = 0x0002,
     NoDisplay = 0x0003,
     ThreeDigit = 0x0004,
-    Release = 0x5
+    Release = 0x5,
+    FourDigitNumeric = 0x6,  // Added to support FileVersion and AssemblyVersion as this is recommended by Microsoft
+
 }

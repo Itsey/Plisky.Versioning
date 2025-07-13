@@ -62,10 +62,14 @@ public partial class Build : NukeBuild {
               throw new InvalidOperationException("The solution must be set");
           }
 
-
+          string versioningToken = settings.VersioningPersistanceTokenRelease;
+          if (PreRelease) {
+              Log.Information("Build>QueryNextVersion>PreRelease is set, using Release Token.");
+              versioningToken = settings.VersioningPersistanceToken;
+          }
           var vc = new VersonifyTasks();
           vc.PassiveCommand(s => s
-          .SetVersionPersistanceValue(settings.VersioningPersistanceToken)
+          .SetVersionPersistanceValue(versioningToken)
           .SetOutputStyle("con-nf")
           .SetRoot(Solution.Directory));
 
@@ -97,11 +101,17 @@ public partial class Build : NukeBuild {
               Log.Information("Local Build - Versioning Set To Dry Run");
               dryRunMode = true;
           }
-          Log.Information($"Versioning Token : {settings.VersioningPersistanceToken}");
+
+          string vtFile = settings.VersioningPersistanceToken;
+          if (!PreRelease) {
+              vtFile = settings.VersioningPersistanceTokenRelease;
+          }
+
+          Log.Information($"Versioning Token : {vtFile}");
 
           var vc = new VersonifyTasks();
           vc.PassiveCommand(s => s
-              .SetVersionPersistanceValue(settings.VersioningPersistanceToken)
+              .SetVersionPersistanceValue(vtFile)
               .SetOutputStyle("azdo")
               .SetRoot(Solution.Directory)
           );
@@ -110,7 +120,7 @@ public partial class Build : NukeBuild {
           mmPath /= "autoversion.txt";
 
           vc.FileUpdateCommand(s => s
-              .SetVersionPersistanceValue(settings.VersioningPersistanceToken)
+              .SetVersionPersistanceValue(vtFile)
               .AddMultimatchFile(mmPath)
               .PerformIncrement(true)
               .SetOutputStyle("azdo-nf")
