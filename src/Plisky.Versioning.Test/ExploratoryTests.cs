@@ -23,6 +23,33 @@ public class Exploratory {
         uth.ClearUpTestFiles();
     }
 
+    [Theory(DisplayName = nameof(NumericDigitUpdateTest))]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [InlineData("1.2-3.4", "1", "2", "3", "4")]
+    [InlineData("1.2.3.4", "1", "2", "3", "4")]
+    [InlineData("1-2-3-4", "1", "2", "3", "4")]
+    [InlineData("1-2+3.4", "1", "2", "3", "4")]
+    public void NumericDigitUpdateTest(string initialValue, string dg1, string dg2, string dg3, string dg4) {
+        b.Info.Flow();
+        var sut = new CompleteVersion(initialValue, '.', '-', '+');
+
+        if (dg1 != null) {
+            sut.Digits[0].Value.ShouldBe(dg1);
+        }
+
+        if (dg2 != null) {
+            sut.Digits[1].Value.ShouldBe(dg2);
+        }
+
+        if (dg3 != null) {
+            sut.Digits[2].Value.ShouldBe(dg3);
+        }
+
+        if (dg4 != null) {
+            sut.Digits[3].Value.ShouldBe(dg4);
+        }
+    }
+
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     public void Commandline_digits_allows_multiple_digits() {
@@ -150,7 +177,6 @@ public class Exploratory {
     [InlineData("NotAValidBehaviour", default(DigitIncrementBehaviour), false)]
     [InlineData("", default(DigitIncrementBehaviour), false)]
     public void TryParseDigitIncrementBehaviour_ParsesExpectedValues(string input, DigitIncrementBehaviour expected, bool shouldParse) {
-
         bool parseResult = VersonifyCommandline.TryParseDigitIncrementBehaviour(input, out var result);
 
         parseResult.ShouldBe(shouldParse);

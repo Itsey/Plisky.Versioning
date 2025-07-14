@@ -18,9 +18,7 @@ internal class Program {
     private static Bilge b = new Bilge();
 
     private static async Task<int> Main(string[] args) {
-        Console.WriteLine("Versonify - Online.");
-
-
+        WriteGreetingMessage();
 
         CommandArgumentSupport clas = null;
         try {
@@ -73,7 +71,11 @@ internal class Program {
         return 0;
     }
 
-
+    private static void WriteGreetingMessage() {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        string verString = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        Console.WriteLine($"💖 Versioning By Versonify 💖 ({verString}).");
+    }
 
     private static CommandArgumentSupport GetCommandLineArguments(string[] args) {
         b.Verbose.Flow();
@@ -85,7 +87,7 @@ internal class Program {
             b.Verbose.Log("Processing Arguments");
             result.ProcessArguments(options, args);
             options.OutputOptions = options.RawOutputOptions;
-            //b.Verbose.Log($"Seting OO {options.RawOutputOptions} as {options.OutputOptions}");            
+            //b.Verbose.Log($"Seting OO {options.RawOutputOptions} as {options.OutputOptions}");
         } catch (ArgumentOutOfRangeException aox) {
             Console.WriteLine("Fatal: Invalid Arguments Passed to Versonify.");
             Console.WriteLine($"{aox.ParamName} - {aox.Message}");
@@ -116,7 +118,6 @@ internal class Program {
         _ = Bilge.AddHandler(new ConsoleHandler(), HandlerAddOptions.SingleType);
 
         Bilge.SetConfigurationResolver((name, inLevel) => {
-
             var returnLvl = SourceLevels.Verbose;
 
             if ((options.Trace != null) && (options.Trace.ToLowerInvariant() == "info")) {
@@ -181,8 +182,6 @@ internal class Program {
             return false;
         }
 
-
-
         switch (options.RequestedCommand) {
             case VersioningCommand.CreateNewVersion:
                 CreateNewVersionStore();
@@ -218,8 +217,6 @@ internal class Program {
         }
     }
 
-
-
     /// <summary>
     /// Most of the versioning approaches require a version store of some sort. This initialises the version store from the command line using the
     /// initialisation data that is passed in to determine which version store to load.
@@ -229,10 +226,7 @@ internal class Program {
         storage = VersionStorage.CreateFromInitialisation(vpv);
     }
 
-
-
     private static void LoadVersionStore() {
-
         var ver = new Versioning(storage, options.DryRunOnly);
         versionerUsed = ver.Version;
 
@@ -245,7 +239,6 @@ internal class Program {
             b.Verbose.Log("About to save version store");
             ver.SaveUpdatedVersion();
         }
-
 
         Console.WriteLine($"Loaded [{ver.GetVersion()}]");
     }
@@ -273,7 +266,6 @@ internal class Program {
 
     private static void ApplyVersionIncrement() {
         b.Verbose.Flow();
-
 
         var ver = new Versioning(storage, options.DryRunOnly);
         versionerUsed = ver.Version;
@@ -306,12 +298,10 @@ internal class Program {
             Console.WriteLine($"WARNING >> Path {options.Root} is invalid, skipping.");
         }
 
-
         ver.UpdateAllRegisteredFiles();
 
         ver.SaveUpdatedVersion();
     }
-
 
 #if FALSE
     private static Action<string> GetActionToPerform(Versioning ver) {
@@ -326,7 +316,6 @@ internal class Program {
                 }
             };
         } else {
-            
             actionToPerform = (fn) => {
                 Console.WriteLine("DryRun - Would Update :" + fn);
             };
@@ -359,11 +348,10 @@ internal class Program {
 
         cv.ReleaseName = options.Release;
 
-
         Console.WriteLine($"Saving {cv.GetVersionString()}");
         storage.Persist(cv);
-
     }
+
     private static void LoadDigitBehaviour() {
         var ver = new Versioning(storage, options.DryRunOnly);
         versionerUsed = ver.Version;
@@ -382,6 +370,7 @@ internal class Program {
             }
         }
     }
+
     private static void ApplyDigitBehaviour() {
         var newBehaviour = options.IncrementBehaviour;
         var ver = new Versioning(storage, options.DryRunOnly);

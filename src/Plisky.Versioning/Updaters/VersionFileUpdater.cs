@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using Plisky.Diagnostics;
 
 public class DryRunVersionFileUpdater : VersionFileUpdater {
+
     protected override void UpdateCSFileWithAttribute(string fileName, string targetAttribute, string versionValue) {
         b.Info.Log($"DRYRUN - Would have updated {fileName} with {targetAttribute} to {versionValue}.  Instead Taking No Action.");
     }
@@ -28,7 +29,6 @@ public class VersionFileUpdater {
 
     private IHookVersioningChanges? hook;
     private CompleteVersion cv;
-
 
     public VersionFileUpdater() {
         cv = new CompleteVersion();
@@ -124,7 +124,6 @@ public class VersionFileUpdater {
             });
         } else {
             replacer = new Func<string, string>((inney) => {
-
                 if (!inney.Contains("XXX-VERSION") && !inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
                     response = "WARNING - No Versioning or Release Name Identifier Found, no updates possible.";
                     return inney;
@@ -138,7 +137,6 @@ public class VersionFileUpdater {
                 .Replace("XXX-VERSION4-XXX", versonToWrite.GetVersionString(DisplayType.Full));
             });
         }
-
 
         string fileText = replacer(File.ReadAllText(fileToCheck));
         File.WriteAllText(fileToCheck, fileText);
@@ -225,7 +223,6 @@ public class VersionFileUpdater {
                 el2.Value = versionText;
                 b.Verbose.Log($"About to save. - {fileName}");
 
-
                 xd.Save(fileName);
                 string[] x = File.ReadAllLines(fileName);
                 foreach (string n in x) {
@@ -288,7 +285,7 @@ public class VersionFileUpdater {
                     if ((!nextLine.Trim().StartsWith("//")) && (r.IsMatch(nextLine))) {
                         if (replacementMade) {
                             // One would hope that this would not occur outside of testing, yet surprisingly enough this is not the case.
-                            throw new ArgumentException("Invalid CSharp File, duplicate verison attribute discovered", fileName);
+                            throw new ArgumentException($"Invalid CSharp File, duplicate verison attribute ({targetAttribute}) discovered", fileName);
                         }
 
                         //  its the line we are to replace

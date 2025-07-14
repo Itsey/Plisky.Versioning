@@ -45,9 +45,37 @@ public class CompleteVersion {
         DisplayTypes.Add(FileUpdateType.TextFile, DisplayType.Short);
     }
 
+    public CompleteVersion(params VersionUnit[] versionDigits) : this() {
+        Digits = versionDigits;
+    }
 
+    public CompleteVersion(string initialValue, params char[] seperators) : this() {
+        b.Verbose.Log($"Parsing Initialisation String [{initialValue}]");
+
+        if (seperators.Length == 0) {
+            b.Verbose.Log("No seperators provided, using default '.'");
+            // This is kept for backward compatibility.  It used to only understand . character as a seperator.
+            seperators = new char[] { '.' };
+        }
+
+        if (initialValue.IndexOfAny(seperators) >= 0) {
+            string[] parse = initialValue.Split(seperators, StringSplitOptions.RemoveEmptyEntries);
+            var vd = new List<VersionUnit>();
+            string prefix = "";
+            foreach (string f in parse) {
+                vd.Add(new VersionUnit(f, prefix, DigitIncrementBehaviour.Fixed));
+                prefix = ".";
+            }
+
+            Digits = vd.ToArray();
+        } else {
+            Digits = new VersionUnit[1];
+            Digits[0] = new VersionUnit(initialValue);
+        }
+    }
 
     public bool IsDefault { get; set; }
+
     public string? ReleaseName {
         get {
             return actualReleaseName;
@@ -71,28 +99,6 @@ public class CompleteVersion {
         return DisplayTypes[fut];
     }
 
-    public CompleteVersion(params VersionUnit[] versionDigits) : this() {
-        Digits = versionDigits;
-    }
-
-    public CompleteVersion(string initialValue) : this() {
-        b.Verbose.Log($"Parsing Initialisation String [{initialValue}]");
-        if (initialValue.Contains(".")) {
-            string[] parse = initialValue.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
-            var vd = new List<VersionUnit>();
-            string prefix = "";
-            foreach (string f in parse) {
-                vd.Add(new VersionUnit(f, prefix, DigitIncrementBehaviour.Fixed));
-                prefix = ".";
-            }
-
-            Digits = vd.ToArray();
-        } else {
-            Digits = new VersionUnit[1];
-            Digits[0] = new VersionUnit(initialValue);
-        }
-    }
-
     /// <summary>
     /// Apply a version change that is to take effect next time the increment is called . Pending versions are based on a pattern where
     /// + indicates an integer increment, - indicates an integer decrement, nothing indicates no change and any combination of numbers
@@ -107,7 +113,7 @@ public class CompleteVersion {
                 string? currentDigitValue = Digits[i].Value;
                 string? newDigitValue = ManipulateValueBasedOnPattern(changes[i], currentDigitValue);
 
-                // Only set this if it is not null, this allows for stacking patterns to work.  
+                // Only set this if it is not null, this allows for stacking patterns to work.
                 if (newDigitValue != null) {
                     Digits[i].IncrementOverride = newDigitValue;
                 }
@@ -191,11 +197,9 @@ public class CompleteVersion {
     }
 
     public void Increment() {
-
         bool lastChanged = false;
         bool anyChanged = false;
         var t1 = DateTime.Now;
-
 
         if (pendingReleaseName != null) {
             ReleaseName = pendingReleaseName;
@@ -219,6 +223,7 @@ public class CompleteVersion {
     public void ApplyPendingRelease(string newReleaseName) {
         pendingReleaseName = newReleaseName;
     }
+
     public bool ValidateDigitOptions(string[] digitsRequested) {
         bool isValid = false;
 

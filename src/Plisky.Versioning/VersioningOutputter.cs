@@ -19,6 +19,7 @@ public class VersioningOutputter {
     public string? ConsoleTemplate { get; set; }
     public string? PverFileName { get; set; }
     public string[] Digits { get; set; } = [ALLDIGITSWILDCARD];
+
     public string BehToWrite {
         get {
             if (Digits == null || Digits.Length == 0) {
@@ -28,7 +29,6 @@ public class VersioningOutputter {
         }
         set { }
     }
-
 
     protected virtual void SetEnvironmentWithValue() {
         b.Verbose.Log($"Attempting to set environment variable PVER-LATEST to {valToWrite}");
@@ -84,12 +84,10 @@ public class VersioningOutputter {
                 outputString = valToWrite;
             }
 
-
             WriteToConsole(outputString);
         }
 
         if ((oo & OutputPossibilities.NukeFusion) == OutputPossibilities.NukeFusion) {
-            b.Verbose.Log("Named Pipe output requested");
             string outputString = $"PNFV]{valToWrite}";
             WriteToConsole(outputString);
             WriteToConsole($"PNF4]{versionToLog.GetVersionString(DisplayType.Full)}");
