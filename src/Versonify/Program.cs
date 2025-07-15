@@ -53,7 +53,8 @@ internal class Program {
                 var vo = new VersioningOutputter(versionerUsed) {
                     ConsoleTemplate = options.ConsoleTemplate,
                     PverFileName = options.PverFileName,
-                    Digits = options.GetDigits()
+                    Digits = options.GetDigits(),
+                    ReleaseRequested = options.Release != null,
                 };
 
                 vo.DoOutput(options.OutputsActive, options.RequestedCommand);
@@ -153,7 +154,7 @@ internal class Program {
 
         if (options.RequestedCommand == VersioningCommand.BehaviourOutput || options.RequestedCommand == VersioningCommand.BehaviourUpdate) {
             if (options.DigitManipulations is null || options.DigitManipulations.Length == 0) {
-                Console.WriteLine("Error >> The Behaviour command requires at least one digit to be specified. Use -DG=<digit> or -DG=* .");
+                Console.WriteLine("Error >> The Behaviour command requires at least one digit to be specified. Use -DG=<digit> or -DG=*");
                 valid = false;
             }
         }
@@ -196,7 +197,11 @@ internal class Program {
                 return true;
 
             case VersioningCommand.PassiveOutput:
-                LoadVersionStore();
+                if (options.Release != null) {
+                    LoadReleaseName();
+                } else {
+                    LoadVersionStore();
+                }
                 return true;
 
             case VersioningCommand.BehaviourOutput:
@@ -242,6 +247,19 @@ internal class Program {
 
         Console.WriteLine($"Loaded [{ver.GetVersion()}]");
     }
+
+    private static void LoadReleaseName() {
+        b.Verbose.Flow();
+        var ver = new Versioning(storage, options.DryRunOnly);
+        versionerUsed = ver.Version;
+
+        if (string.IsNullOrEmpty(ver.Version.ReleaseName)) {
+            Console.WriteLine("Release Name in version store is null or empty.");
+            return;
+        }
+        Console.WriteLine($"Loaded Release Name: {ver.Version.ReleaseName}");
+    }
+
 
     private static void CreateNewPendingIncrement() {
         b.Verbose.Flow();
@@ -413,17 +431,15 @@ internal class Program {
         string[] digitsToUpdate = options.GetDigits();
         string valueToSet = options.QuickValue;
 
-        // Check if valueToSet can be parsed as DigitIncrementBehaviour.ReleaseName
-        bool releaseNameSet = false;
-        if (VersonifyCommandline.TryParseDigitIncrementBehaviour(valueToSet, out var behaviour)
-            && behaviour == DigitIncrementBehaviour.ReleaseName) {
-            releaseNameSet = true;
-        }
-        string displayValue = releaseNameSet ? ver.Version.ReleaseName : valueToSet;
-
         if (!ver.Version.ValidateDigitOptions(digitsToUpdate)) {
             Console.WriteLine("Error >> Invalid digit selection for value update.");
             return;
+        }
+        // Check if valueToSet can be parsed as DigitIncrementBehaviour.ReleaseName
+        string displayValue = valueToSet;
+        if (VersonifyCommandline.TryParseDigitIncrementBehaviour(valueToSet, out var behaviour)
+            && behaviour == DigitIncrementBehaviour.ReleaseName) {
+            displayValue = ver.Version.ReleaseName;
         }
 
         if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == "*") {

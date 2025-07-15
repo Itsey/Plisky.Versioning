@@ -286,4 +286,84 @@ public class Exploratory {
 
         version.Digits[0].Value.ShouldBe(expectedReleaseName, "Digit with Fixed behaviour and value 'ReleaseName' should be set to the ReleaseName property value.");
     }
+
+    [Fact]
+    public void Outputter_ValToWrite_IsReleaseName_WhenReleaseRequestedTrue() {
+        var version = new CompleteVersion(
+            new VersionUnit("1"),
+            new VersionUnit("2")
+        );
+        string expectedReleaseName = "ReleaseX";
+        version.ReleaseName = expectedReleaseName;
+
+        var outputter = new MockVersioningOutputter(version) { ReleaseRequested = true };
+
+        outputter.GetTheValueRequestedToWrite().ShouldBe(expectedReleaseName, "ValToWrite should be set to the release name when ReleaseRequested is true (using MockVersioningOutputter).");
+    }
+
+    [Theory]
+    [InlineData("", "")]
+    [InlineData(null, "")]
+    [InlineData("myNewRelease", "myNewRelease")]
+    [InlineData("release123", "release123")]
+    public void Outputter_File_WritesReleaseNameToFile(string releaseName, string expectedOutput) {
+        b.Info.Flow();
+
+        var mvs = new MockVersionStorage("0.0.0.1");
+        var sut = new Versioning(mvs);
+        var v = sut.Version;
+        v.ReleaseName = releaseName;
+
+        var op = new MockVersioningOutputter(v) {
+            ReleaseRequested = true
+        };
+        op.DoOutput(OutputPossibilities.File, VersioningCommand.PassiveOutput);
+
+        op.FileWasWritten.ShouldBeTrue("FileWasWritten should be true after writing to file.");
+        op.EnvWasSet.ShouldBeFalse("EnvWasSet should be false after writing to file.");
+        op.GetTheValueRequestedToWrite().ShouldBe(expectedOutput, "GetTheValueRequestedToWrite should return the release name when ReleaseRequested is true.");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Outputter_Console_Writes_Correct_Output(bool releaseRequest) {
+        b.Info.Flow();
+        
+        string releaseName = "testReleaseName";
+        string versionNumber = "2.0.1.0";
+
+        var mvs = new MockVersionStorage(versionNumber);
+        var sut = new Versioning(mvs);
+        var v = sut.Version;
+        v.ReleaseName = releaseName;
+        var op = new MockVersioningOutputter(v) {
+            ReleaseRequested = releaseRequest
+        };
+        string expectedOutput = releaseRequest ? releaseName : versionNumber;
+
+        op.DoOutput(OutputPossibilities.File, VersioningCommand.PassiveOutput);
+
+        op.FileWasWritten.ShouldBeTrue("FileWasWritten should be true after writing to file.");
+        op.GetTheValueRequestedToWrite().ShouldBe(expectedOutput, "GetTheValueRequestedToWrite should return the version string when ReleaseRequested is false.");
+    }
+
+    [Fact]
+    public void Outputter_Environment_WritesReleaseNameToEnvironment() {
+        b.Info.Flow();
+
+        var mvs = new MockVersionStorage("0.0.0.1");
+        var sut = new Versioning(mvs);
+        var v = sut.Version;
+        v.ReleaseName = "testReleaseName";
+        var op = new MockVersioningOutputter(v) {
+            ReleaseRequested = true
+        };
+
+        op.DoOutput(OutputPossibilities.Environment, VersioningCommand.PassiveOutput);
+
+        op.FileWasWritten.ShouldBeFalse("FileWasWritten should be false after writing to environment.");
+        op.EnvWasSet.ShouldBeTrue("EnvWasSet should be true after writing to environment.");
+        op.GetTheValueRequestedToWrite().ShouldBe("testReleaseName", "GetTheValueRequestedToWrite should return the release name when ReleaseRequested is true.");
+    }
 }

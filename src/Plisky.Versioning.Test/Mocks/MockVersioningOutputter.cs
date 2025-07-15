@@ -30,7 +30,7 @@ namespace Plisky.CodeCraft.Test {
         }
 
         public string GetTheValueRequestedToWrite() {
-            return valToWrite;
+            return ValToWrite;
         }
 
         private void RecordOutputReceived(string outputString) {

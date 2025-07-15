@@ -153,7 +153,7 @@ public class VersionOutputterTests {
     [Fact(DisplayName = nameof(Outputter_Environment_WritesToEnvironment))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void Outputter_Environment_WritesToEnvironment() {
+    public void Outputter_File_WritesToFile() {
         b.Info.Flow();
 
         var mvs = new MockVersionStorage("0.0.0.1");
@@ -163,7 +163,24 @@ public class VersionOutputterTests {
         var op = new MockVersioningOutputter(v);
         op.DoOutput(OutputPossibilities.File, VersioningCommand.PassiveOutput);
 
-        Assert.True(op.FileWasWritten);
-        Assert.False(op.EnvWasSet);
+        op.FileWasWritten.ShouldBeTrue("FileWasWritten should be true when writing to file.");
+        op.EnvWasSet.ShouldBeFalse("EnvWasSet should be false when writing to file.");
+    }
+
+    [Fact(DisplayName = nameof(Outputter_Environment_WritesToEnvironment))]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Outputter_Environment_WritesToEnvironment() {
+        b.Info.Flow();
+
+        var mvs = new MockVersionStorage("0.0.0.1");
+        var sut = new Versioning(mvs);
+        var v = sut.Version;
+
+        var op = new MockVersioningOutputter(v);
+        op.DoOutput(OutputPossibilities.Environment, VersioningCommand.PassiveOutput);
+
+        op.FileWasWritten.ShouldBeFalse("FileWasWritten should be false when writing to environment.");
+        op.EnvWasSet.ShouldBeTrue("EnvWasSet should be true when writing to environment.");
     }
 }

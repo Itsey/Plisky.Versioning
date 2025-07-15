@@ -13,11 +13,14 @@ public class VersioningOutputter {
     public const string ALLDIGITSWILDCARD = "*";
     protected Bilge b = new Bilge("Plisky-Tool-Output");
     protected CompleteVersion versionToLog;
-    protected string valToWrite;
+    protected string ValToWrite => ReleaseRequested
+       ? versionToLog.ReleaseName ?? ""
+       : versionToLog.GetVersionString();
 
     public string? FileTemplate { get; set; }
     public string? ConsoleTemplate { get; set; }
     public string? PverFileName { get; set; }
+    public bool ReleaseRequested { get; set; }
     public string[] Digits { get; set; } = [ALLDIGITSWILDCARD];
 
     public string BehToWrite {
@@ -31,13 +34,13 @@ public class VersioningOutputter {
     }
 
     protected virtual void SetEnvironmentWithValue() {
-        b.Verbose.Log($"Attempting to set environment variable PVER-LATEST to {valToWrite}");
-        Environment.SetEnvironmentVariable("PVER-LATEST", valToWrite, EnvironmentVariableTarget.User);
+        string envVarName = ReleaseRequested ? "PVER-RELEASE" : "PVER-LATEST";
+        b.Verbose.Log($"Attempting to set environment variable {envVarName} to {ValToWrite}");
+        Environment.SetEnvironmentVariable(envVarName, ValToWrite, EnvironmentVariableTarget.User);
     }
 
     public VersioningOutputter(CompleteVersion ver, DisplayType dt = DisplayType.Full) {
         versionToLog = ver;
-        valToWrite = ver.GetVersionString(dt);
     }
 
     public void DoOutput(OutputPossibilities oo, VersioningCommand command) {
@@ -73,22 +76,22 @@ public class VersioningOutputter {
         }
         if ((oo & OutputPossibilities.File) == OutputPossibilities.File) {
             b.Verbose.Log("File output requested");
-            SetFileValue(valToWrite);
+            SetFileValue(ValToWrite);
         }
 
         if ((oo & OutputPossibilities.Console) == OutputPossibilities.Console) {
             string outputString;
             if (ConsoleTemplate != null) {
-                outputString = ConsoleTemplate.Replace(VERSION_REPLACE_TAG, valToWrite);
+                outputString = ConsoleTemplate.Replace(VERSION_REPLACE_TAG, ValToWrite);
             } else {
-                outputString = valToWrite;
+                outputString = ValToWrite;
             }
 
             WriteToConsole(outputString);
         }
 
         if ((oo & OutputPossibilities.NukeFusion) == OutputPossibilities.NukeFusion) {
-            string outputString = $"PNFV]{valToWrite}";
+            string outputString = $"PNFV]{ValToWrite}";
             WriteToConsole(outputString);
             WriteToConsole($"PNF4]{versionToLog.GetVersionString(DisplayType.Full)}");
             WriteToConsole($"PNF2]{versionToLog.GetVersionString(DisplayType.Short)}");
@@ -97,7 +100,9 @@ public class VersioningOutputter {
     }
 
     protected virtual void SetFileValue(string outputString) {
-        string fileName = string.IsNullOrWhiteSpace(PverFileName) ? "pver-latest.txt" : PverFileName;
+        string fileName = !string.IsNullOrWhiteSpace(PverFileName)
+            ? PverFileName
+            : ReleaseRequested ? "pver-release.txt" : "pver-latest.txt";
         string filePath = Path.Combine(Environment.CurrentDirectory, fileName);
         File.WriteAllText(filePath, outputString);
     }

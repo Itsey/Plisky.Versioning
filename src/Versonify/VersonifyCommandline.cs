@@ -29,7 +29,6 @@ public class VersonifyCommandline {
     [CommandLineArg("Debug", Description = "Enables Debug Logging")]
     public bool Debug { get; set; }
 
-    // TODO: The array separator ';' does not work and needs fixing. Only ',' works inside quotes for arrays.
     [CommandLineArg("DG")]
     [CommandLineArg("Digits", Description = "Separated characters to form digits for the version number", ArraySeparatorChar = ";")]
     public string[] DigitManipulations { get; set; }
