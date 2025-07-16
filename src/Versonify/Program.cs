@@ -161,13 +161,18 @@ internal class Program {
 
         if (options.RequestedCommand == VersioningCommand.SetDigitValue) {
             if (string.IsNullOrWhiteSpace(options.QuickValue)) {
-                Console.WriteLine("Error >> The Set command requires a value to set. Use -Q=<value>.");
+                Console.WriteLine("Error >> The Set command requires a value to set. Use -Q=<value> to set digit value. Use -Release=<value> to set release name.");
                 valid = false;
             }
             if (options.DigitManipulations == null || options.DigitManipulations.Length == 0) {
-                Console.WriteLine("Error >> The Set command requires at least one digit to update. Use -DG=<digit> or -DG=*.");
+                Console.WriteLine("Error >> The Set command requires at least one digit to update. Use -DG=<digit> or -DG=*. Or to set the releasename use -Release=<value>");
                 valid = false;
             }
+        }
+
+        if (options.RequestedCommand == VersioningCommand.SetReleaseName && !string.IsNullOrEmpty(options.QuickValue)) {
+                Console.WriteLine("Error >> Both QuickValue (-Q) and Release (-R) cannot be provided for the Set command. Please specify only one.");
+                valid = false;
         }
 
         return valid;
@@ -214,6 +219,10 @@ internal class Program {
 
             case VersioningCommand.SetDigitValue:
                 ApplyDigitValueUpdate();
+                return true;
+
+            case VersioningCommand.SetReleaseName:
+                ApplyReleaseNameUpdate();
                 return true;
 
             default:
@@ -459,6 +468,21 @@ internal class Program {
         } else {
             Console.WriteLine("DryRun - Would Save:");
             Console.WriteLine($"[{ver.Version.GetVersionString()}]");
+        }
+    }
+
+    private static void ApplyReleaseNameUpdate() {
+        var ver = new Versioning(storage, options.DryRunOnly);
+        versionerUsed = ver.Version;
+        string newReleaseName = options.Release;
+
+        ver.Version.SetReleaseName(newReleaseName);
+        if (!options.DryRunOnly) {
+            Console.WriteLine($"Saving new Release Name as: {newReleaseName}");
+            ver.SaveUpdatedVersion();
+        } else {
+            Console.WriteLine("DryRun - Would Save:");
+            Console.WriteLine($"[{newReleaseName}]");
         }
     }
 }

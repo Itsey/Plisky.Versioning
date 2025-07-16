@@ -119,7 +119,11 @@ public class VersonifyCommandline {
                     }
                     return VersioningCommand.Invalid;
                 case "set":
-                    return VersioningCommand.SetDigitValue;
+                    if (Release != null) {
+                        return VersioningCommand.SetReleaseName;
+                    } else {
+                        return VersioningCommand.SetDigitValue;
+                    }
                 default:
                     return VersioningCommand.Invalid;
             }

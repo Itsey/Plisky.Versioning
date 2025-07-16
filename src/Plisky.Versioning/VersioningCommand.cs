@@ -7,6 +7,7 @@
         BehaviourOutput,
         BehaviourUpdate,
         Override,
-        SetDigitValue
+        SetDigitValue,
+        SetReleaseName
     }
 }

@@ -366,4 +366,30 @@ public class Exploratory {
         op.EnvWasSet.ShouldBeTrue("EnvWasSet should be true after writing to environment.");
         op.GetTheValueRequestedToWrite().ShouldBe("testReleaseName", "GetTheValueRequestedToWrite should return the release name when ReleaseRequested is true.");
     }
+
+    [Theory]
+    [InlineData("releaseA", "NewRelease")]
+    [InlineData(null, "ImNoLongerNull")]
+    [InlineData("", "ImNoLongerEmpty")]
+    [InlineData("releaseA", "release space123")]
+    public void SetReleaseNameCommand_SetsReleaseNameInVersionStore(string currentRelease, string newRelease) {
+        var cv = new CompleteVersion("1.2.3.4") {
+            ReleaseName = currentRelease
+        };
+
+        cv.SetReleaseName(newRelease);
+        
+        cv.ReleaseName.ShouldBe(newRelease, "ReleaseName should be updated to the new value.");
+    }
+
+    [Fact]
+    public void SetReleaseNameCommand_SetsCorrectly() {
+        string releaseName = "QuantumBanana";
+        var cmd = new VersonifyCommandline {
+            Command = "set",
+            Release = releaseName
+        };
+
+        cmd.RequestedCommand.ShouldBe(VersioningCommand.SetReleaseName, "RequestedCommand should be SetReleaseName.");
+    }
 }

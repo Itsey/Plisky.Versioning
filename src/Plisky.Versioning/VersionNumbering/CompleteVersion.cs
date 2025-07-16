@@ -271,4 +271,8 @@ public class CompleteVersion {
         int idx = int.Parse(digitToUpdate);
         Digits[idx].Value = GetValueForDigit(Digits[idx], newValue);
     }
+
+    public void SetReleaseName(string newReleaseName) {
+        ReleaseName = newReleaseName;
+    }
 }
