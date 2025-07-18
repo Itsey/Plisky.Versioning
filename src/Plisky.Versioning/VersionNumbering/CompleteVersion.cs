@@ -275,4 +275,22 @@ public class CompleteVersion {
     public void SetReleaseName(string newReleaseName) {
         ReleaseName = newReleaseName;
     }
+
+    public void SetPrefixForDigit(string digitToUpdate, string newPrefix) {
+        if (digitToUpdate == ALLDIGITSWILDCARD) {
+            b.Verbose.Log($"Applying prefix update to all digits to {newPrefix}");
+            for (int i = 0; i < Digits.Length; i++) {
+                Digits[i].PreFix = newPrefix;
+            }
+            return;
+        }
+
+        Debug.Assert(int.TryParse(digitToUpdate, out _), "Digit to update is not a valid integer, this should not happen.");
+        Debug.Assert(Digits[int.Parse(digitToUpdate)] != null, "Digit to update is null, this should not happen.");
+        Debug.Assert(Digits.Length > int.Parse(digitToUpdate), "Digit to update is out of range of the digits available.");
+
+        b.Verbose.Log($"Applying prefix update for digit {digitToUpdate} to prefix {newPrefix}");
+        int idx = int.Parse(digitToUpdate);
+        Digits[idx].PreFix = newPrefix;
+    }
 }

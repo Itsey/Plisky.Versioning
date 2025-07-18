@@ -124,6 +124,8 @@ public class VersonifyCommandline {
                     } else {
                         return VersioningCommand.SetDigitValue;
                     }
+                case "prefix":
+                    return VersioningCommand.SetDigitPrefix;
                 default:
                     return VersioningCommand.Invalid;
             }

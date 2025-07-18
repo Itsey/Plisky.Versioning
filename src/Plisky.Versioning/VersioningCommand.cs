@@ -8,6 +8,7 @@
         BehaviourUpdate,
         Override,
         SetDigitValue,
-        SetReleaseName
+        SetReleaseName,
+        SetDigitPrefix
     }
 }

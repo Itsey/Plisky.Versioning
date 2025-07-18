@@ -132,18 +132,15 @@ internal class Program {
     private static bool ValidateArgumentSettings(VersonifyCommandline options) {
         bool valid = true;
 
-        if (!string.IsNullOrWhiteSpace(options.Root)) {
-            if (!Directory.Exists(options.Root)) {
-                Console.WriteLine("Error >> Invalid Directory For Root:" + options.Root);
-                valid = false;
-            }
+        // Common checks
+        if (!string.IsNullOrWhiteSpace(options.Root) && !Directory.Exists(options.Root)) {
+            Console.WriteLine("Error >> Invalid Directory For Root:" + options.Root);
+            valid = false;
         }
-
         if (string.IsNullOrWhiteSpace(options.VersionPersistanceValue)) {
             Console.WriteLine("Error >> A versioning store must be selected.  Use -VS= and pass your initialisation data");
             valid = false;
         }
-
         if (!string.IsNullOrWhiteSpace(options.PverFileName)) {
             char[] invalidChars = Path.GetInvalidFileNameChars();
             if (options.PverFileName.IndexOfAny(invalidChars) >= 0) {
@@ -152,30 +149,43 @@ internal class Program {
             }
         }
 
-        if (options.RequestedCommand == VersioningCommand.BehaviourOutput || options.RequestedCommand == VersioningCommand.BehaviourUpdate) {
-            if (options.DigitManipulations is null || options.DigitManipulations.Length == 0) {
-                Console.WriteLine("Error >> The Behaviour command requires at least one digit to be specified. Use -DG=<digit> or -DG=*");
-                valid = false;
-            }
-        }
-
-        if (options.RequestedCommand == VersioningCommand.SetDigitValue) {
-            if (string.IsNullOrWhiteSpace(options.QuickValue)) {
-                Console.WriteLine("Error >> The Set command requires a value to set. Use -Q=<value> to set digit value. Use -Release=<value> to set release name.");
-                valid = false;
-            }
-            if (options.DigitManipulations == null || options.DigitManipulations.Length == 0) {
-                Console.WriteLine("Error >> The Set command requires at least one digit to update. Use -DG=<digit> or -DG=*. Or to set the releasename use -Release=<value>");
-                valid = false;
-            }
-        }
-
-        if (options.RequestedCommand == VersioningCommand.SetReleaseName && !string.IsNullOrEmpty(options.QuickValue)) {
-                Console.WriteLine("Error >> Both QuickValue (-Q) and Release (-R) cannot be provided for the Set command. Please specify only one.");
-                valid = false;
+        // Command-specific checks
+        switch (options.RequestedCommand) {
+            case VersioningCommand.BehaviourOutput:
+            case VersioningCommand.BehaviourUpdate:
+                valid &= ValidateDigitsPresent(options.DigitManipulations, "Behaviour");
+                break;
+            case VersioningCommand.SetDigitValue:
+                valid &= ValidateDigitsPresent(options.DigitManipulations, "Set");
+                if (string.IsNullOrWhiteSpace(options.QuickValue)) {
+                    Console.WriteLine("Error >> The Set command requires a value to set. Use -Q=<value> to set digit value. Use -Release=<value> to set release name.");
+                    valid = false;
+                }
+                break;
+            case VersioningCommand.SetReleaseName:
+                if (!string.IsNullOrEmpty(options.QuickValue)) {
+                    Console.WriteLine("Error >> Both QuickValue (-Q) and Release (-R) cannot be provided for the Set command. Please specify only one.");
+                    valid = false;
+                }
+                break;
+            case VersioningCommand.SetDigitPrefix:
+                valid &= ValidateDigitsPresent(options.DigitManipulations, "Prefix");
+                if (options.QuickValue == null) {    // Allow empty string as valid prefix
+                    Console.WriteLine("Error >> The Prefix command requires a prefix value. Use -Q=<prefix> (can be empty string).");
+                    valid = false;
+                }
+                break;
         }
 
         return valid;
+    }
+
+    private static bool ValidateDigitsPresent(string[] digits, string commandName) {
+        if (digits == null || digits.Length == 0) {
+            Console.WriteLine($"Error >> The {commandName} command requires at least one digit to update. Use -DG=<digit> or -DG=*.");
+            return false;
+        }
+        return true;
     }
 
     private static bool PerformActionsFromCommandline() {
@@ -223,6 +233,10 @@ internal class Program {
 
             case VersioningCommand.SetReleaseName:
                 ApplyReleaseNameUpdate();
+                return true;
+
+            case VersioningCommand.SetDigitPrefix:
+                ApplyDigitPrefixUpdate();
                 return true;
 
             default:
@@ -483,6 +497,34 @@ internal class Program {
         } else {
             Console.WriteLine("DryRun - Would Save:");
             Console.WriteLine($"[{newReleaseName}]");
+        }
+    }
+
+    private static void ApplyDigitPrefixUpdate() {
+        var ver = new Versioning(storage, options.DryRunOnly);
+        versionerUsed = ver.Version;
+
+        string[] digitsToUpdate = options.GetDigits();
+        string prefixToSet = options.QuickValue;
+
+        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == "*") {
+            Console.WriteLine($"Setting prefix for all digits to: {prefixToSet}");
+            ver.Version.SetPrefixForDigit("*", prefixToSet);
+        } else {
+            Console.WriteLine($"Setting prefix for digit(s) [{string.Join(',', digitsToUpdate)}] to: {prefixToSet}");
+            foreach (string digit in digitsToUpdate) {
+                ver.Version.SetPrefixForDigit(digit, prefixToSet);
+            }
+        }
+
+        if (!options.DryRunOnly) {
+            Console.WriteLine("Saving Updated Digit Prefixes");
+            ver.SaveUpdatedVersion();
+            Console.WriteLine($"Prefixes applied: {prefixToSet}");
+            Console.WriteLine($"[{ver.Version.GetVersionString()}]");
+        } else {
+            Console.WriteLine("DryRun - Would Save:");
+            Console.WriteLine($"[{ver.Version.GetVersionString()}]");
         }
     }
 }

@@ -412,4 +412,47 @@ public class Exploratory {
 
         cmd.RequestedCommand.ShouldBe(VersioningCommand.SetReleaseName, "RequestedCommand should be SetReleaseName.");
     }
+
+    [Fact]
+    public void SetPrefixForDigit_SetsPrefixForAllDigitsWithWildcard() {
+        var version = new CompleteVersion(
+            new VersionUnit("1"),
+            new VersionUnit("2"),
+            new VersionUnit("3")
+        );
+        version.SetPrefixForDigit("*", "+");
+        foreach (var digit in version.Digits) {
+            digit.PreFix.ShouldBe("+", "Prefix should be set to '+' for all digits.");
+        }
+    }
+
+    [Fact]
+    public void SetPrefixForDigit_ThrowsOnInvalidIndex() {
+        var version = new CompleteVersion(
+            new VersionUnit("1"),
+            new VersionUnit("2")
+        );
+        Should.Throw<Exception>(() => version.SetPrefixForDigit("5", "!"), "Should throw for invalid digit index '5'.");
+    }
+
+    [Theory]
+    [InlineData("-", "-")]
+    [InlineData(".", ".")]
+    [InlineData("", "")]
+    [InlineData(" ", " ")]
+    [InlineData("#", "#")]
+    [InlineData("ver-", "ver-")]
+    public void SetPrefixForDigit_SetsPrefixForSingleDigit(string prefixToSet, string expectedPrefix) {
+        var version = new CompleteVersion(
+            new VersionUnit("1"),
+            new VersionUnit("2"),
+            new VersionUnit("3"),
+            new VersionUnit("4")
+        );
+        version.Digits[2].PreFix.ShouldBe("", "Prefix should initially be empty for digit[2].");
+
+        version.SetPrefixForDigit("2", prefixToSet);
+
+        version.Digits[2].PreFix.ShouldBe(expectedPrefix, $"Prefix should be set to '{expectedPrefix}' for digit[2].");
+    }
 }
