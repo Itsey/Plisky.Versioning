@@ -50,6 +50,26 @@ public class Exploratory {
         }
     }
 
+
+    [Theory]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("1.2.3.4", "1.2.3.4")]
+    [InlineData("1.2.3.4.0", "1.2.3.4")]
+    [InlineData("1.2.3.4.0.0", "1.2.3.4")]
+    [InlineData("1.2", "1.2.0.0")]
+    [InlineData("1", "1.0.0.0")]
+    [InlineData("1.2-Release.3.4", "1.2.0.0")]
+    [InlineData("1-2-3-4", "1.0.0.0")]
+    public void Fourdigit_display_only_shows_four_digits(string verStr, string outStr) {
+        b.Info.Flow();
+        var sut = new CompleteVersion(verStr, '.', '-', '+');
+        string versionString = sut.GetVersionString(DisplayType.FourDigitNumeric);
+
+        versionString.ShouldBe(outStr);
+    }
+
+
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     public void Commandline_digits_allows_multiple_digits() {
