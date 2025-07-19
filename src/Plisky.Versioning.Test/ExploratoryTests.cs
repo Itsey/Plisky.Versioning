@@ -3,53 +3,26 @@
 namespace Plisky.CodeCraft.Test;
 
 using System;
+using System.Linq;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Shouldly;
 using Versonify;
 using Xunit;
 
-public class Exploratory {
+public class ExploratoryTests {
     private readonly Bilge b = new();
     private readonly UnitTestHelper uth;
     private readonly TestSupport ts;
 
-    public Exploratory() {
+    public ExploratoryTests() {
         uth = new UnitTestHelper();
         ts = new TestSupport(uth);
     }
 
-    ~Exploratory() {
+    ~ExploratoryTests() {
         uth.ClearUpTestFiles();
     }
-
-    [Theory(DisplayName = nameof(NumericDigitUpdateTest))]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [InlineData("1.2-3.4", "1", "2", "3", "4")]
-    [InlineData("1.2.3.4", "1", "2", "3", "4")]
-    [InlineData("1-2-3-4", "1", "2", "3", "4")]
-    [InlineData("1-2+3.4", "1", "2", "3", "4")]
-    public void NumericDigitUpdateTest(string initialValue, string dg1, string dg2, string dg3, string dg4) {
-        b.Info.Flow();
-        var sut = new CompleteVersion(initialValue, '.', '-', '+');
-
-        if (dg1 != null) {
-            sut.Digits[0].Value.ShouldBe(dg1);
-        }
-
-        if (dg2 != null) {
-            sut.Digits[1].Value.ShouldBe(dg2);
-        }
-
-        if (dg3 != null) {
-            sut.Digits[2].Value.ShouldBe(dg3);
-        }
-
-        if (dg4 != null) {
-            sut.Digits[3].Value.ShouldBe(dg4);
-        }
-    }
-
 
     [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
@@ -63,22 +36,22 @@ public class Exploratory {
     [InlineData("1-2-3-4", "1.0.0.0")]
     public void Fourdigit_display_only_shows_four_digits(string verStr, string outStr) {
         b.Info.Flow();
-        var sut = new CompleteVersion(verStr, '.', '-', '+');
+        CompleteVersion sut = new(verStr, '.', '-', '+');
+
         string versionString = sut.GetVersionString(DisplayType.FourDigitNumeric);
 
         versionString.ShouldBe(outStr);
     }
 
-
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     public void Commandline_digits_allows_multiple_digits() {
-        var sut = new VersonifyCommandline();
+        VersonifyCommandline sut = new();
         sut.DigitManipulations = new[] { "1", "2", "3" };
 
         string[] gd = sut.GetDigits();
 
-        gd.Length.ShouldBe(3, "Three digits were passed in.");
+        gd.Length.ShouldBe(3);
         gd[0].ShouldBe("1");
         gd[1].ShouldBe("2");
         gd[2].ShouldBe("3");
@@ -89,9 +62,9 @@ public class Exploratory {
     public void Validate_digitoptions_throws_when_invalid_digit_passed() {
         var cv = CompleteVersion.GetDefault();
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => {
-            _ = cv.ValidateDigitOptions(new[] { "monkey" });
-        });
+        Action act = () => { _ = cv.ValidateDigitOptions(new[] { "monkey" }); };
+
+        act.ShouldThrow<ArgumentOutOfRangeException>();
     }
 
     [Fact]
@@ -100,6 +73,7 @@ public class Exploratory {
         var cv = CompleteVersion.GetDefault();
 
         bool result = cv.ValidateDigitOptions(null);
+
         result.ShouldBeFalse();
     }
 
@@ -113,11 +87,13 @@ public class Exploratory {
     [InlineData("ContinualIncrement", VersioningCommand.BehaviourUpdate)]
     [InlineData("Bannana", VersioningCommand.Invalid)]
     public void CommandLine_correctly_sets_behviourtypes(string quickValue, VersioningCommand cmd) {
-        var sut = new VersonifyCommandline();
+        VersonifyCommandline sut = new();
         sut.Command = "behaviour";
         sut.QuickValue = quickValue;
 
-        sut.RequestedCommand.ShouldBe(cmd, "Behaviour should be output unless a quick value is passed.");
+        var result = sut.RequestedCommand;
+
+        result.ShouldBe(cmd);
     }
 
     [Fact]
@@ -126,62 +102,64 @@ public class Exploratory {
     [Trait("Cause", "Bug:464")]
     public void Build_version_does_not_update_during_build() {
         string ident = TestResources.GetIdentifiers(TestResourcesReferences.Bug464RefContent);
-
         string srcFile = uth.GetTestDataFile(ident);
-
         string fn = ts.GetFileAsTemporary(srcFile);
-        var cv = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."),
-            new VersionUnit("Unicorn", "-"),
-            new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement));
-        var sut = new VersionFileUpdater(cv);
+        CompleteVersion cv = new(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("Unicorn", "-"), new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement));
+        VersionFileUpdater sut = new(cv);
 
         _ = sut.PerformUpdate(fn, FileUpdateType.NetAssembly);
         _ = sut.PerformUpdate(fn, FileUpdateType.NetInformational);
         _ = sut.PerformUpdate(fn, FileUpdateType.NetFile);
 
-        ts.DoesFileContainThisText(fn, "AssemblyFileVersion(\"2.0.0\"").ShouldBeFalse("The file version should be three digits and present");
-        ts.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"2.0-Unicorn.0\"").ShouldBeTrue("The informational version should be present");
-        ts.DoesFileContainThisText(fn, "AssemblyVersion(\"2.0\")").ShouldBeTrue("the assembly version should be two digits and present.");
+        bool fileVer = ts.DoesFileContainThisText(fn, "AssemblyFileVersion(\"2.0.0\"");
+        bool infoVer = ts.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"2.0-Unicorn.0\"");
+        bool asmVer = ts.DoesFileContainThisText(fn, "AssemblyVersion(\"2.0\")");
+
+        fileVer.ShouldBeFalse();
+        infoVer.ShouldBeTrue();
+        asmVer.ShouldBeTrue();
     }
 
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void IncrementAndUpdateThrowsIfNoDirectory() {
-        _ = Assert.Throws<InvalidOperationException>(() => {
-            var sut = new VersioningTask();
+        Action act = () => {
+            VersioningTask sut = new();
             sut.IncrementAndUpdateAll();
-        });
+        };
+
+        act.ShouldThrow<InvalidOperationException>();
     }
 
     [Fact]
     public void ApplyBehaviourUpdate_UpdatesSingleDigitBehaviour() {
-        var version = new CompleteVersion(
-            new VersionUnit("1"),
-            new VersionUnit("2"),
-            new VersionUnit("3")
-        );
-        // Precondition: All digits start as Fixed
-        version.Digits.ShouldAllBe(d => d.Behaviour == DigitIncrementBehaviour.Fixed);
+        CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
+
+        bool allFixed = version.Digits.All(d => d.Behaviour == DigitIncrementBehaviour.Fixed);
+
+        allFixed.ShouldBeTrue();
 
         version.ApplyBehaviourUpdate("1", DigitIncrementBehaviour.AutoIncrementWithReset);
 
-        version.Digits[0].Behaviour.ShouldBe(DigitIncrementBehaviour.Fixed);
-        version.Digits[1].Behaviour.ShouldBe(DigitIncrementBehaviour.AutoIncrementWithReset);
-        version.Digits[2].Behaviour.ShouldBe(DigitIncrementBehaviour.Fixed);
+        var d0 = version.Digits[0].Behaviour;
+        var d1 = version.Digits[1].Behaviour;
+        var d2 = version.Digits[2].Behaviour;
+
+        d0.ShouldBe(DigitIncrementBehaviour.Fixed);
+        d1.ShouldBe(DigitIncrementBehaviour.AutoIncrementWithReset);
+        d2.ShouldBe(DigitIncrementBehaviour.Fixed);
     }
 
     [Fact]
     public void ApplyBehaviourUpdate_UpdatesAllDigitsWhenWildcard() {
-        var version = new CompleteVersion(
-            new VersionUnit("1"),
-            new VersionUnit("2"),
-            new VersionUnit("3")
-        );
+        CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
 
         version.ApplyBehaviourUpdate("*", DigitIncrementBehaviour.ContinualIncrement);
 
-        version.Digits.ShouldAllBe(d => d.Behaviour == DigitIncrementBehaviour.ContinualIncrement);
+        bool allContinual = version.Digits.All(d => d.Behaviour == DigitIncrementBehaviour.ContinualIncrement);
+
+        allContinual.ShouldBeTrue();
     }
 
     [Theory]
@@ -207,50 +185,48 @@ public class Exploratory {
 
     [Fact]
     public void ApplyValueUpdate_SetsAllDigitsToValue() {
-        var version = new CompleteVersion(
-            new VersionUnit("1"),
-            new VersionUnit("2"),
-            new VersionUnit("3")
-        );
+        CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
         string valueToSet = "42";
 
         version.ApplyValueUpdate("*", valueToSet);
 
-        version.Digits.ShouldAllBe(d => d.Value == valueToSet, $"All digits should be set to '{valueToSet}' after wildcard value update.");
+        bool allSet = version.Digits.All(d => d.Value == valueToSet);
+
+        allSet.ShouldBeTrue();
     }
 
     [Fact]
     public void ApplyValueUpdate_SetsSingleDigitToValue() {
-        var version = new CompleteVersion(
-            new VersionUnit("1"),
-            new VersionUnit("2"),
-            new VersionUnit("3")
-        );
+        CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
         string valueToSet = "99";
 
         version.ApplyValueUpdate("1", valueToSet);
 
-        version.Digits[0].Value.ShouldBe("1", "First digit should remain unchanged after single digit update.");
-        version.Digits[1].Value.ShouldBe(valueToSet, $"Second digit should be updated to '{valueToSet}'.");
-        version.Digits[2].Value.ShouldBe("3", "Third digit should remain unchanged after single digit update.");
+        string d0 = version.Digits[0].Value;
+        string d1 = version.Digits[1].Value;
+        string d2 = version.Digits[2].Value;
+
+        d0.ShouldBe("1");
+        d1.ShouldBe(valueToSet);
+        d2.ShouldBe("3");
     }
 
     [Fact]
     public void ApplyValueUpdate_SetsMultipleDigitsToSameValue() {
-        var version = new CompleteVersion(
-            new VersionUnit("1"),
-            new VersionUnit("2"),
-            new VersionUnit("3")
-        );
+        CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
         string valueToSet = "7";
 
         foreach (string idx in new[] { "0", "2" }) {
             version.ApplyValueUpdate(idx, valueToSet);
         }
 
-        version.Digits[0].Value.ShouldBe(valueToSet, $"First digit should be updated to '{valueToSet}'.");
-        version.Digits[1].Value.ShouldBe("2", "Second digit should remain unchanged after multiple digit update.");
-        version.Digits[2].Value.ShouldBe(valueToSet, $"Third digit should be updated to '{valueToSet}'.");
+        string d0 = version.Digits[0].Value;
+        string d1 = version.Digits[1].Value;
+        string d2 = version.Digits[2].Value;
+
+        d0.ShouldBe(valueToSet);
+        d1.ShouldBe("2");
+        d2.ShouldBe(valueToSet);
     }
 
     [Theory]
@@ -258,14 +234,13 @@ public class Exploratory {
     [InlineData(DigitIncrementBehaviour.Fixed, "123")]
     [InlineData(DigitIncrementBehaviour.DaysSinceDate, "77")]
     public void ApplyValueUpdate_SetsValueForBehaviour(DigitIncrementBehaviour behaviour, string valueToSet) {
-        var version = new CompleteVersion(
-            new VersionUnit("1", "", behaviour),
-            new VersionUnit("2")
-        );
+        CompleteVersion version = new(new VersionUnit("1", "", behaviour), new VersionUnit("2"));
 
         version.ApplyValueUpdate("0", valueToSet);
 
-        version.Digits[0].Value.ShouldBe(valueToSet, $"Digit with behaviour {behaviour} should be set to '{valueToSet}'.");
+        string d0 = version.Digits[0].Value;
+
+        d0.ShouldBe(valueToSet);
     }
 
     [Theory]
@@ -273,52 +248,48 @@ public class Exploratory {
     [InlineData("2")]
     [InlineData("5")]
     public void ApplyValueUpdate_InvalidIndex_Throws(string index) {
-        var version = new CompleteVersion(
-            new VersionUnit("1"),
-            new VersionUnit("2")
-        );
+        CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"));
 
-        Should.Throw<Exception>(() => version.ApplyValueUpdate(index, "100"), $"Should throw for invalid digit index '{index}'.");
+        Action act = () => version.ApplyValueUpdate(index, "100");
+
+        act.ShouldThrow<Exception>();
     }
 
     [Theory]
     [InlineData(DigitIncrementBehaviour.DaysSinceDate, "NotANumber")]
     [InlineData(DigitIncrementBehaviour.DailyAutoIncrement, "NotANumber")]
     public void ApplyValueUpdate_NonIntegerValueForIntegerBehaviour_Throws(DigitIncrementBehaviour behaviour, string valueToSet) {
-        var version = new CompleteVersion(
-            new VersionUnit("1", "", behaviour),
-            new VersionUnit("2")
-        );
+        CompleteVersion version = new(new VersionUnit("1", "", behaviour), new VersionUnit("2"));
 
-        Should.Throw<Exception>(() => version.ApplyValueUpdate("0", valueToSet), $"Non-integer value '{valueToSet}' provided for behaviour '{behaviour}' should throw an exception.");
+        Action act = () => version.ApplyValueUpdate("0", valueToSet);
+
+        act.ShouldThrow<Exception>();
     }
 
     [Fact]
     public void ApplyValueUpdate_FixedBehaviour_ReleaseNameValue_SetsToReleaseName() {
-        var version = new CompleteVersion(
-            new VersionUnit("1", "", DigitIncrementBehaviour.Fixed),
-            new VersionUnit("2")
-        );
+        CompleteVersion version = new(new VersionUnit("1", "", DigitIncrementBehaviour.Fixed), new VersionUnit("2"));
         string expectedReleaseName = "MyRelease";
         version.ReleaseName = expectedReleaseName;
 
         version.ApplyValueUpdate("0", "ReleaseName");
 
-        version.Digits[0].Value.ShouldBe(expectedReleaseName, "Digit with Fixed behaviour and value 'ReleaseName' should be set to the ReleaseName property value.");
+        string d0 = version.Digits[0].Value;
+
+        d0.ShouldBe(expectedReleaseName);
     }
 
     [Fact]
     public void Outputter_ValToWrite_IsReleaseName_WhenReleaseRequestedTrue() {
-        var version = new CompleteVersion(
-            new VersionUnit("1"),
-            new VersionUnit("2")
-        );
+        CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"));
         string expectedReleaseName = "ReleaseX";
         version.ReleaseName = expectedReleaseName;
 
-        var outputter = new MockVersioningOutputter(version) { ReleaseRequested = true };
+        MockVersioningOutputter outputter = new(version) { ReleaseRequested = true };
 
-        outputter.GetTheValueRequestedToWrite().ShouldBe(expectedReleaseName, "ValToWrite should be set to the release name when ReleaseRequested is true (using MockVersioningOutputter).");
+        string valToWrite = outputter.GetTheValueRequestedToWrite();
+
+        valToWrite.ShouldBe(expectedReleaseName);
     }
 
     [Theory]
@@ -329,19 +300,22 @@ public class Exploratory {
     public void Outputter_File_WritesReleaseNameToFile(string releaseName, string expectedOutput) {
         b.Info.Flow();
 
-        var mvs = new MockVersionStorage("0.0.0.1");
-        var sut = new Versioning(mvs);
+        MockVersionStorage mvs = new("0.0.0.1");
+        Versioning sut = new(mvs);
         var v = sut.Version;
         v.ReleaseName = releaseName;
 
-        var op = new MockVersioningOutputter(v) {
-            ReleaseRequested = true
-        };
+        MockVersioningOutputter op = new(v) { ReleaseRequested = true };
+
         op.DoOutput(OutputPossibilities.File, VersioningCommand.PassiveOutput);
 
-        op.FileWasWritten.ShouldBeTrue("FileWasWritten should be true after writing to file.");
-        op.EnvWasSet.ShouldBeFalse("EnvWasSet should be false after writing to file.");
-        op.GetTheValueRequestedToWrite().ShouldBe(expectedOutput, "GetTheValueRequestedToWrite should return the release name when ReleaseRequested is true.");
+        bool fileWasWritten = op.FileWasWritten;
+        bool envWasSet = op.EnvWasSet;
+        string valToWrite = op.GetTheValueRequestedToWrite();
+
+        fileWasWritten.ShouldBeTrue();
+        envWasSet.ShouldBeFalse();
+        valToWrite.ShouldBe(expectedOutput);
     }
 
     [Theory]
@@ -349,42 +323,45 @@ public class Exploratory {
     [InlineData(false)]
     public void Outputter_Console_Writes_Correct_Output(bool releaseRequest) {
         b.Info.Flow();
-        
+
         string releaseName = "testReleaseName";
         string versionNumber = "2.0.1.0";
 
-        var mvs = new MockVersionStorage(versionNumber);
-        var sut = new Versioning(mvs);
+        MockVersionStorage mvs = new(versionNumber);
+        Versioning sut = new(mvs);
         var v = sut.Version;
         v.ReleaseName = releaseName;
-        var op = new MockVersioningOutputter(v) {
-            ReleaseRequested = releaseRequest
-        };
+        MockVersioningOutputter op = new(v) { ReleaseRequested = releaseRequest };
         string expectedOutput = releaseRequest ? releaseName : versionNumber;
 
         op.DoOutput(OutputPossibilities.File, VersioningCommand.PassiveOutput);
 
-        op.FileWasWritten.ShouldBeTrue("FileWasWritten should be true after writing to file.");
-        op.GetTheValueRequestedToWrite().ShouldBe(expectedOutput, "GetTheValueRequestedToWrite should return the version string when ReleaseRequested is false.");
+        bool fileWasWritten = op.FileWasWritten;
+        string valToWrite = op.GetTheValueRequestedToWrite();
+
+        fileWasWritten.ShouldBeTrue();
+        valToWrite.ShouldBe(expectedOutput);
     }
 
     [Fact]
     public void Outputter_Environment_WritesReleaseNameToEnvironment() {
         b.Info.Flow();
 
-        var mvs = new MockVersionStorage("0.0.0.1");
-        var sut = new Versioning(mvs);
+        MockVersionStorage mvs = new("0.0.0.1");
+        Versioning sut = new(mvs);
         var v = sut.Version;
         v.ReleaseName = "testReleaseName";
-        var op = new MockVersioningOutputter(v) {
-            ReleaseRequested = true
-        };
+        MockVersioningOutputter op = new(v) { ReleaseRequested = true };
 
         op.DoOutput(OutputPossibilities.Environment, VersioningCommand.PassiveOutput);
 
-        op.FileWasWritten.ShouldBeFalse("FileWasWritten should be false after writing to environment.");
-        op.EnvWasSet.ShouldBeTrue("EnvWasSet should be true after writing to environment.");
-        op.GetTheValueRequestedToWrite().ShouldBe("testReleaseName", "GetTheValueRequestedToWrite should return the release name when ReleaseRequested is true.");
+        bool fileWasWritten = op.FileWasWritten;
+        bool envWasSet = op.EnvWasSet;
+        string valToWrite = op.GetTheValueRequestedToWrite();
+
+        fileWasWritten.ShouldBeFalse();
+        envWasSet.ShouldBeTrue();
+        valToWrite.ShouldBe("testReleaseName");
     }
 
     [Theory]
@@ -393,24 +370,26 @@ public class Exploratory {
     [InlineData("", "ImNoLongerEmpty")]
     [InlineData("releaseA", "release space123")]
     public void SetReleaseNameCommand_SetsReleaseNameInVersionStore(string currentRelease, string newRelease) {
-        var cv = new CompleteVersion("1.2.3.4") {
-            ReleaseName = currentRelease
-        };
+        CompleteVersion cv = new("1.2.3.4") { ReleaseName = currentRelease };
 
         cv.SetReleaseName(newRelease);
-        
-        cv.ReleaseName.ShouldBe(newRelease, "ReleaseName should be updated to the new value.");
+
+        string releaseName = cv.ReleaseName;
+
+        releaseName.ShouldBe(newRelease);
     }
 
     [Fact]
     public void SetReleaseNameCommand_SetsCorrectly() {
         string releaseName = "QuantumBanana";
-        var cmd = new VersonifyCommandline {
+        VersonifyCommandline cmd = new() {
             Command = "set",
             Release = releaseName
         };
 
-        cmd.RequestedCommand.ShouldBe(VersioningCommand.SetReleaseName, "RequestedCommand should be SetReleaseName.");
+        var requestedCommand = cmd.RequestedCommand;
+
+        requestedCommand.ShouldBe(VersioningCommand.SetReleaseName);
     }
 
     [Fact]

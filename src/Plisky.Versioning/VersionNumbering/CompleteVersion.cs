@@ -51,23 +51,36 @@ public class CompleteVersion {
 
     public CompleteVersion(string initialValue, params char[] seperators) : this() {
         b.Verbose.Log($"Parsing Initialisation String [{initialValue}]");
+        // Doesnt currently support starting with a seperator
 
         if (seperators.Length == 0) {
             b.Verbose.Log("No seperators provided, using default '.'");
-            // This is kept for backward compatibility.  It used to only understand . character as a seperator.
+            // This is kept as just . for backward compatibility.  It used to only understand . character as a seperator.
             seperators = new char[] { '.' };
         }
 
-        if (initialValue.IndexOfAny(seperators) >= 0) {
-            string[] parse = initialValue.Split(seperators, StringSplitOptions.RemoveEmptyEntries);
-            var vd = new List<VersionUnit>();
-            string prefix = "";
-            foreach (string f in parse) {
-                vd.Add(new VersionUnit(f, prefix, DigitIncrementBehaviour.Fixed));
-                prefix = ".";
+        var digits = new List<VersionUnit>();
+
+        var remainingString = initialValue.AsSpan();
+        int nextIndex = remainingString.IndexOfAny(seperators);
+        if (nextIndex != -1) {
+            int currentOffset = 0;
+            string prefix = string.Empty;
+
+            while (nextIndex >= 0) {
+                string nextValue = remainingString.Slice(currentOffset, nextIndex - currentOffset).ToString();
+                digits.Add(new VersionUnit(nextValue, prefix, DigitIncrementBehaviour.Fixed));
+
+                prefix = remainingString[nextIndex].ToString();
+                remainingString = remainingString.Slice(nextIndex + 1);
+                nextIndex = remainingString.IndexOfAny(seperators);
             }
 
-            Digits = vd.ToArray();
+            if (remainingString.Length > 0) {
+                digits.Add(new VersionUnit(remainingString.Slice(currentOffset).ToString(), prefix, DigitIncrementBehaviour.Fixed));
+            }
+
+            Digits = digits.ToArray();
         } else {
             Digits = new VersionUnit[1];
             Digits[0] = new VersionUnit(initialValue);
@@ -144,6 +157,10 @@ public class CompleteVersion {
         b.Info.Flow();
 
         string result = string.Empty;
+
+        if (dt == DisplayType.FourDigitNumeric) {
+            return FourDigitNumericDisplayString();
+        }
         int stopPoint = Digits.Length;
         if ((dt == DisplayType.Short) && (Digits.Length > 2)) {
             stopPoint = 2;
@@ -156,6 +173,39 @@ public class CompleteVersion {
             result += Digits[i].ToString();
         }
         b.Verbose.Log($"DisplayType - Stop {stopPoint} |{result}|");
+        return result;
+    }
+
+    private string FourDigitNumericDisplayString() {
+        const int DIGITLIMIT = 4;
+
+        string result = string.Empty;
+        int digitsFound = 0;
+        string mtcPrefix = string.Empty;
+        int stopPoint = Digits.Length;
+        if (stopPoint > DIGITLIMIT) {
+            stopPoint = DIGITLIMIT;
+        }
+
+        // Start with no prefix then use . prefixes and pick up .s only.
+        for (int i = 0; i < stopPoint; i++) {
+            if (Digits[i].PreFix == mtcPrefix) {
+                mtcPrefix = ".";
+                if (ushort.TryParse(Digits[i].Value, out ushort _)) {
+                    digitsFound++;
+                    result += Digits[i].ToString();
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        while (digitsFound < DIGITLIMIT) {
+            digitsFound++;
+            result += ".0";
+        }
         return result;
     }
 

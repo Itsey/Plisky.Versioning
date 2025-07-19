@@ -3,6 +3,7 @@ namespace Plisky.CodeCraft.Test;
 using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Test;
+using Shouldly;
 using Xunit;
 
 public class CompleteVersionTests {
@@ -15,7 +16,67 @@ public class CompleteVersionTests {
         ts = new TestSupport(uth);
     }
 
-    [Theory(DisplayName = nameof(CompletedVersion_ConstructorStringParser_Works))]
+    [Theory]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [InlineData("1.2-3.4", "1", "2", "3", "4")]
+    [InlineData("1.2.3.4", "1", "2", "3", "4")]
+    [InlineData("1-2-3-4", "1", "2", "3", "4")]
+    [InlineData("1-2+3.4", "1", "2", "3", "4")]
+    [InlineData("1234", "1234", null, null, null)]
+    [InlineData("12.34", "12", "34", null, null)]
+    [InlineData("12.3-4", "12", "3", "4", null)]
+    public void Completeversion_constructor_sets_digit_values(string initialValue, string dg1, string dg2, string dg3, string dg4) {
+        b.Info.Flow();
+        var sut = new CompleteVersion(initialValue, '.', '-', '+');
+
+        string d0 = sut.Digits.Length > 0 ? sut.Digits[0].Value : null;
+        string d1 = sut.Digits.Length > 1 ? sut.Digits[1].Value : null;
+        string d2 = sut.Digits.Length > 2 ? sut.Digits[2].Value : null;
+        string d3 = sut.Digits.Length > 3 ? sut.Digits[3].Value : null;
+
+        d0.ShouldBe(dg1);
+
+        if (dg2 != null) {
+            d1.ShouldBe(dg2);
+        } else {
+            sut.Digits.Length.ShouldBeLessThan(2);
+        }
+
+        if (dg3 != null) {
+            d2.ShouldBe(dg3);
+        } else {
+            sut.Digits.Length.ShouldBeLessThan(3);
+        }
+
+        if (dg4 != null) {
+            d3.ShouldBe(dg4);
+        } else {
+            sut.Digits.Length.ShouldBeLessThan(4);
+        }
+    }
+
+    [Theory]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [InlineData("1.2-3.4", "", ".", "-", ".")]
+    [InlineData("1.2.3.4", "", ".", ".", ".")]
+    [InlineData("1-2-3-4", "", "-", "-", "-")]
+    [InlineData("1-2+3.4", "", "-", "+", ".")]
+    public void CompletedVerison_constructor_sets_prefix(string initialValue, string dg1, string dg2, string dg3, string dg4) {
+        b.Info.Flow();
+        var sut = new CompleteVersion(initialValue, '.', '-', '+');
+
+        string p0 = sut.Digits.Length > 0 ? sut.Digits[0].PreFix : null;
+        string p1 = sut.Digits.Length > 1 ? sut.Digits[1].PreFix : null;
+        string p2 = sut.Digits.Length > 2 ? sut.Digits[2].PreFix : null;
+        string p3 = sut.Digits.Length > 3 ? sut.Digits[3].PreFix : null;
+
+        p0.ShouldBe(dg1);
+        p1.ShouldBe(dg2);
+        p2.ShouldBe(dg3);
+        p3.ShouldBe(dg4);
+    }
+
+    [Theory(DisplayName = nameof(CompletedVersion_constructor_parses_correct_digitcount))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     [InlineData("0.0.0.0", 4)]
@@ -24,12 +85,12 @@ public class CompleteVersionTests {
     [InlineData("94.0", 2)]
     [InlineData("94.0.1", 3)]
     [InlineData("94", 1)]
-    public void CompletedVersion_ConstructorStringParser_Works(string initString, int expectedDigits) {
+    public void CompletedVersion_constructor_parses_correct_digitcount(string initString, int expectedDigits) {
         b.Info.Flow();
 
         var cv = new CompleteVersion(initString);
 
-        Assert.Equal(expectedDigits, cv.Digits.Length);
+        cv.Digits.Length.ShouldBe(expectedDigits);
     }
 
     [Theory(DisplayName = (nameof(DisplayTypes_WorkCorrectly)))]
@@ -51,9 +112,10 @@ public class CompleteVersionTests {
         b.Info.Flow();
 
         var cv = new CompleteVersion(version);
+
         string output = cv.GetVersionString(dtype);
 
-        Assert.Equal(expectedDisplay, output);
+        output.ShouldBe(expectedDisplay);
     }
 
     [Theory(DisplayName = nameof(PendingIncrementPatterns_Work))]
@@ -76,7 +138,9 @@ public class CompleteVersionTests {
         cv.ApplyPendingVersion(pattern);
         cv.Increment();
 
-        Assert.Equal(endVer, cv.ToString());
+        string result = cv.ToString();
+
+        result.ShouldBe(endVer);
     }
 
     [Theory(DisplayName = nameof(PendingIncrement_IsAppliedCorrectly))]
@@ -97,10 +161,15 @@ public class CompleteVersionTests {
 
         cv.ApplyPendingVersion(pattern);
 
-        Assert.Equal(d1Expected, cv.Digits[0].IncrementOverride);
-        Assert.Equal(d2Expected, cv.Digits[1].IncrementOverride);
-        Assert.Equal(d3Expected, cv.Digits[2].IncrementOverride);
-        Assert.Equal(d4Expected, cv.Digits[3].IncrementOverride);
+        string d1 = cv.Digits[0].IncrementOverride;
+        string d2 = cv.Digits[1].IncrementOverride;
+        string d3 = cv.Digits[2].IncrementOverride;
+        string d4 = cv.Digits[3].IncrementOverride;
+
+        d1.ShouldBe(d1Expected);
+        d2.ShouldBe(d2Expected);
+        d3.ShouldBe(d3Expected);
+        d4.ShouldBe(d4Expected);
     }
 
     [Theory(DisplayName = nameof(PendingIncrement_IsRemovedCorrectly))]
@@ -122,10 +191,15 @@ public class CompleteVersionTests {
         cv.ApplyPendingVersion(pattern);
         cv.Increment();
 
-        Assert.Null(cv.Digits[0].IncrementOverride);
-        Assert.Null(cv.Digits[1].IncrementOverride);
-        Assert.Null(cv.Digits[2].IncrementOverride);
-        Assert.Null(cv.Digits[3].IncrementOverride);
+        string d1 = cv.Digits[0].IncrementOverride;
+        string d2 = cv.Digits[1].IncrementOverride;
+        string d3 = cv.Digits[2].IncrementOverride;
+        string d4 = cv.Digits[3].IncrementOverride;
+
+        d1.ShouldBeNull();
+        d2.ShouldBeNull();
+        d3.ShouldBeNull();
+        d4.ShouldBeNull();
     }
 
     [Theory(DisplayName = nameof(PendingIncrements_StackCorrectly))]
@@ -141,15 +215,15 @@ public class CompleteVersionTests {
     [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear", "..Berry.", "Unicorn.Peach.Berry.Pear")]
     public void PendingIncrements_StackCorrectly(string startVer, string pattern, string secondPattern, string endVer) {
         b.Info.Flow();
-        // Multi patterns dont really stack, just partially replace
-
         var cv = new CompleteVersion(startVer);
 
         cv.ApplyPendingVersion(pattern);
         cv.ApplyPendingVersion(secondPattern);
         cv.Increment();
 
-        Assert.Equal(endVer, cv.ToString());
+        string result = cv.ToString();
+
+        result.ShouldBe(endVer);
     }
 
     [Theory(DisplayName = "ManipulateVersionTests")]
@@ -170,7 +244,7 @@ public class CompleteVersionTests {
 
         string res = sut.Mock.ManipulateVersionBasedOnPattern(pattern, value);
 
-        Assert.Equal(result, res);
+        res.ShouldBe(result);
     }
 
     [Fact(DisplayName = nameof(ReleaseVersion_StartsEmpty))]
@@ -180,7 +254,10 @@ public class CompleteVersionTests {
         b.Info.Flow();
 
         var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."));
-        Assert.Null(sut.ReleaseName);
+
+        string releaseName = sut.ReleaseName;
+
+        releaseName.ShouldBeNull();
     }
 
     [Fact(DisplayName = nameof(SetReleaseName_Works))]
@@ -191,10 +268,14 @@ public class CompleteVersionTests {
         b.Info.Flow();
 
         var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncrementBehaviour.ReleaseName));
+
         sut.ReleaseName = RELEASENAME;
 
-        Assert.Equal(RELEASENAME, sut.ReleaseName);
-        Assert.Equal("2.0+" + RELEASENAME, sut.ToString());
+        string releaseName = sut.ReleaseName;
+        string versionString = sut.ToString();
+
+        releaseName.ShouldBe(RELEASENAME);
+        versionString.ShouldBe("2.0+" + RELEASENAME);
     }
 
     [Fact(DisplayName = nameof(Increment_DoesNotChangeReleaseName))]
@@ -205,11 +286,15 @@ public class CompleteVersionTests {
         b.Info.Flow();
 
         var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncrementBehaviour.ReleaseName));
+
         sut.ReleaseName = RELEASENAME;
         sut.Increment();
 
-        Assert.Equal(RELEASENAME, sut.ReleaseName);
-        Assert.Equal("2.0+" + RELEASENAME, sut.ToString());
+        string releaseName = sut.ReleaseName;
+        string versionString = sut.ToString();
+
+        releaseName.ShouldBe(RELEASENAME);
+        versionString.ShouldBe("2.0+" + RELEASENAME);
     }
 
     [Fact(DisplayName = nameof(PendingReleaseName_AppliedOnIncrement))]
@@ -221,13 +306,16 @@ public class CompleteVersionTests {
         b.Info.Flow();
 
         var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncrementBehaviour.ReleaseName));
+
         sut.ReleaseName = RELEASENAME;
         sut.ApplyPendingRelease(NEWRELEASE);
-
         sut.Increment();
 
-        Assert.Equal(NEWRELEASE, sut.ReleaseName);
-        Assert.Equal("2.0+" + NEWRELEASE, sut.ToString());
+        string releaseName = sut.ReleaseName;
+        string versionString = sut.ToString();
+
+        releaseName.ShouldBe(NEWRELEASE);
+        versionString.ShouldBe("2.0+" + NEWRELEASE);
     }
 
     [Fact(DisplayName = nameof(PendingReleaseName_IgnoredNoIncrement))]
@@ -239,11 +327,15 @@ public class CompleteVersionTests {
         b.Info.Flow();
 
         var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("", "+", DigitIncrementBehaviour.ReleaseName));
+
         sut.ReleaseName = RELEASENAME;
         sut.ApplyPendingRelease(NEWRELEASE);
 
-        Assert.Equal(RELEASENAME, sut.ReleaseName);
-        Assert.Equal("2.0+" + RELEASENAME, sut.ToString());
+        string releaseName = sut.ReleaseName;
+        string versionString = sut.ToString();
+
+        releaseName.ShouldBe(RELEASENAME);
+        versionString.ShouldBe("2.0+" + RELEASENAME);
     }
 
     [Fact]
@@ -251,9 +343,14 @@ public class CompleteVersionTests {
     [Trait(Traits.Style, Traits.Unit)]
     public void FixedBehaviour_DoesNotIncrement() {
         var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."));
+
         string before = sut.GetVersionString(DisplayType.Full);
+
         sut.Increment();
-        Assert.Equal(before, sut.GetVersionString(DisplayType.Full)); //, "Digits should be fixed and not change when incremented");
+
+        string after = sut.GetVersionString(DisplayType.Full);
+
+        after.ShouldBe(before);
     }
 
     [Fact]
@@ -261,8 +358,12 @@ public class CompleteVersionTests {
     [Trait(Traits.Style, Traits.Unit)]
     public void PartiallyFixed_DoesIncrement() {
         var sut = new CompleteVersion(new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement), new VersionUnit("Monkey", "."));
+
         sut.Increment();
-        Assert.Equal("2.Monkey", sut.GetVersionString(DisplayType.Full)); //, "The increment for the first digit did not work in a mixed verison number");
+
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("2.Monkey");
     }
 
     [Fact]
@@ -274,8 +375,12 @@ public class CompleteVersionTests {
             new VersionUnit("0", "."),
             new VersionUnit("1", "."),
             new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny));
+
         sut.Increment();
-        Assert.Equal("2.0.1.0", sut.GetVersionString(DisplayType.Full)); //, "The reset should prevent the last digit from incrementing");
+
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("2.0.1.0");
     }
 
     [Fact]
@@ -287,7 +392,11 @@ public class CompleteVersionTests {
            new VersionUnit("0", "."),
            new VersionUnit("1", "."),
            new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny));
-        Assert.Equal(sut.GetVersionString(DisplayType.Full), sut.GetVersionString()); //, "The default should be to display as full");
+
+        string full = sut.GetVersionString(DisplayType.Full);
+        string def = sut.GetVersionString();
+
+        def.ShouldBe(full);
     }
 
     [Fact]
@@ -300,14 +409,23 @@ public class CompleteVersionTests {
            vu2,
            new VersionUnit("1", "."),
            new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny));
-        Assert.Equal("1.0.1.0", sut.GetVersionString()); //, "Without an increment its wrong - invalid test");
+
+        string before = sut.GetVersionString();
+
+        before.ShouldBe("1.0.1.0");
 
         sut.Increment();
-        Assert.Equal("1.0.1.1", sut.GetVersionString()); //, "Increment on all fixed should not change anything");
+
+        string after = sut.GetVersionString();
+
+        after.ShouldBe("1.0.1.1");
+
         vu2.IncrementOverride = "5";
         sut.Increment();
 
-        Assert.Equal("1.5.1.0", sut.GetVersionString()); //, "The final digit should reset when a fixed digit changes.");
+        string afterOverride = sut.GetVersionString();
+
+        afterOverride.ShouldBe("1.5.1.0");
     }
 
     [Fact]
@@ -317,8 +435,12 @@ public class CompleteVersionTests {
         var vu = new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement);
         vu.IncrementOverride = "9";
         var sut = new CompleteVersion(vu);
+
         sut.Increment();
-        Assert.Equal("9", sut.GetVersionString(DisplayType.Full)); //, "The overide on a word value did not work");
+
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("9");
     }
 
     [Fact]
@@ -326,8 +448,12 @@ public class CompleteVersionTests {
     [Trait(Traits.Style, Traits.Unit)]
     public void SimpleIncrement_Fixed_DoesNothing() {
         var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("2", "."));
+
         sut.Increment();
-        Assert.Equal("1.2", sut.ToString()); //, "The verison increment should do nothing for fixed");
+
+        string result = sut.ToString();
+
+        result.ShouldBe("1.2");
     }
 
     [Fact]
@@ -337,8 +463,12 @@ public class CompleteVersionTests {
         var vu = new VersionUnit("2", ".");
         vu.SetBehaviour(DigitIncrementBehaviour.AutoIncrementWithReset);
         var sut = new CompleteVersion(new VersionUnit("1"), vu);
+
         sut.Increment();
-        Assert.Equal("1.3", sut.ToString()); //, "The verison increment should do nothing for fixed");
+
+        string result = sut.ToString();
+
+        result.ShouldBe("1.3");
     }
 
     [Fact]
@@ -350,7 +480,9 @@ public class CompleteVersionTests {
         vu.IncrementOverride = "Fish";
         var sut = new CompleteVersion(vu);
 
-        Assert.Equal("Monkey", sut.GetVersionString(DisplayType.Full));
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("Monkey");
     }
 
     [Fact]
@@ -361,9 +493,12 @@ public class CompleteVersionTests {
         vu.IncrementOverride = "5";
 
         var sut = new CompleteVersion(vu);
+
         sut.Increment();
 
-        Assert.Equal("5", sut.GetVersionString(DisplayType.Full));
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("5");
     }
 
     [Fact]
@@ -374,9 +509,12 @@ public class CompleteVersionTests {
         vu.IncrementOverride = "Fish";
 
         var sut = new CompleteVersion(vu);
+
         sut.Increment();
 
-        Assert.Equal("Fish", sut.GetVersionString(DisplayType.Full)); //, "The overide on a word value did not work");
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("Fish");
     }
 
     [Fact]
@@ -387,15 +525,18 @@ public class CompleteVersionTests {
         vu.IncrementOverride = "Fish";
 
         var sut = new CompleteVersion(vu);
+
         sut.Increment();
 
-        Assert.Equal("Fish", sut.GetVersionString(DisplayType.Full));
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("Fish");
     }
 
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void GetBehaviourString_ReturnsCorrectBehaviourForSingleDigit() {   // Expected format is [digit]:BehaviourName(behaviourvalue)
+    public void GetBehaviourString_ReturnsCorrectBehaviourForSingleDigit() {
         var behaviour = DigitIncrementBehaviour.ContinualIncrement;
         int behaviourValue = (int)behaviour;
         string expectedResult = $"[0]:{behaviour}({behaviourValue})";
@@ -405,13 +546,13 @@ public class CompleteVersionTests {
 
         string result = sut.GetBehaviourString("0");
 
-        Assert.Equal(expectedResult, result);
+        result.ShouldBe(expectedResult);
     }
 
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void GetBehaviourString_ReturnsCorrectBehaviourForStar() {   // Expected format is [digit]:BehaviourName(behaviourvalue)
+    public void GetBehaviourString_ReturnsCorrectBehaviourForStar() {
         var behaviourFixed = DigitIncrementBehaviour.Fixed;
         int behaviourFixedValue = (int)behaviourFixed;
         var behaviourInc = DigitIncrementBehaviour.ContinualIncrement;
@@ -428,7 +569,7 @@ public class CompleteVersionTests {
 
         string result = sut.GetBehaviourString("*");
 
-        Assert.Equal(expectedResult, result);
+        result.ShouldBe(expectedResult);
     }
 
     [Theory]
@@ -439,9 +580,10 @@ public class CompleteVersionTests {
     public void ValidateDigitOptions_ReturnsTrueForValidInput(string digitInput, bool expectedResult) {
         b.Info.Flow();
         var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
+
         bool actualResult = sut.ValidateDigitOptions([digitInput]);
 
-        Assert.Equal(expectedResult, actualResult);
+        actualResult.ShouldBe(expectedResult);
     }
 
     public class DisplayTypes {
@@ -451,7 +593,11 @@ public class CompleteVersionTests {
         [Trait(Traits.Style, Traits.Unit)]
         public void ToString_equals_getversionstring() {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-            Assert.Equal(sut.ToString(), sut.GetVersionString(DisplayType.Full));
+
+            string toString = sut.ToString();
+            string getVersionString = sut.GetVersionString(DisplayType.Full);
+
+            toString.ShouldBe(getVersionString);
         }
 
         [Fact]
@@ -460,7 +606,10 @@ public class CompleteVersionTests {
         public void Short_returns_two_digits() {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
             var dt = DisplayType.Short;
-            Assert.Equal("1.0", sut.GetVersionString(dt));
+
+            string result = sut.GetVersionString(dt);
+
+            result.ShouldBe("1.0");
         }
 
         [Fact]
@@ -469,7 +618,10 @@ public class CompleteVersionTests {
         public void Short_returns_two_digits_when_more_present() {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."), new VersionUnit("1", "."));
             var dt = DisplayType.Short;
-            Assert.Equal("1.0", sut.GetVersionString(dt));
+
+            string result = sut.GetVersionString(dt);
+
+            result.ShouldBe("1.0");
         }
 
         [Fact]
@@ -477,7 +629,10 @@ public class CompleteVersionTests {
         [Trait(Traits.Style, Traits.Unit)]
         public void ToString_respects_alternative_separator_characters() {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "-"), new VersionUnit("1", "-"));
-            Assert.Equal("1-0-1", sut.ToString());
+
+            string result = sut.ToString();
+
+            result.ShouldBe("1-0-1");
         }
 
         [Fact]
@@ -485,7 +640,10 @@ public class CompleteVersionTests {
         [Trait(Traits.Style, Traits.Unit)]
         public void Default_display_is_correct_for_two_digits() {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-            Assert.True(sut.ToString() == "1.0");
+
+            string result = sut.ToString();
+
+            result.ShouldBe("1.0");
         }
     }
 
@@ -495,17 +653,22 @@ public class CompleteVersionTests {
         [Trait(Traits.Age, Traits.Regression)]
         [Trait(Traits.Style, Traits.Unit)]
         public void Plisky_semantic_versioning_is_supported() {
-            var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."),
+            var sut = new CompleteVersion(
+                new VersionUnit("2"),
+                new VersionUnit("0", "."),
                 new VersionUnit("Unicorn", "-"),
                 new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement));
+
             string verString = sut.GetVersionString();
-            Assert.Equal("2.0-Unicorn.0", verString); //,"The initial string is not correct");
+            verString.ShouldBe("2.0-Unicorn.0");
+
             sut.Increment();
             verString = sut.GetVersionString();
-            Assert.Equal("2.0-Unicorn.1", verString); //, "The first increment string is not correct");
+            verString.ShouldBe("2.0-Unicorn.1");
+
             sut.Increment();
             verString = sut.GetVersionString(DisplayType.Full);
-            Assert.Equal("2.0-Unicorn.2", verString); //, "The second increment string is not correct");
+            verString.ShouldBe("2.0-Unicorn.2");
         }
     }
 }
