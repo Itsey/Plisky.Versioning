@@ -170,7 +170,7 @@ internal class Program {
                 break;
             case VersioningCommand.SetDigitPrefix:
                 valid &= ValidateDigitsPresent(options.DigitManipulations, "Prefix");
-                if (options.QuickValue == null) {    // Allow empty string as valid prefix
+                if (options.QuickValue == null) {    // Allow empty string or whitespace as valid prefix
                     Console.WriteLine("Error >> The Prefix command requires a prefix value. Use -Q=<prefix> (can be empty string).");
                     valid = false;
                 }
@@ -194,7 +194,8 @@ internal class Program {
         Console.WriteLine("Performing Versioning Actions");
 
         GetVersionStorageFromCommandLine();
-        if (!storage.IsValid) {
+
+        if (!ValidateVersionStorage()) {
             return false;
         }
 
@@ -267,8 +268,24 @@ internal class Program {
             b.Verbose.Log("About to save version store");
             ver.SaveUpdatedVersion();
         }
-
+         
         Console.WriteLine($"Loaded [{ver.GetVersion()}]");
+    }
+    private static bool ValidateVersionStorage() {
+        if (!storage.IsValid) {
+            return false;
+        }
+
+        bool vstoreExists = storage.DoesVstoreExist();
+        if (!vstoreExists && options.RequestedCommand != VersioningCommand.CreateNewVersion) {
+            Console.WriteLine($"Error >> Version Store {options.VersionPersistanceValue} does not exist or is inaccessible.");
+            return false;
+        }
+        if (vstoreExists && options.RequestedCommand == VersioningCommand.CreateNewVersion) {
+            Console.WriteLine($"Error >> Version store {options.VersionPersistanceValue} already exists.");
+            return false;
+        }
+        return true;
     }
 
     private static void LoadReleaseName() {

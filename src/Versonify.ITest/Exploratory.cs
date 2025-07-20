@@ -103,4 +103,27 @@ public class Exploratory {
         s.ShouldNotContain("PNFV]");
         th.LastExecutionExitCode.ShouldBe(0);
     }
+
+    [Theory]
+    [InlineData("passive", false, true)]
+    [InlineData("passive", true, false)]
+    [InlineData("createversion", true, true)]
+    [InlineData("createversion", false, false)]
+    [Trait("Cause", "Bug:LFY-25")]
+    public async Task VersionStorage_DoesVstoreExist_ValidatesFileExistence(string command, bool isVstoreValid, bool shouldError) {
+        b.Info.Flow();
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string vStoreFilePath = uth.GetTestDataFile(resName);
+        if (!isVstoreValid) {
+            vStoreFilePath = vStoreFilePath + ".invalid";
+        }
+        
+        string output = await th.ExecuteVersonify($"{command} -vs={vStoreFilePath}");
+
+        if (shouldError) {
+            output.ShouldContain("Error >>");
+        } else {
+            output.ShouldNotContain("Error >>");
+        }
+    }
 }

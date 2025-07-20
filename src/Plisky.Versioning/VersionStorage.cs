@@ -1,4 +1,5 @@
 ﻿namespace Plisky.CodeCraft;
+using System.IO;
 using Plisky.Diagnostics;
 
 public abstract class VersionStorage {
@@ -63,6 +64,18 @@ public abstract class VersionStorage {
             result = CompleteVersion.GetDefault();
         }
         return result;
+    }
+
+    /// <summary>
+    /// Checks if the InitValue is a file path that already exists on disk.
+    /// </summary>
+    /// <returns>True if InitValue is a valid, existing file path; otherwise, false.</returns>
+    public bool DoesVstoreExist() {
+        if (InitValue == null || string.IsNullOrWhiteSpace(InitValue.InitialisationString)) {
+            return false;
+        }
+        string path = InitValue.InitialisationString;
+        return File.Exists(path);
     }
 
 
