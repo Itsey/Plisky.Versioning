@@ -108,10 +108,14 @@ public class CompleteVersionTests {
     [InlineData("1.9.0.0", "1.9.0", DisplayType.ThreeDigit)]
     [InlineData("1.0", "1.0", DisplayType.ThreeDigit)]
     [InlineData("1000.1000.1000.1000", "1000.1000.1000", DisplayType.ThreeDigit)]
+    [InlineData("1.2.3.4", "1.2.3.4", DisplayType.FourDigitNumeric)]
+    [InlineData("1000.20004", "1000.20004.0.0", DisplayType.FourDigitNumeric)]
+    [InlineData("1001-20A004", "1001.0.0.0", DisplayType.FourDigitNumeric)]
+    [InlineData("1", "1.0.0.0", DisplayType.FourDigitNumeric)]
     public void DisplayTypes_WorkCorrectly(string version, string expectedDisplay, DisplayType dtype) {
         b.Info.Flow();
 
-        var cv = new CompleteVersion(version);
+        var cv = new CompleteVersion(version, '.', '-');
 
         string output = cv.GetVersionString(dtype);
 

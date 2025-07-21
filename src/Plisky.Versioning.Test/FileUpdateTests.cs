@@ -31,7 +31,6 @@ public class FileUpdateTests {
         uth.ClearUpTestFiles();
     }
 
-
     [Fact(DisplayName = nameof(LiteralReplace_DefaultReplacesVersionAndReleaseName))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -47,14 +46,12 @@ public class FileUpdateTests {
         var sut = new VersionFileUpdater(cv);
         _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Release);
 
-
         string result = File.ReadAllText(srcFile);
         Assert.DoesNotContain("XXX-RELEASENAME-XXX", result);
         Assert.Contains("Unicorn", result);
         Assert.DoesNotContain("XXX-VERSION-XXX", result);
         Assert.Contains("1.1.1.1", result);
     }
-
 
     [Fact(DisplayName = nameof(LiteralReplace_Version3_IsThreeDigits))]
     [Trait(Traits.Age, Traits.Regression)]
@@ -112,16 +109,12 @@ public class FileUpdateTests {
         var sut = new VersionFileUpdater(cv);
         _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.NoDisplay);
 
-
         string result = File.ReadAllText(srcFile);
         Assert.DoesNotContain("XXX-RELEASENAME-XXX", result);
         Assert.Contains("Unicorn", result);
         Assert.Contains("XXX-VERSION-XXX", result);
         Assert.DoesNotContain("1.1.1.1", result);
-
     }
-
-
 
     [Fact(DisplayName = nameof(VersionFileUpdaterFindsFiles))]
     [Trait(Traits.Age, Traits.Regression)]
@@ -202,9 +195,9 @@ public class FileUpdateTests {
 
         _ = sut.PerformUpdate(fn, FileUpdateType.NetAssembly);
 
-        Assert.False(ts.DoesFileContainThisText(fn, "0.0.0.0"), "No update was made to the file at all");
-        Assert.True(ts.DoesFileContainThisText(fn, "1.1"), "The file does not appear to have been updated correctly.");
-        Assert.True(ts.DoesFileContainThisText(fn, "AssemblyVersion(\"1.1\")"), "The file does not have the full version in it");
+        Assert.False(ts.DoesFileContainThisText(fn, "0.0"), "No update was made to the file at all");
+        Assert.True(ts.DoesFileContainThisText(fn, "1.1.1.1"), "The file does not appear to have been updated correctly.");
+        Assert.True(ts.DoesFileContainThisText(fn, "AssemblyVersion(\"1.1.1.1\")"), "The file does not have the full version in it");
     }
 
     [Fact]
@@ -302,7 +295,6 @@ public class FileUpdateTests {
         Assert.NotEqual<string>(before, after);
     }
 
-
     [Fact(DisplayName = nameof(UpdateStd_AddsFileWhenMissing))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -319,7 +311,6 @@ public class FileUpdateTests {
         Assert.True(string.IsNullOrEmpty(before));
         Assert.False(string.IsNullOrEmpty(after));
     }
-
 
     [Fact(DisplayName = nameof(UpdateStd_AddsAsmWhenMissing))]
     [Trait(Traits.Age, Traits.Regression)]
@@ -339,9 +330,6 @@ public class FileUpdateTests {
         Assert.False(string.IsNullOrEmpty(after));
     }
 
-
-
-
     [Fact(DisplayName = nameof(UpdateStd_AddsStdInfoWhenMissing))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -359,11 +347,6 @@ public class FileUpdateTests {
         Assert.True(string.IsNullOrEmpty(before));
         Assert.False(string.IsNullOrEmpty(after));
     }
-
-
-
-
-
 
     [Fact(DisplayName = nameof(Update_StdCSProjFile_Works))]
     [Trait(Traits.Age, Traits.Regression)]
@@ -399,8 +382,6 @@ public class FileUpdateTests {
         Assert.NotEqual<string>(before, after);
     }
 
-
-
     [Fact(DisplayName = nameof(Update_Nuspec_BugNoUpdate))]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -426,7 +407,6 @@ public class FileUpdateTests {
         Assert.False(txt2.IndexOf(knownStartPoint) > 0);
         Assert.True(txt2.IndexOf(destinationPoint) > 0);
     }
-
 }
 
 public class MockVersionFileUpdater : VersionFileUpdater {
@@ -452,8 +432,6 @@ public class MockVersionFileUpdater : VersionFileUpdater {
     }
 
     #endregion mocking implementation
-
-
 
     public MockVersionFileUpdater() {
         mock = new Mocking(this);

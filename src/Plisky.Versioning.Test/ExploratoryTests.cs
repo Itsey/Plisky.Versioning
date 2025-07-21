@@ -111,9 +111,9 @@ public class ExploratoryTests {
         _ = sut.PerformUpdate(fn, FileUpdateType.NetInformational);
         _ = sut.PerformUpdate(fn, FileUpdateType.NetFile);
 
-        bool fileVer = ts.DoesFileContainThisText(fn, "AssemblyFileVersion(\"2.0.0\"");
+        bool fileVer = ts.DoesFileContainThisText(fn, "AssemblyFileVersion(\"2.0\"");
         bool infoVer = ts.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"2.0-Unicorn.0\"");
-        bool asmVer = ts.DoesFileContainThisText(fn, "AssemblyVersion(\"2.0\")");
+        bool asmVer = ts.DoesFileContainThisText(fn, "AssemblyVersion(\"2.0.0.0\")");
 
         fileVer.ShouldBeFalse();
         infoVer.ShouldBeTrue();

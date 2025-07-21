@@ -34,13 +34,13 @@ public class CompleteVersion {
     public Dictionary<FileUpdateType, DisplayType> DisplayTypes { get; set; } = new Dictionary<FileUpdateType, DisplayType>();
 
     public CompleteVersion() {
-        DisplayTypes.Add(FileUpdateType.NetAssembly, DisplayType.Short);
-        DisplayTypes.Add(FileUpdateType.NetFile, DisplayType.Full);
+        DisplayTypes.Add(FileUpdateType.NetAssembly, DisplayType.FourDigitNumeric);
+        DisplayTypes.Add(FileUpdateType.NetFile, DisplayType.FourDigitNumeric);
         DisplayTypes.Add(FileUpdateType.NetInformational, DisplayType.Full);
         DisplayTypes.Add(FileUpdateType.Wix, DisplayType.Full);
-        DisplayTypes.Add(FileUpdateType.Nuspec, DisplayType.ThreeDigit);
-        DisplayTypes.Add(FileUpdateType.StdAssembly, DisplayType.Short);
-        DisplayTypes.Add(FileUpdateType.StdFile, DisplayType.Full);
+        DisplayTypes.Add(FileUpdateType.Nuspec, DisplayType.Full);
+        DisplayTypes.Add(FileUpdateType.StdAssembly, DisplayType.FourDigitNumeric);
+        DisplayTypes.Add(FileUpdateType.StdFile, DisplayType.FourDigitNumeric);
         DisplayTypes.Add(FileUpdateType.StdInformational, DisplayType.Full);
         DisplayTypes.Add(FileUpdateType.TextFile, DisplayType.Short);
     }
