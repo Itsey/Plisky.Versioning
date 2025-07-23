@@ -12,6 +12,7 @@ using Plisky.Plumbing;
 using Plisky.Versioning;
 
 internal class Program {
+    private const string ALL_DIGITS_WILDCARD = "*";
     public static VersonifyCommandline options = new();
     private static CompleteVersion versionerUsed;
     private static VersionStorage storage;
@@ -268,9 +269,9 @@ internal class Program {
             b.Verbose.Log("About to save version store");
             ver.SaveUpdatedVersion();
         }
-         
         Console.WriteLine($"Loaded [{ver.GetVersion()}]");
     }
+
     private static bool ValidateVersionStorage() {
         if (!storage.IsValid) {
             return false;
@@ -418,7 +419,7 @@ internal class Program {
         }
 
         string[] digitsToLoad = options.GetDigits();
-        if (digitsToLoad[0] == "*") {
+        if (digitsToLoad[0] == ALL_DIGITS_WILDCARD) {
             Console.WriteLine("Loading All Behaviours");
             Console.WriteLine(ver.GetBehaviour(digitsToLoad[0]));
         } else {
@@ -439,7 +440,7 @@ internal class Program {
         }
 
         string[] digitsToUpdate = options.GetDigits();
-        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == "*") {
+        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
             Console.WriteLine($"Setting All Behaviours to {newBehaviour}");
         } else {
             Console.WriteLine($"Setting Behaviour for Digit[{string.Join(',', digitsToUpdate)}] to {newBehaviour}({(int)newBehaviour})");
@@ -482,9 +483,9 @@ internal class Program {
             displayValue = ver.Version.ReleaseName;
         }
 
-        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == "*") {
+        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
             Console.WriteLine($"Setting all digits to value: {displayValue}");
-            ver.Version.ApplyValueUpdate("*", valueToSet);
+            ver.Version.ApplyValueUpdate(ALL_DIGITS_WILDCARD, valueToSet);
         } else {
             Console.WriteLine($"Setting digit(s) [{string.Join(',', digitsToUpdate)}] to value: {displayValue}");
             foreach (string digit in digitsToUpdate) {
@@ -524,9 +525,9 @@ internal class Program {
         string[] digitsToUpdate = options.GetDigits();
         string prefixToSet = options.QuickValue;
 
-        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == "*") {
+        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
             Console.WriteLine($"Setting prefix for all digits to: {prefixToSet}");
-            ver.Version.SetPrefixForDigit("*", prefixToSet);
+            ver.Version.SetPrefixForDigit(ALL_DIGITS_WILDCARD, prefixToSet);
         } else {
             Console.WriteLine($"Setting prefix for digit(s) [{string.Join(',', digitsToUpdate)}] to: {prefixToSet}");
             foreach (string digit in digitsToUpdate) {
@@ -535,9 +536,8 @@ internal class Program {
         }
 
         if (!options.DryRunOnly) {
-            Console.WriteLine("Saving Updated Digit Prefixes");
+            Console.WriteLine("Saving updated digit prefixes");
             ver.SaveUpdatedVersion();
-            Console.WriteLine($"Prefixes applied: {prefixToSet}");
             Console.WriteLine($"[{ver.Version.GetVersionString()}]");
         } else {
             Console.WriteLine("DryRun - Would Save:");

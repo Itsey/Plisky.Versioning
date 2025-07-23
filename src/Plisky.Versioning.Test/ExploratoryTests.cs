@@ -393,15 +393,18 @@ public class ExploratoryTests {
     }
 
     [Fact]
-    public void SetPrefixForDigit_SetsPrefixForAllDigitsWithWildcard() {
+    public void SetPrefixForDigit_SetsPrefixForAllDigitsWithWildcard_excludes_first_digit() {
         var version = new CompleteVersion(
             new VersionUnit("1"),
             new VersionUnit("2"),
             new VersionUnit("3")
         );
+
         version.SetPrefixForDigit("*", "+");
-        foreach (var digit in version.Digits) {
-            digit.PreFix.ShouldBe("+", "Prefix should be set to '+' for all digits.");
+
+        version.Digits[0].PreFix.ShouldBe("", "Prefix should remain empty for the first digit."); 
+        for (int i = 1; i < version.Digits.Length; i++) {
+            version.Digits[i].PreFix.ShouldBe("+", "Prefix should be set to '+' for all digits except digit[0].");
         }
     }
 

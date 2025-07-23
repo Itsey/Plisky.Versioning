@@ -329,7 +329,7 @@ public class CompleteVersion {
     public void SetPrefixForDigit(string digitToUpdate, string newPrefix) {
         if (digitToUpdate == ALLDIGITSWILDCARD) {
             b.Verbose.Log($"Applying prefix update to all digits to {newPrefix}");
-            for (int i = 0; i < Digits.Length; i++) {
+            for (int i = 1; i < Digits.Length; i++) {
                 Digits[i].PreFix = newPrefix;
             }
             return;
