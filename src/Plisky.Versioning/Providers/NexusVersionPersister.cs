@@ -47,4 +47,12 @@ public class NexusVersionPersister : VersionStorage {
         t.Wait();
 
     }
+    protected override bool ActualDoesVstoreExist(VersionStorageOptions? opts) {
+        if (opts == null || string.IsNullOrWhiteSpace(opts.InitialisationString) || config == null) {
+            return false;
+        }
+        var existsTask = remote.FileExistsAsync(config.Url, config.Username, config.Password);
+        existsTask.Wait();
+        return existsTask.Result;
+    }
 }

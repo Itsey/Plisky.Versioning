@@ -4,9 +4,34 @@ These rules should be followed by github inline code editor and github copilot c
 ## General Guidelines for Code Suggestions
 - **Frameworks:** Always use British English for spelling and grammar in code comments, documentation, commit messages, and any other text, including class, method and variable names.
 - **Naming:** Prefer descriptive, explicit variable names for readability.
-- **Coding Standards:** Ensure code adheres to project standards and style, and only change code relevant to the task.
+- **Coding Standards:**
+    - Always ensure that new code confirms to the coding style.
+    - Ensure that code complies with IDE0008. Prefer using the 'var' keyword when the type is obvious from the right-hand side of the assignment.
+    - Name the return value from a function 'result'.
+    - Where in doubt use the one true brace style.
+    - When looking at style refer to the .editorconfig for the project in the first instance. If there is no .editorconfig then ensure code adheres to project standards and style, and only change code relevant to the task.
+    - Always use the following coding standards where it is not obvious from the context - the code in this next block shows the preferred style.  
+    
+```csharp
+public class ExampleClass{
+  private int exampleField;
+  public int ExampleProperty { get; set; }
+
+  public void ExampleMethod(){
+    int one = 1;
+    while (one < two) {
+      if (one <2){ 
+        one++;
+      } else {
+        one += 10;
+      }
+      break;
+    }
+  }
+}
+```
+
 - **Modernity:** Use modern technologies and best practices relevant to the programming language and framework in use.
-- **Impact & Safety:** Consider performance, security, readability, maintainability, and avoid breaking changes unless requested.
 - **Rationale:** If a code suggestion involves a significant change, provide a detailed explanation of the rationale behind the change.
 - **Constants:** Avoid using magic numbers; use constants or enums instead.
 - **Whitespace:** Don't suggest whitespace changes.
@@ -18,45 +43,39 @@ These rules should be followed by github inline code editor and github copilot c
 
 ### Making Edits
 - **Change Management:** Focus on one conceptual change at a time and show clear before/after snippets.
-- **Explanation:** Provide concise explanations and rationale for code changes.
-- **Style:** Always check if the edit maintains the project's coding style.
 - **Relevance:** Only change code that is directly relevant to the task at hand. Do not refactor unrelated code unless it is necessary for the change.
 
-###  Instructions for Code Suggestions
-When working with large files (>300 lines) or complex changes:
-1. **Planning:** ALWAYS start by creating a detailed plan BEFORE making any edits
-2. **PlanContent:** Your plan MUST include:
-   - All functions/sections that need modification
-   - The order in which changes should be applied
-   - Dependencies between changes
-   - Estimated number of separate edits required
-3. **PlanFormat:** Format your plan as:
-## Proposed Edit Plan
-	Working with: [filename]
-	Total planned edits: [number]
+###  Instructions for Code Generation.
+- Only generate a plan if you need it for the task at hand. If you do not need a plan then do not generate one.  
+- Focus on solving the task at hand. Once you have finished the task, review all the code in any modified files and identify security issues or code quality issues. If you find any issues then suggest a prompt that
+would fix the issues. If you do not find any issues then state that no issues were found.
+
 
 ## Dot Net Project Requirements
-- **Language:** Use C# as the primary programming language.
-- **Framework:** Use .NET 6 or later for all new projects.
+- **Language:** Use C# as the programming language.
+- **Framework:** Use .NET 8 or later for all new projects.
 - **Web:** Use ASP.NET Core for web applications.
 - **DI:** Use Dependency Injection for managing dependencies.
-- **Braces:** Use One True Brace Style for formatting code.
 
 ## Test Project Requirements
-- **Integration:** .ITest projects are Integration Tests.
-- **Unit:** .Test projects are Unit Tests.
-- **NoComments:** Do not include comments for Arrange, Act, Assert sections.
-- **Spacing:** Leave a single blank new line between the Arrange, Act, and Assert sections.
-- **Shouldly:** Use Shouldly for assertions.
-- **AssertionMsg:** Include a short custom message in Shouldly assertions to provide context for test failures.
+- **Integration:** .ITest projects are Integration Tests.  Tests which require external resources, such as databases or file systems, should be placed in an .ITest project.
+- **Unit:** .Test projects are Unit Tests.  Use XUnit for all unit tests.
+- **NoComments:** Do not include comments for Arrange, Act, Assert sections but prefer to adopt that style of test.  Ensure that the primary subject of the test is named 'sut'. 
+- **Naming:** When creating new unit tests their names should be snake cased.  If the test is to ensure something succeeded and its not clear from the name then use _works as a suffix for the method name.  If the test throws an exception then use _throws as a suffix for the method name.
+- **Spacing:** Leave a single blank new line between the Arrange, Act, and Assert sections.  Prefer to use intermediary variables to help keep the arrange, act and assert sections separate.
+- **Shouldly:** Use Shouldly for assertions.  When updating test files check other methods in the same file to ensure that they are using Shouldly for consistency.  If they are not then update them to use Shouldly.
 - **Exploratory:** Use the ExploratoryTests class for new exploratory unit tests.
 - **Fact:** Use the [Fact] attribute for unit tests.
 - **Theory:** Use the [Theory] attribute for parameterised tests to reduce repetition and improve maintainability.
-- **InlineData:** Use the [InlineData] attribute for providing parameters to parameterised tests.
-- **NoDisk:** Avoid creating unit tests that hit the disk or require external resources.
+- **InlineData:**
+    - Use the [InlineData] attribute for providing parameters to parameterised tests.
+    - Try and use parameterised tests where possible to include edge cases and reduce test duplication.
+    - Ensure that a wide variety of data is used to cover different scenarios.
+    - If there are more than 5 parameters in the inline data then use a test class instead. If there are more than 5 rows of inline data then either reuse or create a TestData class to hold the data and use methods or properties to retrieve the data.
+- **NoDisk:** Avoid creating unit tests that hit the disk or require external resources.  If the test requires external resources, it should be placed in an .ITest project.
 - **EdgeCases:** Make suggestions for unit tests that cover edge cases and error handling.
 
 ## Repo Specific Requirements
 - **Library:** The Plisky.Versioning project is a reusable library with the versioning logic.
-- **CLI:** The Versonify project is a user-facing dotnet CLI tool to interact with the versioning system.
+- **CLI:** The Versonify project is a user-facing dotnet CLI tool to interact with the versioning system.  The Versonify project should reference the Plisky.Versioning project to access the core versioning logic. Command line interface and output should be within the Versonify project.
 - **CoreLogic:** Core logic should be added to the Plisky.Versioning project where it can then be referenced by the Versonify project.

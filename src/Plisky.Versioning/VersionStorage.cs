@@ -11,6 +11,8 @@ public abstract class VersionStorage {
 
     protected abstract CompleteVersion ActualLoad();
 
+    protected abstract bool ActualDoesVstoreExist(VersionStorageOptions? opts);
+
     public bool IsValid {
         get {
             return string.IsNullOrEmpty(StorageFailureMessage);
@@ -74,8 +76,7 @@ public abstract class VersionStorage {
         if (InitValue == null || string.IsNullOrWhiteSpace(InitValue.InitialisationString)) {
             return false;
         }
-        string path = InitValue.InitialisationString;
-        return File.Exists(path);
+        return ActualDoesVstoreExist(InitValue);
     }
 
 

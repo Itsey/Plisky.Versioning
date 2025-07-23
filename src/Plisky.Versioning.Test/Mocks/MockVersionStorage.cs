@@ -51,5 +51,9 @@
             PersistWasCalled = true;
             VersionStringPersisted = cv.GetVersionString();
         }
+        protected override bool ActualDoesVstoreExist(VersionStorageOptions? opts) {
+            // For the mock, assume existence if the initialisation string is not null or empty and not 'invalid'.
+            return opts != null && !string.IsNullOrWhiteSpace(opts.InitialisationString) && opts.InitialisationString != "invalid";
+        }
     }
 }

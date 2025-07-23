@@ -229,4 +229,24 @@ public class NexusSupport {
         b.Warning.Log($"download url did not start with marker ]{molsbaseMarker}[, returning empty");
         return new Tuple<string, string>(string.Empty, string.Empty);
     }
+
+    public async Task<bool> FileExistsAsync(string fileUrl, string? username, string? password) {
+        b.Info.Flow($"Checking existence of file at URL: {fileUrl}");
+        var request = new HttpRequestMessage(HttpMethod.Head, fileUrl);
+
+        if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password)) {
+            byte[] byteArray = new System.Text.UTF8Encoding().GetBytes($"{username}:{password}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+        }
+
+        try {
+            var response = await client.SendAsync(request);
+            b.Verbose.Log($"Received response: {(int)response.StatusCode} {response.StatusCode} for {fileUrl}");
+            bool result = response.IsSuccessStatusCode;
+            return result;
+        } catch (HttpRequestException ex) {
+            b.Warning.Log($"HTTP request exception when checking file existence at {fileUrl}: {ex.Message}");
+            return false;
+        }
+    }
 }

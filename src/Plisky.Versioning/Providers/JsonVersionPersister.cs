@@ -45,4 +45,11 @@ public class JsonVersionPersister : VersionStorage {
         string val = JsonSerializer.Serialize(cv);
         File.WriteAllText(InitValue.InitialisationString, val);
     }
+
+    protected override bool ActualDoesVstoreExist(VersionStorageOptions? opts) {
+        if (opts == null || string.IsNullOrWhiteSpace(opts.InitialisationString)) {
+            return false;
+        }
+        return File.Exists(opts.InitialisationString);
+    }
 }
