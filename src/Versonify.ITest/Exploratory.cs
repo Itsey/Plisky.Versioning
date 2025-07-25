@@ -26,6 +26,62 @@ public class Exploratory {
         th.LastExecutionExitCode.ShouldNotBe(0, "No Parameters is an error condition.");
     }
 
+    [Fact(Skip = "This looks like it could be a bug in current implementation while evidencing LFY-10")]
+    public async Task Pre_and_release_versioning_use_case_works() {
+        // Usecase where pre-release is incremented, then a release version takes over, then pre-release is incremented again.
+        b.Info.Flow();
+        string preReleaseVersionStore = uth.NewTemporaryFileName(true);
+        string releaseVersionStore = uth.NewTemporaryFileName(true);
+        string tDirectory = Path.Combine(Path.GetTempPath(), "tmp-ver-empty");
+
+        Assert.False(Directory.Exists(tDirectory));
+        Directory.CreateDirectory(tDirectory);
+
+        try {
+            string output;
+
+            output = await th.ExecuteVersonify($"-Command=CreateVersion -VS={releaseVersionStore} -Q=\"2.0.0\" -Release=Austen");
+            output = await th.ExecuteVersonify($"-Command=Behaviour -VS={releaseVersionStore} -dg=2 -Q=AutoIncrementWithResetAny");
+
+            output = await th.ExecuteVersonify($"-Command=CreateVersion -VS={preReleaseVersionStore} -Q=\"1.0.0.0.0.0\" -Release=Austen");
+            output = await th.ExecuteVersonify($"-Command=Prefix -VS={preReleaseVersionStore} -dg=3 -Q=-");
+            output = await th.ExecuteVersonify($"-Command=Behaviour -VS={preReleaseVersionStore} -dg=5 -Q=AutoIncrementWithResetAny");
+            output = await th.ExecuteVersonify($"-Command=Set -VS={preReleaseVersionStore} -dg=3 -Q=Austen");
+
+            FileShouldContain(preReleaseVersionStore, "\"-\"", "\"Austen\"");
+
+            output = await th.ExecuteVersonify($"-Command=Passive -VS={preReleaseVersionStore}");
+            output.ShouldContain("1.0.0-Austen.0.0");
+
+            // Increment PreRelease versions 1.0.0-Austen.1.0 > 1.0.0-Austen.1.1 > 1.0.0-Austen.1.2 etc.
+
+            for (int i = 1; i <= 5; i++) {
+                output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root=D:\\Scratch\\xx -Increment -VS={preReleaseVersionStore}");
+                output.ShouldContain($"1.0.0-Austen.0.{i}");
+            }
+
+            // Now create a release version.
+            output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={tDirectory} -Increment -VS={releaseVersionStore} -output=con-nf");
+            output.ShouldContain("2.0.1");
+            output = await th.ExecuteVersonify($"-Command=Override -Root={tDirectory} -VS={preReleaseVersionStore} -Q=1.0.0 -output=con-nf");
+
+            // Apply overriden pre-release version.
+            output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={tDirectory} -Increment -VS={preReleaseVersionStore}");
+            output = await th.ExecuteVersonify($"-Command=Passive -VS={preReleaseVersionStore}");
+            output.ShouldContain("2.0.1-Austen.0.0");
+
+        } finally {
+            uth.ClearUpTestFiles();
+        }
+    }
+
+    private static void FileShouldContain(string preReleaseVersionStore, params string[] contains) {
+        string currentFileContents = File.ReadAllText(preReleaseVersionStore);
+        foreach (string c in contains) {
+            currentFileContents.ShouldContain(c);
+        }
+    }
+
     [Fact]
     public async Task Behaviour_command_shows_all_digits() {
         b.Info.Flow();
@@ -117,7 +173,7 @@ public class Exploratory {
         if (!isVstoreValid) {
             vStoreFilePath = vStoreFilePath + ".invalid";
         }
-        
+
         string output = await th.ExecuteVersonify($"{command} -vs={vStoreFilePath}");
 
         if (shouldError) {

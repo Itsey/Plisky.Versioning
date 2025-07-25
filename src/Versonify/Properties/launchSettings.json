@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Versonify": {
+      "commandName": "Project",
+      "commandLineArgs": "-Command=CreateVersion -VS=%TEMP%dummy.vstore -Q=\"1.0.0.0.0.0\" -Release=Austen"
+    }
+  }
+}

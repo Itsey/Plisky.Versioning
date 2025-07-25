@@ -64,7 +64,7 @@ public partial class Build : NukeBuild {
 
           string versioningToken = settings.VersioningPersistanceTokenRelease;
           if (PreRelease) {
-              Log.Information("Build>QueryNextVersion>PreRelease is set, using Release Token.");
+              Log.Information("Build>QueryNextVersion>PreRelease is set, using non release Token.");
               versioningToken = settings.VersioningPersistanceToken;
           }
           var vc = new VersonifyTasks();
@@ -102,12 +102,14 @@ public partial class Build : NukeBuild {
               dryRunMode = true;
           }
 
+          string versioningType = "Pre-Release";
           string vtFile = settings.VersioningPersistanceToken;
           if (!PreRelease) {
               vtFile = settings.VersioningPersistanceTokenRelease;
+              versioningType = "Release";
           }
 
-          Log.Information($"Versioning Token : {vtFile}");
+          Log.Information($"[Versioning]{versioningType} versioning displaying curent version number.");
 
           var vc = new VersonifyTasks();
           vc.PassiveCommand(s => s
@@ -119,6 +121,8 @@ public partial class Build : NukeBuild {
           var mmPath = settings.DependenciesDirectory / "automation";
           mmPath /= "autoversion.txt";
 
+          Log.Information($"[Versioning]{versioningType} Increment and Update Exsiting Files.({vc.VersionLiteral})");
+
           vc.FileUpdateCommand(s => s
               .SetVersionPersistanceValue(vtFile)
               .AddMultimatchFile(mmPath)
@@ -127,8 +131,21 @@ public partial class Build : NukeBuild {
               .AsDryRun(dryRunMode)
               .SetRoot(Solution.Directory)
           );
+
+          if (!PreRelease) {
+              Log.Information($"[Versioning]{versioningType} Applying release version number to pre-release data. ({vc.VersionLiteral})");
+
+              vc.OverrideCommand(s => s
+                  .SetVersionPersistanceValue(settings.VersioningPersistanceToken)
+                  .SetOutputStyle("azdo-nf")
+                  .AsDryRun(dryRunMode)
+                  .SetRoot(Solution.Directory)
+                  .SetQuickValue(vc.VersionLiteral)
+              );
+          }
+
           FullVersionNumber = vc.VersionLiteral;
-          Log.Information($"Version applied:{vc.VersionLiteral}");
+          Log.Information($"[Versioning]Version applied:{vc.VersionLiteral}");
 
       });
 

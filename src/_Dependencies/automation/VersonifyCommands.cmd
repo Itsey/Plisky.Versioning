@@ -20,10 +20,9 @@ versonify -Command=Passive -VS=%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.ye
 goto EndOfTimes
 
 :TestX
-::
-versonify -Command=Behaviour -VS=C:\Users\itsey\Downloads\versonify-version-pre.store -dg=4 -Q=Fixed
-versonify -Command=Behaviour -VS=C:\Users\itsey\Downloads\versonify-version-pre.store -dg=5 -Q=AutoIncrementWithReset
-versonify -Command=PAssive -VS=C:\Users\itsey\Downloads\versonify-version-pre.store 
+:: repro steps
+versonify -Command=CreateVersion -VS=%TEMP%\bugrepro.store -Q="666.666.666.666" -Release=Buggy
+versonify -Command=UpdateFiles -Root=X:\Code\ghub\Plisky.Versioning\src\ -VS=%TEMP%\bugrepro.store -DryRun 
 goto EndOfTimes
 
 
