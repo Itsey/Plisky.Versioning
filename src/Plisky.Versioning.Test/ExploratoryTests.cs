@@ -184,11 +184,11 @@ public class ExploratoryTests {
     }
 
     [Fact]
-    public void ApplyValueUpdate_SetsAllDigitsToValue() {
+    public void SetIndividualDigits_WithWildcard_SetsAllDigitsToValue() {
         CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
         string valueToSet = "42";
 
-        version.ApplyValueUpdate("*", valueToSet);
+        version.SetIndividualDigits(["*"], valueToSet);
 
         bool allSet = version.Digits.All(d => d.Value == valueToSet);
 
@@ -196,11 +196,11 @@ public class ExploratoryTests {
     }
 
     [Fact]
-    public void ApplyValueUpdate_SetsSingleDigitToValue() {
+    public void SetIndividualDigits_SetsSingleDigitToValue() {
         CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
         string valueToSet = "99";
 
-        version.ApplyValueUpdate("1", valueToSet);
+        version.SetIndividualDigits(["1"], valueToSet);
 
         string d0 = version.Digits[0].Value;
         string d1 = version.Digits[1].Value;
@@ -212,13 +212,11 @@ public class ExploratoryTests {
     }
 
     [Fact]
-    public void ApplyValueUpdate_SetsMultipleDigitsToSameValue() {
+    public void SetIndividualDigits_SetsMultipleDigitsToSameValue() {
         CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
-        string valueToSet = "7";
+        string valueToSet = "77";
 
-        foreach (string idx in new[] { "0", "2" }) {
-            version.ApplyValueUpdate(idx, valueToSet);
-        }
+        version.SetIndividualDigits(["0", "2"], valueToSet);
 
         string d0 = version.Digits[0].Value;
         string d1 = version.Digits[1].Value;
@@ -229,25 +227,65 @@ public class ExploratoryTests {
         d2.ShouldBe(valueToSet);
     }
 
+    [Fact]
+    public void SetAllDigitsFromString_sets_digits_from_dotted_string() {
+        var version = new CompleteVersion(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
+        string valueToSet = "5.6.7";
+
+        version.SetCompleteVersionFromString(valueToSet);
+
+        version.Digits[0].Value.ShouldBe("5");
+        version.Digits[1].Value.ShouldBe("6");
+        version.Digits[2].Value.ShouldBe("7");
+    }
+    [Fact]
+    public void SetAllDigitsFromString_pads_missing_digits_with_zero() {
+        var version = new CompleteVersion(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"), new VersionUnit("4"));
+        string valueToSet = "5.6";
+
+        version.SetCompleteVersionFromString(valueToSet);
+
+        version.Digits[0].Value.ShouldBe("5");
+        version.Digits[1].Value.ShouldBe("6");
+        version.Digits[2].Value.ShouldBe("0");
+        version.Digits[3].Value.ShouldBe("0");
+    }
+
     [Theory]
-    [InlineData(DigitIncrementBehaviour.ReleaseName, "ReleaseA")]
     [InlineData(DigitIncrementBehaviour.Fixed, "123")]
     [InlineData(DigitIncrementBehaviour.DaysSinceDate, "77")]
     public void ApplyValueUpdate_SetsValueForBehaviour(DigitIncrementBehaviour behaviour, string valueToSet) {
-        CompleteVersion version = new(new VersionUnit("1", "", behaviour), new VersionUnit("2"));
+        CompleteVersion version = new(
+            new VersionUnit("1", "", behaviour),
+            new VersionUnit("2"));
 
-        version.ApplyValueUpdate("0", valueToSet);
+        version.ApplyValueUpdate(0, valueToSet);
 
         string d0 = version.Digits[0].Value;
 
         d0.ShouldBe(valueToSet);
     }
 
+    [Fact]
+    public void ApplyValueUpdate_DoesNotSetValue_WhenBehaviourIsRelease() {
+        string name = "myRelease";
+        CompleteVersion version = new(
+            new VersionUnit("1", "", DigitIncrementBehaviour.ReleaseName),
+            new VersionUnit("2"));
+        version.ReleaseName = name;
+
+        version.ApplyValueUpdate(0, "ReleaseA");
+
+        string d0 = version.Digits[0].Value;
+
+        d0.ShouldBe(name);
+    }
+
     [Theory]
-    [InlineData("-1")]
-    [InlineData("2")]
-    [InlineData("5")]
-    public void ApplyValueUpdate_InvalidIndex_Throws(string index) {
+    [InlineData(-1)]
+    [InlineData(2)]
+    [InlineData(5)]
+    public void ApplyValueUpdate_InvalidIndex_Throws(int index) {
         CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"));
 
         Action act = () => version.ApplyValueUpdate(index, "100");
@@ -261,7 +299,7 @@ public class ExploratoryTests {
     public void ApplyValueUpdate_NonIntegerValueForIntegerBehaviour_Throws(DigitIncrementBehaviour behaviour, string valueToSet) {
         CompleteVersion version = new(new VersionUnit("1", "", behaviour), new VersionUnit("2"));
 
-        Action act = () => version.ApplyValueUpdate("0", valueToSet);
+        Action act = () => version.ApplyValueUpdate(0, valueToSet);
 
         act.ShouldThrow<Exception>();
     }
@@ -272,7 +310,7 @@ public class ExploratoryTests {
         string expectedReleaseName = "MyRelease";
         version.ReleaseName = expectedReleaseName;
 
-        version.ApplyValueUpdate("0", "ReleaseName");
+        version.ApplyValueUpdate(0, "ReleaseName");
 
         string d0 = version.Digits[0].Value;
 
@@ -402,7 +440,7 @@ public class ExploratoryTests {
 
         version.SetPrefixForDigit("*", "+");
 
-        version.Digits[0].PreFix.ShouldBe("", "Prefix should remain empty for the first digit."); 
+        version.Digits[0].PreFix.ShouldBe("", "Prefix should remain empty for the first digit.");
         for (int i = 1; i < version.Digits.Length; i++) {
             version.Digits[i].PreFix.ShouldBe("+", "Prefix should be set to '+' for all digits except digit[0].");
         }

@@ -157,10 +157,12 @@ internal class Program {
                 valid &= ValidateDigitsPresent(options.DigitManipulations, "Behaviour");
                 break;
             case VersioningCommand.SetDigitValue:
-                valid &= ValidateDigitsPresent(options.DigitManipulations, "Set");
                 if (string.IsNullOrWhiteSpace(options.QuickValue)) {
                     Console.WriteLine("Error >> The Set command requires a value to set. Use -Q=<value> to set digit value. Use -Release=<value> to set release name.");
                     valid = false;
+                } else if (!options.QuickValue.Contains('.')) {
+                    // Only require digits if not setting the full version string
+                    valid &= ValidateDigitsPresent(options.DigitManipulations, "Set");
                 }
                 break;
             case VersioningCommand.SetReleaseName:
@@ -472,25 +474,20 @@ internal class Program {
         string[] digitsToUpdate = options.GetDigits();
         string valueToSet = options.QuickValue;
 
-        if (!ver.Version.ValidateDigitOptions(digitsToUpdate)) {
-            Console.WriteLine("Error >> Invalid digit selection for value update.");
-            return;
-        }
-        // Check if valueToSet can be parsed as DigitIncrementBehaviour.ReleaseName
-        string displayValue = valueToSet;
-        if (VersonifyCommandline.TryParseDigitIncrementBehaviour(valueToSet, out var behaviour)
-            && behaviour == DigitIncrementBehaviour.ReleaseName) {
-            displayValue = ver.Version.ReleaseName;
-        }
-
-        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
-            Console.WriteLine($"Setting all digits to value: {displayValue}");
-            ver.Version.ApplyValueUpdate(ALL_DIGITS_WILDCARD, valueToSet);
+        if (ShouldSetCompleteVersionFromString(digitsToUpdate, valueToSet)) {
+            ver.Version.SetCompleteVersionFromString(valueToSet);
+            Console.WriteLine($"Set version to: {ver.Version.GetVersionString()}");
         } else {
-            Console.WriteLine($"Setting digit(s) [{string.Join(',', digitsToUpdate)}] to value: {displayValue}");
-            foreach (string digit in digitsToUpdate) {
-                ver.Version.ApplyValueUpdate(digit, valueToSet);
+            if (!ver.Version.ValidateDigitOptions(digitsToUpdate)) {
+                Console.WriteLine("Error >> Invalid digit selection for value update.");
+                return;
             }
+            if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
+                Console.WriteLine($"Setting all digits to value: {valueToSet}");
+            } else {
+                Console.WriteLine($"Setting digit(s) [{string.Join(',', digitsToUpdate)}] to value: {valueToSet}");
+            }
+            ver.Version.SetIndividualDigits(digitsToUpdate, valueToSet);
         }
 
         if (!options.DryRunOnly) {
@@ -503,6 +500,16 @@ internal class Program {
         }
     }
 
+    private static bool ShouldSetCompleteVersionFromString(string[] digitsToUpdate, string valueToSet) {
+        if (string.IsNullOrWhiteSpace(valueToSet)) {
+            return false;
+        }
+        if (digitsToUpdate.Length == 0 && valueToSet.Contains('.')) {
+            return true;
+        }
+        return false;
+    }
+ 
     private static void ApplyReleaseNameUpdate() {
         var ver = new Versioning(storage, options.DryRunOnly);
         versionerUsed = ver.Version;

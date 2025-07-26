@@ -304,22 +304,40 @@ public class CompleteVersion {
         return newValue;
     }
 
-    public void ApplyValueUpdate(string digitToUpdate, string newValue) {
-        if (digitToUpdate == ALLDIGITSWILDCARD) {
-            b.Verbose.Log($"Applying value update to all digits to {newValue}");
+    public void SetCompleteVersionFromString(string versionString) {
+        string[] versionParts = versionString.Split('.');
+        if (versionParts.Length > Digits.Length) {
+            b.Warning.Log($"Warning: Version string has more parts ({versionParts.Length}) than available digits ({Digits.Length}). Extra parts will be ignored.");
+        }
+        for (int i = 0; i < Digits.Length; i++) {
+            string versionPart = i < versionParts.Length ? versionParts[i] : "0";
+            ApplyValueUpdate(i, versionPart);
+        }
+    }
+
+    public void SetIndividualDigits(string[] digitsToUpdate, string valueToSet) {
+        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALLDIGITSWILDCARD) {
             for (int i = 0; i < Digits.Length; i++) {
-                Digits[i].Value = GetValueForDigit(Digits[i], newValue);
+                ApplyValueUpdate(i, valueToSet);
             }
+        } else {
+            for (int i = 0; i < digitsToUpdate.Length; i++) {
+                Debug.Assert(int.TryParse(digitsToUpdate[i], out _), "Digit to update is not a valid integer, this should not happen.");
+                ApplyValueUpdate(int.Parse(digitsToUpdate[i]), valueToSet);
+            }
+        }
+    }
+
+    public void ApplyValueUpdate(int digitToUpdate, string newValue) {
+        Debug.Assert(digitToUpdate >= 0 && digitToUpdate < Digits.Length, "Digit to update is not a valid integer, this should not happen.");
+        Debug.Assert(Digits[digitToUpdate] != null, "Digit to update is null, this should not happen.");
+
+        if (Digits[digitToUpdate].Behaviour == DigitIncrementBehaviour.ReleaseName) {
+            b.Warning.Log($"Warning: Digit {digitToUpdate} has Release behaviour and will not be set.");
             return;
         }
-
-        Debug.Assert(int.TryParse(digitToUpdate, out _), "Digit to update is not a valid integer, this should not happen.");
-        Debug.Assert(Digits[int.Parse(digitToUpdate)] != null, "Digit to update is null, this should not happen.");
-        Debug.Assert(Digits.Length > int.Parse(digitToUpdate), "Digit to update is out of range of the digits available.");
-
         b.Verbose.Log($"Applying value update for digit {digitToUpdate} to value {newValue}");
-        int idx = int.Parse(digitToUpdate);
-        Digits[idx].Value = GetValueForDigit(Digits[idx], newValue);
+        Digits[digitToUpdate].Value = GetValueForDigit(Digits[digitToUpdate], newValue);
     }
 
     public void SetReleaseName(string newReleaseName) {

@@ -6,10 +6,11 @@ These rules should be followed by github inline code editor and github copilot c
 - **Naming:** Prefer descriptive, explicit variable names for readability.
 - **Coding Standards:**
     - Always ensure that new code confirms to the coding style.
-    - Ensure that code complies with IDE0008. Prefer using the 'var' keyword when the type is obvious from the right-hand side of the assignment.
+    - Ensure that code complies with IDE0008. For built in types, use the explicit type. For all other types use the 'var' keyword.
     - Name the return value from a function 'result'.
     - Where in doubt use the one true brace style.
-    - When looking at style refer to the .editorconfig for the project in the first instance. If there is no .editorconfig then ensure code adheres to project standards and style, and only change code relevant to the task.
+    - Ensure code adheres to project standards and style, and only change code relevant to the task.
+    - Resolve all formatting warnings that are raised on the code you create.
     - Always use the following coding standards where it is not obvious from the context - the code in this next block shows the preferred style.  
     
 ```csharp
