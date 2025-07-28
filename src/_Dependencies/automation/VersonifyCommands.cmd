@@ -6,7 +6,7 @@ goto EndOfTimes
 
 :Test1
 :: Create new version with enough for pre-release
-versonify  -Command=CreateVersion -VS=%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.yellowwater-365987e0.uksouth.azurecontainerapps.io/repository/plisky/vstore/versonify-version-pre.store -Q="1.0.0.0.0.0" -Release=Austen
+versonify  -Command=CreateVersion -VS=%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.yellowwater-365987e0.uksouth.azurecontainerapps.io/repository/plisky/vstore/versonify-pre.vstore -Q="1.0.0.0.0.0" -Release=Austen
 goto EndOfTimes
 
 :Test2
