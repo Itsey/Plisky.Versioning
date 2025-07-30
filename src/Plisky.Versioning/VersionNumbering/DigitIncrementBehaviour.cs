@@ -2,12 +2,12 @@
 
 /// <summary>
 /// The DigitIncrementBehaviour enum is the determining factor for how each element is incremented within the VersionSupport class.  Each element
-/// of the version when incrememented will do so in a different way depending on its revision behaviour.
+/// of the version when incremented will do so in a different way depending on its revision behaviour.
 /// </summary>
 public enum DigitIncrementBehaviour {
 
     /// <summary>
-    /// Fixed values do not change.  They remain constant throuought a version increment.
+    /// Fixed values do not change.  They remain constant throughout a version increment.
     /// </summary>
     Fixed = 0,
 
@@ -34,9 +34,9 @@ public enum DigitIncrementBehaviour {
 
     /// <summary>
     /// AutoIncrementWithResetAny will increment continually unless any of the higher order digits have changed.  It therefore continually
-    /// increments untill a more significant digit changes then it resets to zero.  Major digits will continally incrememnt.  Minor digits
-    /// will continue to incrememnt until the major changes.  Build will continue to increment until either Major or Minor changes and finally
-    /// the revision digit wil continue to increment until any of Major / Minor or Build changes.
+    /// increments until a more significant digit changes then it resets to zero.  Major digits will continually increment.  Minor digits
+    /// will continue to increment until the major changes.  Build will continue to increment until either Major or Minor changes and finally
+    /// the revision digit will continue to increment until any of Major / Minor or Build changes.
     /// </summary>
     AutoIncrementWithResetAny = 5,
 
@@ -50,12 +50,10 @@ public enum DigitIncrementBehaviour {
     /// </summary>
     WeeksSinceDate = 7,
 
-
     /// <summary>
     /// Will set this digit to be the release name as specified in the version.  Release names can change during an increment but are not
     /// incremented or decremented as such.  They are set to literal strings.
     /// </summary>
-    ReleaseName = 8
-
+    ReleaseName = 8 // Versonify no longer supports this behaviour. ReleaseName now functions the same as Fixed(1).
 
 };

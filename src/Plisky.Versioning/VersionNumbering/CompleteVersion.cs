@@ -90,17 +90,8 @@ public class CompleteVersion {
     public bool IsDefault { get; set; }
 
     public string? ReleaseName {
-        get {
-            return actualReleaseName;
-        }
-        set {
-            actualReleaseName = value;
-            foreach (var l in Digits) {
-                if (l.Behaviour == DigitIncrementBehaviour.ReleaseName) {
-                    l.Value = actualReleaseName;
-                }
-            }
-        }
+        get => actualReleaseName;
+        set => actualReleaseName = value;
     }
 
     public void SetDisplayTypeForVersion(FileUpdateType fut, DisplayType dt) {
@@ -270,10 +261,6 @@ public class CompleteVersion {
         }
     }
 
-    public void ApplyPendingRelease(string newReleaseName) {
-        pendingReleaseName = newReleaseName;
-    }
-
     public bool ValidateDigitOptions(string[] digitsRequested) {
         bool isValid = false;
 
@@ -332,10 +319,6 @@ public class CompleteVersion {
         Debug.Assert(digitToUpdate >= 0 && digitToUpdate < Digits.Length, "Digit to update is not a valid integer, this should not happen.");
         Debug.Assert(Digits[digitToUpdate] != null, "Digit to update is null, this should not happen.");
 
-        if (Digits[digitToUpdate].Behaviour == DigitIncrementBehaviour.ReleaseName) {
-            b.Warning.Log($"Warning: Digit {digitToUpdate} has Release behaviour and will not be set.");
-            return;
-        }
         b.Verbose.Log($"Applying value update for digit {digitToUpdate} to value {newValue}");
         Digits[digitToUpdate].Value = GetValueForDigit(Digits[digitToUpdate], newValue);
     }

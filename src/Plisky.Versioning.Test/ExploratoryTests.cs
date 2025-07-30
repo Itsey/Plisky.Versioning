@@ -266,21 +266,6 @@ public class ExploratoryTests {
         d0.ShouldBe(valueToSet);
     }
 
-    [Fact]
-    public void ApplyValueUpdate_DoesNotSetValue_WhenBehaviourIsRelease() {
-        string name = "myRelease";
-        CompleteVersion version = new(
-            new VersionUnit("1", "", DigitIncrementBehaviour.ReleaseName),
-            new VersionUnit("2"));
-        version.ReleaseName = name;
-
-        version.ApplyValueUpdate(0, "ReleaseA");
-
-        string d0 = version.Digits[0].Value;
-
-        d0.ShouldBe(name);
-    }
-
     [Theory]
     [InlineData(-1)]
     [InlineData(2)]

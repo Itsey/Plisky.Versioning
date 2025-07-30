@@ -62,7 +62,7 @@ would fix the issues. If you do not find any issues then state that no issues we
 - **Integration:** .ITest projects are Integration Tests.  Tests which require external resources, such as databases or file systems, should be placed in an .ITest project.
 - **Unit:** .Test projects are Unit Tests.  Use XUnit for all unit tests.
 - **NoComments:** Do not include comments for Arrange, Act, Assert sections but prefer to adopt that style of test.  Ensure that the primary subject of the test is named 'sut'. 
-- **Naming:** When creating new unit tests their names should be snake cased.  If the test is to ensure something succeeded and its not clear from the name then use _works as a suffix for the method name.  If the test throws an exception then use _throws as a suffix for the method name.
+- **Naming:** When creating new unit tests, use the following naming convention: `MethodUnderTest_ExpectedBehavior_WhenCondition`. For example, `AddMeta_ReturnsOk_WhenMetaAddedSuccessfully`. This convention clearly communicates what is being tested, the expected outcome, and the scenario or condition.
 - **Spacing:** Leave a single blank new line between the Arrange, Act, and Assert sections.  Prefer to use intermediary variables to help keep the arrange, act and assert sections separate.
 - **Shouldly:** Use Shouldly for assertions.  When updating test files check other methods in the same file to ensure that they are using Shouldly for consistency.  If they are not then update them to use Shouldly.
 - **Exploratory:** Use the ExploratoryTests class for new exploratory unit tests.
@@ -73,7 +73,7 @@ would fix the issues. If you do not find any issues then state that no issues we
     - Try and use parameterised tests where possible to include edge cases and reduce test duplication.
     - Ensure that a wide variety of data is used to cover different scenarios.
     - If there are more than 5 parameters in the inline data then use a test class instead. If there are more than 5 rows of inline data then either reuse or create a TestData class to hold the data and use methods or properties to retrieve the data.
-- **NoDisk:** Avoid creating unit tests that hit the disk or require external resources.  If the test requires external resources, it should be placed in an .ITest project.
+- **NoDisk:** Avoid creating unit tests that hit the disk, that hit a database, or that require external resources.  If the test requires external resources, it should be placed in an .ITest project.
 - **EdgeCases:** Make suggestions for unit tests that cover edge cases and error handling.
 
 ## Repo Specific Requirements
