@@ -33,8 +33,11 @@ public partial class Build : NukeBuild {
     [Parameter("Specifies a quick version command for the versioning quick step", Name = "QuickVersion")]
     readonly string QuickVersion = "";
 
-    [Parameter("PreRelease will only release a pre-release verison of the package.  Uses pre-release versioning.")]
+    [Parameter("PreRelease will only release a pre-release version of the package.  Uses pre-release versioning.")]
     readonly bool PreRelease = true;
+
+    [Parameter("Full version number")]
+    private string FullVersionNumber = string.Empty;
 
     private AbsolutePath SourceDirectory => RootDirectory / "src";
     private AbsolutePath? ArtifactsDirectory;

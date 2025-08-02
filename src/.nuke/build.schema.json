@@ -124,9 +124,13 @@
             "Release"
           ]
         },
+        "FullVersionNumber": {
+          "type": "string",
+          "description": "Full version number"
+        },
         "PreRelease": {
           "type": "boolean",
-          "description": "PreRelease will only release a pre-release verison of the package.  Uses pre-release versioning"
+          "description": "PreRelease will only release a pre-release version of the package.  Uses pre-release versioning"
         },
         "QuickVersion": {
           "type": "string",

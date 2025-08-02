@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using Nuke.Common;
 using Nuke.Common.Tools.Git;
 using Nuke.Common.Tools.NuGet;
@@ -20,6 +18,7 @@ public partial class Build : NukeBuild {
               } else {
                   Log.Information("Applying Git Tag");
                   GitTasks.Git($"tag -a {FullVersionNumber} -m \"Release {FullVersionNumber}\"");
+                  GitTasks.Git($"push origin {FullVersionNumber}");
               }
           }
       });

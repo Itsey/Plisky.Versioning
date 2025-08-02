@@ -8,8 +8,6 @@ using Serilog;
 public partial class Build : NukeBuild {
     // Standard entrypoint for compiling the app.  Arrange [Construct] Examine Package Release Test
 
-    public string FullVersionNumber { get; set; } = string.Empty;
-
     public Target ConstructStep => _ => _
         .Before(ExamineStep, Wrapup)
         .After(ArrangeStep)
@@ -172,6 +170,9 @@ public partial class Build : NukeBuild {
 
           FullVersionNumber = vc.VersionLiteral;
           Log.Information($"[Versioning]Version applied:{vc.VersionLiteral}");
+
+          // Set Azure DevOps variable for use in pipeline/release steps
+          Console.WriteLine($"##vso[task.setvariable variable=FullVersionNumber;isOutput=true]{FullVersionNumber}");
       });
 
     private Target Compile => _ => _
