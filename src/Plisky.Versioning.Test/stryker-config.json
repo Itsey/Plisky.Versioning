@@ -1,0 +1,11 @@
+{
+  "stryker-config": {
+
+    "test-projects": [
+      "Plisky.Versioning.Test.csproj"
+    ],
+    "solution": "../PliskyVersioning.sln",
+    "project": "Plisky.Versioning.csproj",
+    "reporters": [ "dots", "cleartext" ]    
+  }
+}

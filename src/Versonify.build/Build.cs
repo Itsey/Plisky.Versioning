@@ -42,7 +42,8 @@ public partial class Build : NukeBuild {
     private AbsolutePath SourceDirectory => RootDirectory / "src";
     private AbsolutePath? ArtifactsDirectory;
 
-    private LocalBuildConfig? settings;
+    protected LocalBuildConfig? settings;
+    protected LocalBuildReporting? reporting;
 
     public Target Wrapup => _ => _
         .DependsOn(Initialise)
@@ -55,7 +56,10 @@ public partial class Build : NukeBuild {
         });
 
     protected override void OnBuildFinished() {
-
+        Console.WriteLine("Fin.");
+        if (reporting != null) {
+            Console.WriteLine("Mutey Lootey > " + reporting.MutationScore);
+        }
     }
 
     public Target NexusLive => _ => _
@@ -118,6 +122,8 @@ public partial class Build : NukeBuild {
                    ArtifactsDirectory = Path.Combine(Path.GetTempPath(), "_build\\vsfbld\\"),
                    DependenciesDirectory = Solution.Projects.First(x => x.Name == "_Dependencies").Directory
                };
+
+               reporting = new LocalBuildReporting();
 
                if (settings.NonDestructive) {
                    Log.Information("Build > Initialise > Finish - In Non Destructive Mode.");

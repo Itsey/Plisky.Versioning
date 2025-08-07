@@ -34,6 +34,7 @@
         "Initialise",
         "IntegrationTest",
         "MollyCheck",
+        "MutationAnalysis",
         "NexusLive",
         "PackageStep",
         "QueryNextVersion",
