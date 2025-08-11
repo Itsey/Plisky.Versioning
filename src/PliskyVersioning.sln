@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 	ProjectSection(SolutionItems) = preProject
 		..\.github\copilot-instructions.md = ..\.github\copilot-instructions.md
 		..\readme.md = ..\readme.md
+		..\.github\prompts\nuke.prompt.md = ..\.github\prompts\nuke.prompt.md
 		..\build\versonify-ci.yml = ..\build\versonify-ci.yml
 		..\build\versonify-release.yml = ..\build\versonify-release.yml
 	EndProjectSection

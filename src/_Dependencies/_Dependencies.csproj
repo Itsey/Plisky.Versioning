@@ -8,6 +8,7 @@
     <Compile Include="automation\VersonifyCommands.cmd" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Templates\" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
