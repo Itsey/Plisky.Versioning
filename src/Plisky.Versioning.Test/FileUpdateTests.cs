@@ -132,8 +132,7 @@ public class FileUpdateTests {
     public void Regex_MatchesForAssembly() {
         b.Info.Flow();
 
-        var sut = new VersionFileUpdater();
-        var rx = sut.GetRegex("AssemblyVersion");
+        var rx = VersionFileUpdater.GetRegex("AssemblyVersion");
         Assert.True(rx.IsMatch("[assembly: AssemblyVersion(\"0.0.0.0\")]"), "1 Invalid match for an assembly version");
         Assert.True(rx.IsMatch("[assembly: AssemblyVersion(\"0.0.0\")]"), "2 Invalid match for an assembly version");
         Assert.True(rx.IsMatch("[assembly: AssemblyVersion(\"0.0\")]"), "3 Invalid match for an assembly version");
@@ -149,8 +148,7 @@ public class FileUpdateTests {
     public void Regex_MatchesForInformational() {
         b.Info.Flow();
 
-        var sut = new VersionFileUpdater();
-        var rx = sut.GetRegex("AssemblyFileVersion");
+        var rx = VersionFileUpdater.GetRegex("AssemblyFileVersion");
         Assert.True(rx.IsMatch("[assembly: AssemblyFileVersion(\"0.0.0.0\")]"), "1 Invalid match for an assembly version");
         Assert.True(rx.IsMatch("[assembly: AssemblyFileVersion(\"0.0.0\")]"), "2 Invalid match for an assembly version");
         Assert.True(rx.IsMatch("[assembly: AssemblyFileVersion(\"0.0\")]"), "3 Invalid match for an assembly version");
@@ -166,8 +164,7 @@ public class FileUpdateTests {
     public void Regex_MatchesForFile() {
         b.Info.Flow();
 
-        var sut = new VersionFileUpdater();
-        var rx = sut.GetRegex("AssemblyInformationalVersion");
+        var rx = VersionFileUpdater.GetRegex("AssemblyInformationalVersion");
 
         Assert.True(rx.IsMatch("[assembly: AssemblyInformationalVersion(\"0.0.0.0\")]"), "1 Invalid match for an assembly version");
         Assert.True(rx.IsMatch("[assembly: AssemblyInformationalVersion(\"0.0.0\")]"), "2 Invalid match for an assembly version");

@@ -7,16 +7,6 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Plisky.Diagnostics;
 
-public class DryRunVersionFileUpdater : VersionFileUpdater {
-
-    protected override void UpdateCSFileWithAttribute(string fileName, string targetAttribute, string versionValue) {
-        b.Info.Log($"DRYRUN - Would have updated {fileName} with {targetAttribute} to {versionValue}.  Instead Taking No Action.");
-    }
-
-    public DryRunVersionFileUpdater(CompleteVersion cv, IHookVersioningChanges? actions = null) : base(cv, actions) {
-    }
-}
-
 public class VersionFileUpdater {
     protected Bilge b = new Bilge("Plisky-Versioning");
     private const string ASMFILE_FILEVER_TAG = "AssemblyFileVersion";
@@ -25,10 +15,10 @@ public class VersionFileUpdater {
     private const string ASM_STD_ASMVTAG = "AssemblyVersion";
     private const string ASM_STD_VERSTAG = "Version";
     private const string ASM_STD_FILETAG = "FileVersion";
-    private const string RELEASE_NAME_FILE_IDENTIFIER = "XXX-RELEASENAME-XXX";
+    protected const string RELEASE_NAME_FILE_IDENTIFIER = "XXX-RELEASENAME-XXX";
 
-    private IHookVersioningChanges? hook;
-    private CompleteVersion cv;
+    //private readonly IHookVersioningChanges? hook; //is this needed?
+    private readonly CompleteVersion cv;
 
     public VersionFileUpdater() {
         cv = new CompleteVersion();
@@ -38,7 +28,7 @@ public class VersionFileUpdater {
         this.cv = cv;
     }
 
-    public Regex GetRegex(string targetAttribute) {
+    public static Regex GetRegex(string targetAttribute) {
         return new Regex("\\s*\\[\\s*assembly\\s*:\\s*" + targetAttribute + "\\s*\\(\\s*\\\"\\s*[0-9A-z\\-.*]*\\s*\\\"\\s*\\)\\s*\\]", RegexOptions.IgnoreCase);
     }
 
@@ -49,7 +39,7 @@ public class VersionFileUpdater {
             throw new FileNotFoundException($"Filename must be present for version update {fl}");
         }
 
-        string responseLog = string.Empty;
+        string responseLog;
 
         var dtx = cv.GetDisplayType(fut, dt);
         string versonToWrite = cv.GetVersionString(dtx);
@@ -104,7 +94,7 @@ public class VersionFileUpdater {
         return responseLog;
     }
 
-    private string UpdateLiteralReplacer(string fileToCheck, CompleteVersion versonToWrite, DisplayType displayStyle) {
+    protected virtual string UpdateLiteralReplacer(string fileToCheck, CompleteVersion versonToWrite, DisplayType displayStyle) {
 #if DEBUG
         if (!File.Exists(fileToCheck)) { throw new InvalidOperationException("Must not be possible, check this before you reach this code"); }
 #endif
@@ -143,7 +133,7 @@ public class VersionFileUpdater {
         return response;
     }
 
-    private void UpdateStdCSPRoj(string fl, string versonToWrite, string propName) {
+    protected virtual void UpdateStdCSPRoj(string fl, string versonToWrite, string propName) {
         const string PROPERTYGROUP_ELNAME = "PropertyGroup";
         const string PROJECT_ELNAME = "Project";
 #if DEBUG
@@ -176,13 +166,13 @@ public class VersionFileUpdater {
         xd2.Save(fl);
     }
 
-    private void UpdateWixFile(string fileName, string versionToWrite) {
+    protected virtual void UpdateWixFile(string fileName, string versionToWrite) {
         const string WIXNAMESPACE = "http://schemas.microsoft.com/wix/2006/wi";
         var xd = XDocument.Load(fileName);
         XNamespace ns = WIXNAMESPACE;
         var el = xd.Element(ns + "Wix")?.Element(ns + "Product");
         if (el == null) {
-            b.Verbose.Log("No Wix/Product element found, nothing i can do");
+            b.Verbose.Log("No Wix/Product element found, nothing to do");
             return;
         }
 
@@ -201,9 +191,9 @@ public class VersionFileUpdater {
         xd.Save(fileName);
     }
 
-    private string UpdateNuspecFile(string fileName, string versionText) {
+    protected virtual string UpdateNuspecFile(string fileName, string versionText) {
         const string NUGETNAMESPACE = "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd";
-        string result = string.Empty;
+        string result;
 
         b.Verbose.Log("About to load filename", fileName);
 
@@ -243,12 +233,12 @@ public class VersionFileUpdater {
     }
 
     /// <summary>
-    /// Either updates an existing version number in a file or creates a new (very basic) assembly info file and adds the verison number to it.  The
+    /// Either updates an existing version number in a file or creates a new (very basic) assembly info file and adds the version number to it.  The
     /// version is stored in the attribute that is supplied as the second parameter.
     /// </summary>
     /// <param name="fileName">The full path to the file to either update or create</param>
-    /// <param name="targetAttribute">The name of the attribute to write the verison number into</param>
-    /// <param name="vn">The verison number to apply to the code</param>
+    /// <param name="targetAttribute">The name of the attribute to write the version number into</param>
+    /// <param name="vn">The version number to apply to the code</param>
     protected virtual void UpdateCSFileWithAttribute(string fileName, string targetAttribute, string versionValue) {
 
         #region entry code
@@ -270,7 +260,7 @@ public class VersionFileUpdater {
         } else {
             // If it does exist we need to verify that it is not readonly.
             if ((File.GetAttributes(fileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly) {
-                b.Warning.Log("The file is readonly, removing attribs so I can write on it", "fname [" + fileName + "]");
+                b.Warning.Log("The file is readonly, removing attributes to enable write access", "fname [" + fileName + "]");
                 File.SetAttributes(fileName, (File.GetAttributes(fileName) ^ FileAttributes.ReadOnly));
             }
 
@@ -278,31 +268,30 @@ public class VersionFileUpdater {
             // introduced a compile error into the code.
             bool replacementMade = false;
 
-            var r = GetRegex(targetAttribute);
-            using (var sr = new StreamReader(fileName)) {
-                string? nextLine = null;
-                while ((nextLine = sr.ReadLine()) != null) {
-                    if ((!nextLine.Trim().StartsWith("//")) && (r.IsMatch(nextLine))) {
-                        if (replacementMade) {
-                            // One would hope that this would not occur outside of testing, yet surprisingly enough this is not the case.
-                            throw new ArgumentException($"Invalid CSharp File, duplicate verison attribute ({targetAttribute}) discovered", fileName);
-                        }
-
-                        //  its the line we are to replace
-                        outputFile.Append("[assembly: " + targetAttribute + "(\"");
-                        outputFile.Append(versionValue);
-                        outputFile.Append("\")]\r\n");
-                        replacementMade = true;
-                    } else {
-                        // All lines except the one we are interested in are copied across.
-                        outputFile.Append(nextLine + "\r\n");
+            var r = VersionFileUpdater.GetRegex(targetAttribute);
+            using var sr = new StreamReader(fileName);
+            string? nextLine = null;
+            while ((nextLine = sr.ReadLine()) != null) {
+                if ((!nextLine.Trim().StartsWith("//")) && (r.IsMatch(nextLine))) {
+                    if (replacementMade) {
+                        // One would hope that this would not occur outside of testing, yet surprisingly enough this is not the case.
+                        throw new ArgumentException($"Invalid CSharp File, duplicate version attribute ({targetAttribute}) discovered", fileName);
                     }
-                }
 
-                if (!replacementMade) {
-                    b.Warning.Log("No " + targetAttribute + " found in file, appending new one.");
-                    outputFile.Append($"\r\n[assembly: {targetAttribute}(\"{versionValue}\")]\r\n");
+                    //  its the line we are to replace
+                    outputFile.Append("[assembly: " + targetAttribute + "(\"");
+                    outputFile.Append(versionValue);
+                    outputFile.Append("\")]\r\n");
+                    replacementMade = true;
+                } else {
+                    // All lines except the one we are interested in are copied across.
+                    outputFile.Append(nextLine + "\r\n");
                 }
+            }
+
+            if (!replacementMade) {
+                b.Warning.Log("No " + targetAttribute + " found in file, appending new one.");
+                outputFile.Append($"\r\n[assembly: {targetAttribute}(\"{versionValue}\")]\r\n");
             }
         }
 

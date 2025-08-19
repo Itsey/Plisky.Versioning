@@ -8,8 +8,8 @@ using Plisky.Diagnostics;
 
 public class Versioning {
     protected Bilge b = new Bilge("Plisky-Versioning");
-    protected List<Tuple<string, FileUpdateType>> filenamesRegistered = new List<Tuple<string, FileUpdateType>>();
-    protected Dictionary<FileUpdateType, List<string>> fileUpdateMinmatchers = new Dictionary<FileUpdateType, List<string>>();
+    protected List<Tuple<string, FileUpdateType>> filenamesRegistered = [];
+    protected Dictionary<FileUpdateType, List<string>> fileUpdateMinmatchers = [];
     protected CompleteVersion cv;
     protected VersionFileUpdater vfu;
     protected VersionStorage repo;
@@ -47,7 +47,7 @@ public class Versioning {
         get { return cv; }
     }
 
-    public Action<string> Logger { get; set; }
+    public Action<string>? Logger { get; set; }
 
     public override string ToString() {
         return cv.ToString();
@@ -83,9 +83,13 @@ public class Versioning {
         foreach (var f in filenamesRegistered) {
             Log("Updating : " + f);
             string s = vfu.PerformUpdate(f.Item1, f.Item2);
-            Log("Updated : " + s);
+            if (!testMode) {
+                Log($"Updated : {s}");
+                b.Verbose.Log($"Update Completed {f.Item1} : {f.Item2}");
+            } else {
+                Log($"DRYRUN - Would have updated : {s}. Instead taking no action.");
+            }
 
-            b.Verbose.Log($"Update Completed {f.Item1} : {f.Item2}");
             numberFilesUpdated++;
         }
 
@@ -146,7 +150,7 @@ public class Versioning {
         }
     }
 
-    private Tuple<FileUpdateType, string> ParseMMStringToPattern(string line) {
+    private static Tuple<FileUpdateType, string>? ParseMMStringToPattern(string line) {
         Tuple<FileUpdateType, string>? result = null;
         string[] ln = line.Split('|');
         if (ln.Length == 2) {
@@ -155,8 +159,6 @@ public class Versioning {
                 result = new Tuple<FileUpdateType, string>(fut, ln[0]);
             }
         }
-
-
         return result;
     }
 
