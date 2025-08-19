@@ -8,8 +8,8 @@ using Plisky.Diagnostics;
 
 public class Versioning {
     protected Bilge b = new Bilge("Plisky-Versioning");
-    protected List<Tuple<string, FileUpdateType>> filenamesRegistered = [];
-    protected Dictionary<FileUpdateType, List<string>> fileUpdateMinmatchers = [];
+    protected List<Tuple<string, FileUpdateType>> filenamesRegistered = new List<Tuple<string, FileUpdateType>>();
+    protected Dictionary<FileUpdateType, List<string>> fileUpdateMinmatchers = new Dictionary<FileUpdateType, List<string>>();
     protected CompleteVersion cv;
     protected VersionFileUpdater vfu;
     protected VersionStorage repo;
@@ -94,13 +94,17 @@ public class Versioning {
         }
 
         if (numberFilesUpdated == 0) {
-            Log("Warning - No files found to update.");
+            Warning("WARNING - No files found to update.");
         }
         return numberFilesUpdated;
     }
 
     private void Log(string v) {
         b.Info.Log(v);
+        Logger?.Invoke(v);
+    }
+    private void Warning(string v) {
+        b.Warning.Log(v);
         Logger?.Invoke(v);
     }
 
@@ -141,12 +145,12 @@ public class Versioning {
 
         if (mmPattern != null) {
             if (!fileUpdateMinmatchers.ContainsKey(mmPattern.Item1)) {
-                fileUpdateMinmatchers.Add(mmPattern.Item1, new List<string>());
+                fileUpdateMinmatchers.Add(mmPattern.Item1, []);
             }
             fileUpdateMinmatchers[mmPattern.Item1].Add(mmPattern.Item2);
             Log($"{mmPattern.Item1} Registered For {mmPattern.Item2}");
         } else {
-            Log($"Invalid MM Line: {line}");
+            Warning($"Invalid MM Line: {line}");
         }
     }
 
@@ -200,7 +204,7 @@ public class Versioning {
                 }
             }
         } catch (UnauthorizedAccessException) {
-            Log($"Access Denied - File Searcher Stopped.");
+            Warning($"Access Denied - File Searcher Stopped.");
         }
         b.Verbose.Log($"Total Files {totalNoFiles} registered for update {registered}");
 
