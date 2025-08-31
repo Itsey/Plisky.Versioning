@@ -11,6 +11,6 @@
   <ItemGroup>
     <PackageReference Include="Glob" Version="1.1.9" />
     <PackageReference Include="Plisky.Diagnostics" Version="3.2.5" />
-    <PackageReference Include="System.Text.Json" Version="9.0.6" />
+    <PackageReference Include="System.Text.Json" Version="9.0.8" />
   </ItemGroup>
 </Project>

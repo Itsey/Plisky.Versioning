@@ -21,19 +21,18 @@
     <PackageReference Include="Flurl.Http" Version="4.0.2" />
     <PackageReference Include="jQuery" Version="3.7.1" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="17.14.8" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.6" />
-    <PackageReference Include="Nuke.Common" Version="9.0.3" />
+    <PackageReference Include="Nuke.Common" Version="9.0.4" />
     <PackageReference Include="Plisky.Diagnostics" Version="3.2.5" />
     <PackageReference Include="Plisky.Listeners" Version="3.2.5" />
     <PackageReference Include="Plisky.Mollycoddle" Version="0.1.4" />
-    <PackageReference Include="Plisky.Nuke.Fusion" Version="0.2.0" />
-    <PackageReference Include="Plisky.Versonify" Version="0.1.8" />
+    <PackageReference Include="Plisky.Nuke.Fusion" Version="0.3.0-pre.0.3" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Text.Json" Version="9.0.6" />
+    <PackageReference Include="System.Text.Json" Version="9.0.8" />
   </ItemGroup>
   <ItemGroup>
     <PackageDownload Include="Nuget.CommandLine" Version="[6.9.1]" />
     <PackageDownload Include="dotnet-stryker" Version="[4.8.0]" />
+    <PackageDownload Include="Plisky.Versonify" Version="[1.0.1]" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Plisky.Nuke.Fusion">
