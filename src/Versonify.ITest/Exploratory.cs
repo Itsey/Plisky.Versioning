@@ -42,17 +42,17 @@ public class Exploratory {
                 string output;
 
                 // Not discards to allow for debugging.
-                output = await th.ExecuteVersonify($"-Command=CreateVersion -VS={releaseVersionStore} -Q=\"2.0.0\" -Release=Austen");
-                output = await th.ExecuteVersonify($"-Command=Behaviour -VS={releaseVersionStore} -dg=2 -Q=AutoIncrementWithResetAny");
+                output = await th.ExecuteVersonify($"-Command=CreateVersion -v={releaseVersionStore} -Q=\"2.0.0\" -Release=Austen");
+                output = await th.ExecuteVersonify($"-Command=Behaviour -v={releaseVersionStore} -d=2 -Q=AutoIncrementWithResetAny");
 
-                output = await th.ExecuteVersonify($"-Command=CreateVersion -VS={preReleaseVersionStore} -Q=\"1.0.0.0.0.0\" -Release=Austen");
-                output = await th.ExecuteVersonify($"-Command=Prefix -VS={preReleaseVersionStore} -dg=3 -Q=-");
-                output = await th.ExecuteVersonify($"-Command=Behaviour -VS={preReleaseVersionStore} -dg=5 -Q=AutoIncrementWithResetAny");
-                output = await th.ExecuteVersonify($"-Command=Set -VS={preReleaseVersionStore} -dg=3 -Q=Austen");
+                output = await th.ExecuteVersonify($"-Command=CreateVersion -v={preReleaseVersionStore} -Q=\"1.0.0.0.0.0\" -Release=Austen");
+                output = await th.ExecuteVersonify($"-Command=Prefix -v={preReleaseVersionStore} -d=3 -Q=-");
+                output = await th.ExecuteVersonify($"-Command=Behaviour -v={preReleaseVersionStore} -d=5 -Q=AutoIncrementWithResetAny");
+                output = await th.ExecuteVersonify($"-Command=Set -v={preReleaseVersionStore} -d=3 -Q=Austen");
 
                 FileShouldContain(preReleaseVersionStore, "\"-\"", "\"Austen\"");
 
-                output = await th.ExecuteVersonify($"-Command=Passive -VS={preReleaseVersionStore}");
+                output = await th.ExecuteVersonify($"-Command=Passive -v={preReleaseVersionStore}");
                 output.ShouldContain("1.0.0-Austen.0.0");
 
                 // Increment PreRelease versions 1.0.0-Austen.1.0 > 1.0.0-Austen.1.1 > 1.0.0-Austen.1.2 etc.
@@ -62,7 +62,7 @@ public class Exploratory {
                 Directory.CreateDirectory(eDirectory);
                 try {
                     for (int i = 1; i <= 5; i++) {
-                        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={eDirectory} -Increment -VS={preReleaseVersionStore}");
+                        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={eDirectory} -Increment -v={preReleaseVersionStore}");
                         output.ShouldContain($"1.0.0-Austen.0.{i}");
                     }
                 } finally {
@@ -70,10 +70,10 @@ public class Exploratory {
                 }
 
                 // Now create a release version.
-                output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={tDirectory} -Increment -VS={releaseVersionStore} -output=con-nf");
+                output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={tDirectory} -Increment -v={releaseVersionStore} -output=con-nf");
                 output.ShouldContain("2.0.1");
 
-                output = await th.ExecuteVersonify($"-Command=Passive -VS={releaseVersionStore}");
+                output = await th.ExecuteVersonify($"-Command=Passive -v={releaseVersionStore}");
 
                 const string LOADED_MARKER = "Loaded [";
                 string versionNumber = output.Substring(output.IndexOf(LOADED_MARKER) + LOADED_MARKER.Length);
@@ -81,9 +81,9 @@ public class Exploratory {
                 versionNumber.ShouldBe("2.0.1");
 
                 // Take the first three digits of the release version and use them in the pre-release version.
-                output = await th.ExecuteVersonify($"-Command=Override -Root={tDirectory} -VS={preReleaseVersionStore} -Q={versionNumber} -output=con-nf");
-                output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={tDirectory} -Increment -VS={preReleaseVersionStore}");
-                output = await th.ExecuteVersonify($"-Command=Passive -VS={preReleaseVersionStore}");
+                output = await th.ExecuteVersonify($"-Command=Override -Root={tDirectory} -v={preReleaseVersionStore} -Q={versionNumber} -output=con-nf");
+                output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={tDirectory} -Increment -v={preReleaseVersionStore}");
+                output = await th.ExecuteVersonify($"-Command=Passive -v={preReleaseVersionStore}");
                 output.ShouldContain("2.0.1-Austen.0.0");
             } finally {
                 Directory.Delete(tDirectory, true);
@@ -106,7 +106,7 @@ public class Exploratory {
         string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        string output = await th.ExecuteVersonify($"behaviour -vs={vStoreFilePath} -DG=*");
+        string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d=*");
 
         output.ShouldContain("[0]:Fixed(0)");
         output.ShouldContain("[1]:DaysSinceDate(2)");
@@ -128,7 +128,7 @@ public class Exploratory {
         string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        string output = await th.ExecuteVersonify($"behaviour -vs={vStoreFilePath} -DG={digitPosition}");
+        string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition}");
 
         output.ShouldContain(outputData);
         output.ShouldNotContain(noOutputData);
@@ -146,7 +146,7 @@ public class Exploratory {
         string vStoreFilePath = uth.GetTestDataFile(resName);
         string expectedOutput = $"Setting Behaviour for Digit[{digitPosition}] to {outputdata}({(int)outputdata})";
 
-        string output = await th.ExecuteVersonify($"behaviour -vs={vStoreFilePath} -DG={digitPosition} -Q={quickValue}");
+        string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition} -Q={quickValue}");
 
         output.ShouldContain(expectedOutput);
         th.LastExecutionExitCode.ShouldBe(0);
@@ -158,7 +158,7 @@ public class Exploratory {
         string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        string args = $"passive -vs={vStoreFilePath} -O=con-nf -Debug=v-** -Q=1.9.4.3";
+        string args = $"passive -v={vStoreFilePath} -O=con-nf -Debug=v-** -Q=1.9.4.3";
         string s = await th.ExecuteVersonify(args);
 
         s.ShouldContain("PNFV]", customMessage: "Nuke Marker not found in output");
@@ -171,7 +171,7 @@ public class Exploratory {
         string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        string args = $"passive -vs={vStoreFilePath} -O=con -Debug=v-** -Q=1.9.4.3";
+        string args = $"passive -v={vStoreFilePath} -O=con -Debug=v-** -Q=1.9.4.3";
         string s = await th.ExecuteVersonify(args);
 
         s.ShouldNotContain("PNFV]");
@@ -192,7 +192,7 @@ public class Exploratory {
             vStoreFilePath = vStoreFilePath + ".invalid";
         }
 
-        string output = await th.ExecuteVersonify($"{command} -vs={vStoreFilePath}");
+        string output = await th.ExecuteVersonify($"{command} -v={vStoreFilePath}");
 
         if (shouldError) {
             output.ShouldContain("Error >>");

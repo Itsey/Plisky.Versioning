@@ -89,7 +89,7 @@ internal class Program {
             b.Verbose.Log("Processing Arguments");
             result.ProcessArguments(options, args);
             options.OutputOptions = options.RawOutputOptions;
-            //b.Verbose.Log($"Seting OO {options.RawOutputOptions} as {options.OutputOptions}");
+            CheckForDeprecatedCommands(args);
         } catch (ArgumentOutOfRangeException aox) {
             Console.WriteLine("Fatal: Invalid Arguments Passed to Versonify.");
             Console.WriteLine($"{aox.ParamName} - {aox.Message}");
@@ -104,6 +104,17 @@ internal class Program {
             }
         }
         return result;
+    }
+
+    private static void CheckForDeprecatedCommands(string[] args) {
+        foreach (string arg in args) {
+            foreach (var c in VersonifyCommandline.deprecatedCommandMappings) {
+                if (arg.StartsWith(c.Key, StringComparison.OrdinalIgnoreCase) && !arg.Equals("-nooverride", StringComparison.OrdinalIgnoreCase)) {
+                    Console.WriteLine($"Warning >> Argument '{c.Key}' is now deprecated. Please use '{c.Value}' instead. Refer to the documentation for updated usage.");
+                    break;
+                }
+            }
+        }
     }
 
     private static void WriteErrorConditions(CommandArgumentSupport clas) {
@@ -509,7 +520,7 @@ internal class Program {
         }
         return false;
     }
- 
+
     private static void ApplyReleaseNameUpdate() {
         var ver = new Versioning(storage, options.DryRunOnly);
         versionerUsed = ver.Version;

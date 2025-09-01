@@ -1,6 +1,7 @@
 ﻿namespace Versonify;
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Plisky.CodeCraft;
@@ -26,14 +27,27 @@ public class VersonifyCommandline {
     public string PverFileName { get; set; }
     public DigitIncrementBehaviour IncrementBehaviour { get; set; }
 
+    public static readonly Dictionary<string, string> deprecatedCommandMappings = new(StringComparer.OrdinalIgnoreCase) {
+        { "-DG", "-d" },
+        { "-VS", "-v" },
+        { "-NO", "-NoOverride" },
+        { "-MM", "-m" }
+    };
+
+    //Current bug in Plisky.Plumbing 1.7.25 means -debug and -dryrun must be above -Digits in the code to work correctly.
     [CommandLineArg("Debug", Description = "Enables Debug Logging")]
     public bool Debug { get; set; }
 
-    [CommandLineArg("DG")]
+    [CommandLineArg("DryRun", Description = "Runs the tool in output mode only, no changes are made")]
+    public bool DryRunOnly { get; set; }
+
+    [CommandLineArg("DG")]  // Marked as deprecated. Retained for backward compatability
+    [CommandLineArg("D")]
     [CommandLineArg("Digits", Description = "Separated characters to form digits for the version number", ArraySeparatorChar = ";")]
     public string[] DigitManipulations { get; set; }
 
-    [CommandLineArg("NO", Description = "Allows you to ignore a saved override (see documentation).")]
+    [CommandLineArg("NO")]  // Marked as deprecated. Retained for backward compatability
+    [CommandLineArg("NoOverride", Description = "Allows you to ignore a saved override (see documentation).")]
     public bool NoOverride { get; set; }
 
     [CommandLineArg("O")]
@@ -80,17 +94,17 @@ public class VersonifyCommandline {
         }
     }
 
-    [CommandLineArg("DryRun", Description = "Runs the tool in output mode only, no changes are made")]
-    public bool DryRunOnly { get; set; }
 
     [CommandLineArg("Trace", Description = "Enables Debug Tracing, set to Info,Verbose,Off")]
     public string Trace { get; set; }
 
-    [CommandLineArg("VS")]
+    [CommandLineArg("V")]
+    [CommandLineArg("VS")]  // Marked as deprecated. Retained for backward compatability
     [CommandLineArg("VersionSource", Description = "Provides the source for retrieving version information")]
     public string VersionPersistanceValue { get; set; }
 
-    [CommandLineArg("MM")]
+    [CommandLineArg("M")]
+    [CommandLineArg("MM")]  // Marked as deprecated. Retained for backward compatability
     [CommandLineArg("MinMatch", ArraySeparatorChar = ";", Description = "A series of minmatch path descriptions to files to update")]
     public string[] VersionTargetMinMatch { get; set; }
 
