@@ -39,6 +39,16 @@ public partial class Build : NukeBuild {
     [Parameter("Full version number")]
     private string FullVersionNumber = string.Empty;
 
+    // Optional inbound parameter from pipeline / command line. If specified it overrides automatic mapping.
+    [Parameter("AnalysisMode override parameter", Name = "AnalysisMode")]
+    private readonly AnalysisMode? analysisModeOverride;
+    private AnalysisMode analysisMode;
+
+    private readonly AzurePipelinesBuildReason? BuildReason =
+        Enum.TryParse<AzurePipelinesBuildReason>(Environment.GetEnvironmentVariable("BUILD_REASON"), true, out var result)
+            ? result
+            : null;
+
     private AbsolutePath SourceDirectory => RootDirectory / "src";
     private AbsolutePath? ArtifactsDirectory;
 
@@ -94,6 +104,17 @@ public partial class Build : NukeBuild {
                    Log.Error("Build>Initialise>Solution is null.");
                    throw new InvalidOperationException("The solution must be set");
                }
+
+               analysisMode = analysisModeOverride ?? (IsLocalBuild
+                   ? AnalysisMode.Lite
+                   : BuildReason switch {
+                       AzurePipelinesBuildReason.Manual => AnalysisMode.Deep,
+                       AzurePipelinesBuildReason.Schedule => AnalysisMode.Deep,
+                       AzurePipelinesBuildReason.IndividualCI => AnalysisMode.Lite,
+                       _ => AnalysisMode.Lite
+                   });
+               Log.Information($"Build>Initialise> Analysis Mode derived from Build Reason '{(BuildReason.HasValue ? BuildReason.Value.ToString() : "<null>")}': {analysisMode}");
+
 
                if (SingleThreadedTrace) {
                    // This is to work around a bug where trace was not being written.

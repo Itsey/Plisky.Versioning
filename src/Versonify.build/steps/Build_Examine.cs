@@ -25,6 +25,7 @@ public partial class Build : NukeBuild {
         .After(UnitTest)
         .Before(PackageStep)
         .DependsOn(Initialise)
+        .OnlyWhenDynamic(() => analysisMode > AnalysisMode.Lite)
         .Executes(() => {
             if (Solution == null) {
                 Log.Error("Build>MutationAnalysis>Solution is null.");

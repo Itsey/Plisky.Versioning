@@ -7,6 +7,12 @@
 trigger:
   - main
 
+parameters:
+  - name: AnalysisMode
+    displayName: 'Analysis Mode'
+    type: string
+    default: ""
+
 stages:
   - stage: VersonifyCIBuild
     displayName: 'Versonify CI Build'
