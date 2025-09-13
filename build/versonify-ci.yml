@@ -7,11 +7,19 @@
 trigger:
   - main
 
+schedules:
+  - cron: '0 2 * * *'
+    displayName: 'Nightly build (2am UTC)'
+    branches:
+      include:
+        - main
+    always: true
+
 parameters:
   - name: AnalysisMode
     displayName: 'Analysis Mode'
     type: string
-    default: ""
+    default: ''
 
 stages:
   - stage: VersonifyCIBuild
