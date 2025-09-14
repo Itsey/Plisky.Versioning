@@ -41,7 +41,7 @@ public partial class Build : NukeBuild {
 
     // Optional inbound parameter from pipeline / command line. If specified it overrides automatic mapping.
     [Parameter("AnalysisMode override parameter", Name = "AnalysisMode")]
-    private readonly AnalysisMode? analysisModeOverride;
+    private readonly string? analysisModeOverride;
     private AnalysisMode analysisMode;
 
     private readonly AzurePipelinesBuildReason? BuildReason =
@@ -67,7 +67,7 @@ public partial class Build : NukeBuild {
 
     protected override void OnBuildFinished() {
         Console.WriteLine("Fin.");
-        if (reporting != null) {
+        if (reporting != null && (InvokedTargets.Any(t => t.Name == nameof(MutationAnalysis)))) {
             Console.WriteLine("Mutey Lootey > " + reporting.MutationScore);
         }
     }
@@ -105,15 +105,20 @@ public partial class Build : NukeBuild {
                    throw new InvalidOperationException("The solution must be set");
                }
 
-               analysisMode = analysisModeOverride ?? (IsLocalBuild
-                   ? AnalysisMode.Lite
-                   : BuildReason switch {
-                       AzurePipelinesBuildReason.Manual => AnalysisMode.Deep,
-                       AzurePipelinesBuildReason.Schedule => AnalysisMode.Deep,
-                       AzurePipelinesBuildReason.IndividualCI => AnalysisMode.Lite,
-                       _ => AnalysisMode.Lite
-                   });
-               Log.Information($"Build>Initialise> Analysis Mode derived from Build Reason '{(BuildReason.HasValue ? BuildReason.Value.ToString() : "<null>")}': {analysisMode}");
+               if (!string.IsNullOrWhiteSpace(analysisModeOverride) && Enum.TryParse<AnalysisMode>(analysisModeOverride, true, out var parsedMode)) {
+                   analysisMode = parsedMode;
+                   Log.Information($"Build>Initialise> Analysis Mode override parameter specified: {analysisMode}");
+               } else {
+                   analysisMode = IsLocalBuild
+                       ? AnalysisMode.Lite
+                       : BuildReason switch {
+                           AzurePipelinesBuildReason.Manual => AnalysisMode.Deep,
+                           AzurePipelinesBuildReason.Schedule => AnalysisMode.Deep,
+                           AzurePipelinesBuildReason.IndividualCI => AnalysisMode.Lite,
+                           _ => AnalysisMode.Lite
+                       };
+                   Log.Information($"Build>Initialise> Analysis Mode derived from Build Reason '{(BuildReason.HasValue ? BuildReason.Value.ToString() : "LocalBuild")}': {analysisMode}");
+               }
 
 
                if (SingleThreadedTrace) {

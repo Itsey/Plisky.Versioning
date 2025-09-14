@@ -20,6 +20,7 @@ parameters:
     displayName: 'Analysis Mode'
     type: string
     default: ''
+    allowEmpty: true
 
 stages:
   - stage: VersonifyCIBuild

@@ -1,16 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "definitions": {
-    "AnalysisMode": {
-      "type": "string",
-      "description": "",
-      "enum": [
-        "Lite",
-        "Deep",
-        "Deep",
-        "Lite"
-      ]
-    },
     "Host": {
       "type": "string",
       "enum": [
@@ -128,12 +118,8 @@
     {
       "properties": {
         "AnalysisMode": {
-          "type": [
-            "null",
-            "string"
-          ],
-          "description": "AnalysisMode override parameter",
-          "$ref": "#/definitions/AnalysisMode"
+          "type": "string",
+          "description": "AnalysisMode override parameter"
         },
         "Configuration": {
           "type": "string",
