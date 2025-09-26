@@ -46,4 +46,4 @@ stages:
           - task: CmdLine@2
             displayName: 'Run: ExamineStep'
             inputs:
-              script: '.\src\build.cmd ExamineStep --skip ArrangeStep ConstructStep --root .\src\ --AnalysisMode $(AnalysisMode)'
+              script: '.\src\build.cmd ExamineStep --skip ArrangeStep ConstructStep --root .\src\ --AnalysisMode ${{ parameters.AnalysisMode }}'
