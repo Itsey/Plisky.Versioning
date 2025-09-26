@@ -5,20 +5,19 @@
 # </auto-generated>
 
 trigger:
-  - main
+  - local-em-ci
 
-schedules:
-  - cron: '0 2 * * *'
-    displayName: 'Nightly build (2am UTC)'
-    branches:
-      include:
-        - main
+# schedules:
+#   - cron: '0 2 * * *'
+#     displayName: 'Nightly build (2am UTC)'
+#     branches:
+#       include:
+#         - main
 
 parameters:
   - name: AnalysisMode
     displayName: 'Analysis Mode'
     type: string
-    default: 'Lite'
 
 stages:
   - stage: VersonifyCIBuild
