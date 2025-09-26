@@ -104,27 +104,6 @@ public partial class Build : NukeBuild {
                    Log.Error("Build>Initialise>Solution is null.");
                    throw new InvalidOperationException("The solution must be set");
                }
-               if (!string.IsNullOrWhiteSpace(analysisModeOverride)) {
-                   Log.Information("Build>Initialise> analysismodeoveride is not null");
-                   Log.Information($"Build>Initialise> analysisoverride: {analysisModeOverride}");
-                   Log.Information($"Build>Initialise> analysismode try parse: {Enum.Parse<AnalysisMode>(analysisModeOverride, true)}");
-               }
-               if (!string.IsNullOrWhiteSpace(analysisModeOverride) && Enum.TryParse<AnalysisMode>(analysisModeOverride, true, out var parsedMode)) {
-                   analysisMode = parsedMode;
-                   Log.Information($"Build>Initialise> Analysis Mode override parameter specified: {analysisMode}");
-               } else {
-                   Log.Information("Build>Initialise> Analysis Mode override parameter not specified, deriving from build reason.");
-                   analysisMode = IsLocalBuild
-                       ? AnalysisMode.Lite
-                       : BuildReason switch {
-                           AzurePipelinesBuildReason.Manual => AnalysisMode.Deep,
-                           AzurePipelinesBuildReason.Schedule => AnalysisMode.Deep,
-                           AzurePipelinesBuildReason.IndividualCI => AnalysisMode.Lite,
-                           _ => AnalysisMode.Lite
-                       };
-                   Log.Information($"Build>Initialise> Analysis Mode derived from Build Reason '{(BuildReason.HasValue ? BuildReason.Value.ToString() : "LocalBuild")}': {analysisMode}");
-               }
-
 
                if (SingleThreadedTrace) {
                    // This is to work around a bug where trace was not being written.

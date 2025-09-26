@@ -29,6 +29,7 @@
         "ArrangeStep",
         "Clean",
         "Compile",
+        "ConfigureAnalysisMode",
         "ConstructStep",
         "ExamineStep",
         "Initialise",
