@@ -1,10 +1,11 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Nuke.Common;
-using Nuke.Common.Tools.DotNet;
+using Nuke.Common.CI.AzurePipelines;
 using Nuke.Common.Tooling;
+using Nuke.Common.Tools.DotNet;
 using Serilog;
-using System.IO;
 
 public partial class Build : NukeBuild {
 
@@ -16,10 +17,29 @@ public partial class Build : NukeBuild {
         .After(ConstructStep)
         .Before(PackageStep, Wrapup)
         .DependsOn(Initialise, ConstructStep)
-        .Triggers(UnitTest, MutationAnalysis)
+        .Triggers(ConfigureAnalysisMode, UnitTest, MutationAnalysis)
         .Executes(() => {
             Log.Information("--> Examine Step <-- ");
         });
+    private Target ConfigureAnalysisMode => _ => _
+    .After(Initialise)
+    .Before(UnitTest, MutationAnalysis)
+    .Executes(() => {
+        if (!string.IsNullOrWhiteSpace(analysisModeOverride) && Enum.TryParse<AnalysisMode>(analysisModeOverride, true, out var parsedMode)) {
+            analysisMode = parsedMode;
+            Log.Information($"Build>ConfigureAnalysisMode> Analysis Mode override parameter specified: {analysisMode}");
+        } else {
+            analysisMode = IsLocalBuild
+                ? AnalysisMode.Lite
+                : BuildReason switch {
+                    AzurePipelinesBuildReason.Manual => AnalysisMode.Deep,
+                    AzurePipelinesBuildReason.Schedule => AnalysisMode.Deep,
+                    AzurePipelinesBuildReason.IndividualCI => AnalysisMode.Lite,
+                    _ => AnalysisMode.Lite
+                };
+            Log.Information($"Build>ConfigureAnalysisMode> Analysis Mode derived from Build Reason {(BuildReason.HasValue ? BuildReason.Value.ToString() : "LocalBuild")} and set to: '{analysisMode}'");
+        }
+    });
 
     private Target MutationAnalysis => _ => _
         .After(UnitTest)

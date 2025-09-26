@@ -105,22 +105,6 @@ public partial class Build : NukeBuild {
                    throw new InvalidOperationException("The solution must be set");
                }
 
-               if (!string.IsNullOrWhiteSpace(analysisModeOverride) && Enum.TryParse<AnalysisMode>(analysisModeOverride, true, out var parsedMode)) {
-                   analysisMode = parsedMode;
-                   Log.Information($"Build>Initialise> Analysis Mode override parameter specified: {analysisMode}");
-               } else {
-                   analysisMode = IsLocalBuild
-                       ? AnalysisMode.Lite
-                       : BuildReason switch {
-                           AzurePipelinesBuildReason.Manual => AnalysisMode.Deep,
-                           AzurePipelinesBuildReason.Schedule => AnalysisMode.Deep,
-                           AzurePipelinesBuildReason.IndividualCI => AnalysisMode.Lite,
-                           _ => AnalysisMode.Lite
-                       };
-                   Log.Information($"Build>Initialise> Analysis Mode derived from Build Reason '{(BuildReason.HasValue ? BuildReason.Value.ToString() : "LocalBuild")}': {analysisMode}");
-               }
-
-
                if (SingleThreadedTrace) {
                    // This is to work around a bug where trace was not being written.
                    Bilge.SimplifyRouter();
