@@ -93,8 +93,12 @@ public class VersioningOutputter {
         if ((oo & OutputPossibilities.NukeFusion) == OutputPossibilities.NukeFusion) {
             string outputString = $"PNFV]{ValToWrite}";
             WriteToConsole(outputString);
-            WriteToConsole($"PNF4]{versionToLog.GetVersionString(DisplayType.Full)}");
             WriteToConsole($"PNF2]{versionToLog.GetVersionString(DisplayType.Short)}");
+            WriteToConsole($"PNF3]{versionToLog.GetVersionString(DisplayType.ThreeDigit)}");
+            WriteToConsole($"PN3D]{versionToLog.GetVersionString(DisplayType.ThreeDigitNumeric)}");
+            WriteToConsole($"PNF4]{versionToLog.GetVersionString(DisplayType.Full)}");
+            WriteToConsole($"PNQF]{versionToLog.GetVersionString(DisplayType.QueuedFull)}");
+            WriteToConsole($"PN4D]{versionToLog.GetVersionString(DisplayType.FourDigitNumeric)}");
             WriteToConsole($"PNFN]{versionToLog.ReleaseName}");
         }
     }

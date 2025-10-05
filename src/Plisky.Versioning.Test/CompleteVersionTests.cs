@@ -112,6 +112,9 @@ public class CompleteVersionTests {
     [InlineData("1000.20004", "1000.20004.0.0", DisplayType.FourDigitNumeric)]
     [InlineData("1001-20A004", "1001.0.0.0", DisplayType.FourDigitNumeric)]
     [InlineData("1", "1.0.0.0", DisplayType.FourDigitNumeric)]
+    [InlineData("1.2.3.4", "1.2.3", DisplayType.ThreeDigitNumeric)]
+    [InlineData("1", "1.0.0", DisplayType.ThreeDigitNumeric)]
+    [InlineData("1001-20A004", "1001.0.0", DisplayType.ThreeDigitNumeric)]
     public void DisplayTypes_WorkCorrectly(string version, string expectedDisplay, DisplayType dtype) {
         b.Info.Flow();
 
@@ -120,6 +123,21 @@ public class CompleteVersionTests {
         string output = cv.GetVersionString(dtype);
 
         output.ShouldBe(expectedDisplay);
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void DisplayType_QueuedFull_WorksCorrectly() {
+        b.Info.Flow();
+        string version = "1.2.3.4";
+        string pendingVersion = "2.3.4.5";
+        var cv = new CompleteVersion(version, '.');
+
+        cv.ApplyPendingVersion("+.+.+.+");
+        string output = cv.GetVersionString(DisplayType.QueuedFull);
+
+        output.ShouldBe(pendingVersion);
     }
 
     [Theory(DisplayName = nameof(PendingIncrementPatterns_Work))]

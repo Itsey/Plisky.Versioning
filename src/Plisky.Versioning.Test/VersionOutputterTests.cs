@@ -183,4 +183,30 @@ public class VersionOutputterTests {
         op.FileWasWritten.ShouldBeFalse("FileWasWritten should be false when writing to environment.");
         op.EnvWasSet.ShouldBeTrue("EnvWasSet should be true when writing to environment.");
     }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Outputter_PNF_WritesPNFToConsole() {
+        b.Info.Flow();
+        string version = "1.1.oranges.0";
+        string release = "Fruit";
+        var mvs = new MockVersionStorage(version);
+        var sut = new Versioning(mvs);
+        var v = sut.Version;
+        v.ReleaseName = release;
+
+        v.ApplyPendingVersion("+...");
+        var op = new MockVersioningOutputter(v);
+        op.DoOutput(OutputPossibilities.NukeFusion, VersioningCommand.PassiveOutput);
+        op.OutputLines.Length.ShouldBe(8, "There should be eight lines of output for the nuke fusion output.");
+        op.OutputLines[0].ShouldBe($"PNFV]{version}");
+        op.OutputLines[1].ShouldBe($"PNF2]1.1");
+        op.OutputLines[2].ShouldBe($"PNF3]1.1.oranges");
+        op.OutputLines[3].ShouldBe($"PN3D]1.1.0");
+        op.OutputLines[4].ShouldBe($"PNF4]1.1.oranges.0");
+        op.OutputLines[5].ShouldBe($"PNQF]2.1.oranges.0");
+        op.OutputLines[6].ShouldBe($"PN4D]1.1.0.0");
+        op.OutputLines[7].ShouldBe($"PNFN]{release}");
+    }
 }

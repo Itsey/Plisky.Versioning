@@ -176,6 +176,12 @@ internal class Program {
                     valid &= ValidateDigitsPresent(options.DigitManipulations, "Set");
                 }
                 break;
+            case VersioningCommand.Override:
+                if (string.IsNullOrWhiteSpace(options.QuickValue)) {
+                    Console.WriteLine("Error >> The Override command requires a version pattern to apply. Use -Q=<pattern> to set the override pattern.");
+                    valid = false;
+                }
+                break;
             case VersioningCommand.SetReleaseName:
                 if (!string.IsNullOrEmpty(options.QuickValue)) {
                     Console.WriteLine("Error >> Both QuickValue (-Q) and Release (-R) cannot be provided for the Set command. Please specify only one.");

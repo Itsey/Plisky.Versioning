@@ -11,5 +11,6 @@ public enum DisplayType {
     ThreeDigit = 0x0004,
     Release = 0x5,
     FourDigitNumeric = 0x6,  // Added to support FileVersion and AssemblyVersion as this is recommended by Microsoft
-
+    ThreeDigitNumeric = 0x7,
+    QueuedFull = 0x8,
 }

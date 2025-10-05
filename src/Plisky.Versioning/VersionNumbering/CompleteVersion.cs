@@ -15,7 +15,7 @@ public class CompleteVersion {
 
     /// <summary>
     /// Returns the default, empty, version instance which is four digits and all fixed except the
-    /// build digit which is set to autoincrementresetnany.
+    /// build digit which is set to autoincrementresetany.
     /// </summary>
     /// <returns></returns>
     public static CompleteVersion GetDefault() {
@@ -49,20 +49,20 @@ public class CompleteVersion {
         Digits = versionDigits;
     }
 
-    public CompleteVersion(string initialValue, params char[] seperators) : this() {
+    public CompleteVersion(string initialValue, params char[] separators) : this() {
         b.Verbose.Log($"Parsing Initialisation String [{initialValue}]");
-        // Doesnt currently support starting with a seperator
+        // Doesnt currently support starting with a separator
 
-        if (seperators.Length == 0) {
-            b.Verbose.Log("No seperators provided, using default '.'");
-            // This is kept as just . for backward compatibility.  It used to only understand . character as a seperator.
-            seperators = new char[] { '.' };
+        if (separators.Length == 0) {
+            b.Verbose.Log("No separator provided, using default '.'");
+            // This is kept as just . for backward compatibility.  It used to only understand . character as a separator.
+            separators = new char[] { '.' };
         }
 
         var digits = new List<VersionUnit>();
 
         var remainingString = initialValue.AsSpan();
-        int nextIndex = remainingString.IndexOfAny(seperators);
+        int nextIndex = remainingString.IndexOfAny(separators);
         if (nextIndex != -1) {
             int currentOffset = 0;
             string prefix = string.Empty;
@@ -73,7 +73,7 @@ public class CompleteVersion {
 
                 prefix = remainingString[nextIndex].ToString();
                 remainingString = remainingString.Slice(nextIndex + 1);
-                nextIndex = remainingString.IndexOfAny(seperators);
+                nextIndex = remainingString.IndexOfAny(separators);
             }
 
             if (remainingString.Length > 0) {
@@ -148,16 +148,21 @@ public class CompleteVersion {
         b.Info.Flow();
 
         string result = string.Empty;
-
-        if (dt == DisplayType.FourDigitNumeric) {
-            return FourDigitNumericDisplayString();
-        }
         int stopPoint = Digits.Length;
-        if ((dt == DisplayType.Short) && (Digits.Length > 2)) {
-            stopPoint = 2;
-        }
-        if ((dt == DisplayType.ThreeDigit) && (Digits.Length > 3)) {
-            stopPoint = 3;
+
+        switch (dt) {
+            case DisplayType.FourDigitNumeric:
+                return NumericDisplayString(4);
+            case DisplayType.ThreeDigitNumeric:
+                return NumericDisplayString(3);
+            case DisplayType.QueuedFull:
+                return QueuedDisplayString();
+            case DisplayType.Short when Digits.Length > 2:
+                stopPoint = 2;
+                break;
+            case DisplayType.ThreeDigit when Digits.Length > 3:
+                stopPoint = 3;
+                break;
         }
 
         for (int i = 0; i < stopPoint; i++) {
@@ -167,15 +172,31 @@ public class CompleteVersion {
         return result;
     }
 
-    private string FourDigitNumericDisplayString() {
-        const int DIGITLIMIT = 4;
+    private string QueuedDisplayString() {
+        // Create a new array to hold the queued digits, reflecting any pending overrides.
+        string result = string.Empty;
+        var queuedDigits = new VersionUnit[Digits.Length];
+        for (int i = 0; i < Digits.Length; i++) {
+            var original = Digits[i];
+            queuedDigits[i] = new VersionUnit(
+                original.IncrementOverride ?? original.Value ?? string.Empty,
+                original.PreFix,
+                original.Behaviour
+            );
+            result += queuedDigits[i].ToString();
+        }
+        b.Verbose.Log($"DisplayType - QueuedFull {result}");
 
+        return result;
+    }
+
+    private string NumericDisplayString(int digitLimit = 4) {
         string result = string.Empty;
         int digitsFound = 0;
         string mtcPrefix = string.Empty;
         int stopPoint = Digits.Length;
-        if (stopPoint > DIGITLIMIT) {
-            stopPoint = DIGITLIMIT;
+        if (stopPoint > digitLimit) {
+            stopPoint = digitLimit;
         }
 
         // Start with no prefix then use . prefixes and pick up .s only.
@@ -193,10 +214,11 @@ public class CompleteVersion {
             }
         }
 
-        while (digitsFound < DIGITLIMIT) {
+        while (digitsFound < digitLimit) {
             digitsFound++;
             result += ".0";
         }
+        b.Verbose.Log($"DisplayType - Stop {stopPoint} |{result}|");
         return result;
     }
 
