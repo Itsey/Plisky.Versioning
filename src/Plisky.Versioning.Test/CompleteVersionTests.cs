@@ -115,6 +115,9 @@ public class CompleteVersionTests {
     [InlineData("1.2.3.4", "1.2.3", DisplayType.ThreeDigitNumeric)]
     [InlineData("1", "1.0.0", DisplayType.ThreeDigitNumeric)]
     [InlineData("1001-20A004", "1001.0.0", DisplayType.ThreeDigitNumeric)]
+    [InlineData("1001-20A004.1.1", "1001-20A004.1.1", DisplayType.FourDigit)]
+    [InlineData("1.2.3.4.5", "1.2.3.4", DisplayType.FourDigit)]
+    [InlineData("1.0", "1.0", DisplayType.FourDigit)]
     public void DisplayTypes_WorkCorrectly(string version, string expectedDisplay, DisplayType dtype) {
         b.Info.Flow();
 

@@ -46,10 +46,10 @@ public class VersioningTask {
     }
 
     public void SetAllVersioningItems(string verItemsSimple) {
-        b.Info.Log("SetAllVersioningITems");
+        b.Info.Log("SetAllVersioningItems");
         if (verItemsSimple.Contains(Environment.NewLine)) {
             // The TFS build agent uses \n not Environment.Newline for its line separator, however unit tests use Environment.Newline
-            // so replacing them with \n to make the two consistant.
+            // so replacing them with \n to make the two consistent.
             verItemsSimple = verItemsSimple.Replace(Environment.NewLine, "\n");
         }
         string[] allLines = verItemsSimple.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
@@ -69,7 +69,7 @@ public class VersioningTask {
             "INFO" => FileUpdateType.NetInformational,
             "FILE" => FileUpdateType.NetFile,
             "WIX" => FileUpdateType.Wix,
-            _ => throw new InvalidOperationException($"The verisoning string {v} is not valid."),
+            _ => throw new InvalidOperationException($"The versioning string {v} is not valid."),
         };
     }
 
@@ -107,7 +107,7 @@ public class VersioningTask {
                     }
                 }
             } catch (UnauthorizedAccessException) {
-                // If you run through all the filles in a directory you can hit areas of the filesystem
+                // If you run through all the files in a directory you can hit areas of the filesystem
                 // that you dont have access to - this skips those files and then continues.
                 b.Verbose.Log("Unauthorised area of the filesystem, skipping");
             }

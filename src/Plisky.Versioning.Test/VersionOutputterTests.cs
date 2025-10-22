@@ -189,7 +189,7 @@ public class VersionOutputterTests {
     [Trait(Traits.Style, Traits.Unit)]
     public void Outputter_PNF_WritesPNFToConsole() {
         b.Info.Flow();
-        string version = "1.1.oranges.0";
+        string version = "1.1.oranges.0.0";
         string release = "Fruit";
         var mvs = new MockVersionStorage(version);
         var sut = new Versioning(mvs);
@@ -205,7 +205,7 @@ public class VersionOutputterTests {
         op.OutputLines[2].ShouldBe($"PNF3]1.1.oranges");
         op.OutputLines[3].ShouldBe($"PN3D]1.1.0");
         op.OutputLines[4].ShouldBe($"PNF4]1.1.oranges.0");
-        op.OutputLines[5].ShouldBe($"PNQF]2.1.oranges.0");
+        op.OutputLines[5].ShouldBe($"PNQF]2.1.oranges.0.0");
         op.OutputLines[6].ShouldBe($"PN4D]1.1.0.0");
         op.OutputLines[7].ShouldBe($"PNFN]{release}");
     }

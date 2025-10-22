@@ -122,9 +122,9 @@ public class VersionFileUpdater {
 
                 return inney.Replace(RELEASE_NAME_FILE_IDENTIFIER, versonToWrite.ReleaseName)
                 .Replace("XXX-VERSION-XXX", versonToWrite.GetVersionString(displayStyle))
-                .Replace("XXX-VERSION3-XXX", versonToWrite.GetVersionString(DisplayType.ThreeDigit))
+                .Replace("XXX-VERSION3-XXX", versonToWrite.GetVersionString(DisplayType.ThreeDigitNumeric))
                 .Replace("XXX-VERSION2-XXX", versonToWrite.GetVersionString(DisplayType.Short))
-                .Replace("XXX-VERSION4-XXX", versonToWrite.GetVersionString(DisplayType.Full));
+                .Replace("XXX-VERSION4-XXX", versonToWrite.GetVersionString(DisplayType.FourDigitNumeric));
             });
         }
 

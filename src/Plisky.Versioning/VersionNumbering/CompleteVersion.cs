@@ -163,6 +163,9 @@ public class CompleteVersion {
             case DisplayType.ThreeDigit when Digits.Length > 3:
                 stopPoint = 3;
                 break;
+            case DisplayType.FourDigit when Digits.Length > 4:
+                stopPoint = 4;
+                break;
         }
 
         for (int i = 0; i < stopPoint; i++) {
