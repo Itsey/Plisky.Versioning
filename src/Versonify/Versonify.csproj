@@ -49,7 +49,7 @@
     <PackageReference Include="Plisky.Listeners" Version="3.2.5" />
     <PackageReference Include="Plisky.Plumbing" Version="1.7.25" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Text.Json" Version="9.0.8" />
+    <PackageReference Include="System.Text.Json" Version="9.0.10" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Plisky.Versioning\Plisky.Versioning.csproj" />
