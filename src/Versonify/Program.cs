@@ -195,6 +195,12 @@ internal class Program {
                     valid = false;
                 }
                 break;
+            case VersioningCommand.UpdateFiles:
+                if ((options.VersionTargetMinMatch == null) || (options.VersionTargetMinMatch.Length == 0)) {
+                    Console.WriteLine("Error >> The Update command requires a minmatch .txt file to be provided. Use -M=<path to minmatch file.>");
+                    valid = false;
+                }
+                break;
         }
 
         return valid;
@@ -365,10 +371,8 @@ internal class Program {
 
         Console.WriteLine("Version To Write: " + ver.GetVersion());
 
-        // Increment done, now persist and then update the pages - first check if the command line ovverrides the minimatchers
-        if ((options.VersionTargetMinMatch != null) && (options.VersionTargetMinMatch.Length > 0)) {
-            ver.LoadMiniMatches(options.VersionTargetMinMatch);
-        }
+        // Increment done, now persist and then update the pages 
+        ver.LoadMiniMatches(options.VersionTargetMinMatch);
 
         if (!string.IsNullOrEmpty(options.Root) && Directory.Exists(options.Root)) {
             _ = ver.SearchForAllFiles(options.Root);

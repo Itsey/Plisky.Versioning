@@ -27,13 +27,6 @@ public class Versioning {
         } else {
             vfu = new VersionFileUpdater(cv);
         }
-
-        fileUpdateMinmatchers.Add(FileUpdateType.NetAssembly, new List<string>());
-        fileUpdateMinmatchers[FileUpdateType.NetAssembly].Add("**\\properties\\assemblyinfo.cs");
-        fileUpdateMinmatchers[FileUpdateType.NetAssembly].Add("**\\properties\\commonassemblyinfo.cs");
-
-        fileUpdateMinmatchers.Add(FileUpdateType.Nuspec, new List<string>());
-        fileUpdateMinmatchers[FileUpdateType.Nuspec].Add("**\\*.nuspec");
     }
 
     public void Increment(string? newReleaseName = null) {

@@ -60,15 +60,15 @@ public class MinmatchTests {
     }
 
 
-    [Fact(DisplayName = nameof(GetDefaultMinimatchers_IsNotEmpty))]
+    [Fact(DisplayName = nameof(GetDefaultMinimatchers_IsEmpty))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void GetDefaultMinimatchers_IsNotEmpty() {
+    public void GetDefaultMinimatchers_IsEmpty() {
         b.Info.Flow();
 
         var v = new MockVersioning(new MockVersionStorage(""));
 
-        Assert.True(v.mock.ReturnMinMatchers().Length > 0, "There should be some default minmatchers loaded by versioning");
+        Assert.True(v.mock.ReturnMinMatchers().Length == 0, "There should be no default minmatchers loaded by versioning");
     }
 
     [Fact(DisplayName = nameof(SetMinMatchers_ReplacesAll))]

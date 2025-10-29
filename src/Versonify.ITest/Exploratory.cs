@@ -32,6 +32,7 @@ public class Exploratory {
         b.Info.Flow();
         string preReleaseVersionStore = uth.NewTemporaryFileName(true);
         string releaseVersionStore = uth.NewTemporaryFileName(true);
+        string mmPattern = "**/*.csproj|StdFile";
 
         try {
             string tDirectory = Path.Combine(Path.GetTempPath(), "tmp-ver-empty");
@@ -62,7 +63,7 @@ public class Exploratory {
                 Directory.CreateDirectory(eDirectory);
                 try {
                     for (int i = 1; i <= 5; i++) {
-                        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={eDirectory} -Increment -v={preReleaseVersionStore}");
+                        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={eDirectory} -Increment -v={preReleaseVersionStore} -m={mmPattern}");
                         output.ShouldContain($"1.0.0-Austen.0.{i}");
                     }
                 } finally {
@@ -70,7 +71,7 @@ public class Exploratory {
                 }
 
                 // Now create a release version.
-                output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={tDirectory} -Increment -v={releaseVersionStore} -output=con-nf");
+                output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={tDirectory} -Increment -v={releaseVersionStore} -m={mmPattern} -output=con-nf");
                 output.ShouldContain("2.0.1");
 
                 output = await th.ExecuteVersonify($"-Command=Passive -v={releaseVersionStore}");
@@ -82,7 +83,7 @@ public class Exploratory {
 
                 // Take the first three digits of the release version and use them in the pre-release version.
                 output = await th.ExecuteVersonify($"-Command=Override -Root={tDirectory} -v={preReleaseVersionStore} -Q={versionNumber} -output=con-nf");
-                output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={tDirectory} -Increment -v={preReleaseVersionStore}");
+                output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={tDirectory} -Increment -m={mmPattern} -v={preReleaseVersionStore}");
                 output = await th.ExecuteVersonify($"-Command=Passive -v={preReleaseVersionStore}");
                 output.ShouldContain("2.0.1-Austen.0.0");
             } finally {
