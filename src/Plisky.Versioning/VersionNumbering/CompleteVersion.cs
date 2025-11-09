@@ -299,7 +299,7 @@ public class CompleteVersion {
             if (string.IsNullOrWhiteSpace(d)) {
                 continue;
             }
-            if (d.Equals(ALLDIGITSWILDCARD) || (int.TryParse(d, out int result) && result >= 0 && result <= Digits.Length)) {
+            if (d.Equals(ALLDIGITSWILDCARD) || (int.TryParse(d, out int result) && result >= 0 && result < Digits.Length)) {
                 b.Verbose.Log($"Digit [{d}] is valid.");
                 isValid = true;
             } else {

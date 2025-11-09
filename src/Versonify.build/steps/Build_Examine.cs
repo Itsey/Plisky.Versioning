@@ -44,7 +44,7 @@ public partial class Build : NukeBuild {
     private Target MutationAnalysis => _ => _
         .After(UnitTest)
         .Before(PackageStep)
-        .DependsOn(Initialise)
+        .DependsOn(Initialise, ConfigureAnalysisMode)
         .OnlyWhenDynamic(() => analysisMode > AnalysisMode.Lite)
         .Executes(() => {
             if (Solution == null) {

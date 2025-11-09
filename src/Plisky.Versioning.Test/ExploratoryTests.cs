@@ -57,22 +57,29 @@ public class ExploratoryTests {
         gd[2].ShouldBe("3");
     }
 
-    [Fact]
+    [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
-    public void Validate_digitoptions_throws_when_invalid_digit_passed() {
+    [InlineData("monkey")]
+    [InlineData("4")] // Digits.Length is 4, so valid digits are 0-3
+    public void Validate_digitoptions_throws_when_invalid_digit_passed(string invalidDigit) {
         var cv = CompleteVersion.GetDefault();
 
-        Action act = () => { _ = cv.ValidateDigitOptions(new[] { "monkey" }); };
+        Action act = () => { _ = cv.ValidateDigitOptions([invalidDigit]); };
 
         act.ShouldThrow<ArgumentOutOfRangeException>();
+        var ex = act.ShouldThrow<ArgumentOutOfRangeException>();
+        ex.Message.ShouldContain($"The digit [{invalidDigit}] is not a valid digit.");
+
     }
 
-    [Fact]
+    [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
-    public void Validate_digitoptions_returns_false_when_null_options() {
+    [InlineData("")]
+    [InlineData(null)]
+    public void Validate_digitoptions_returns_false_when_nullOrEmpty_options(string digitrequested) {
         var cv = CompleteVersion.GetDefault();
 
-        bool result = cv.ValidateDigitOptions(null);
+        bool result = cv.ValidateDigitOptions([digitrequested]);
 
         result.ShouldBeFalse();
     }

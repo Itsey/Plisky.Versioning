@@ -93,6 +93,25 @@ public class CompleteVersionTests {
         cv.Digits.Length.ShouldBe(expectedDigits);
     }
 
+    [Theory]
+    [InlineData(FileUpdateType.NetAssembly, DisplayType.FourDigitNumeric)]
+    [InlineData(FileUpdateType.NetFile, DisplayType.FourDigitNumeric)]
+    [InlineData(FileUpdateType.NetInformational, DisplayType.Full)]
+    [InlineData(FileUpdateType.Wix, DisplayType.Full)]
+    [InlineData(FileUpdateType.Nuspec, DisplayType.Full)]
+    [InlineData(FileUpdateType.StdAssembly, DisplayType.FourDigitNumeric)]
+    [InlineData(FileUpdateType.StdFile, DisplayType.FourDigitNumeric)]
+    [InlineData(FileUpdateType.StdInformational, DisplayType.Full)]
+    [InlineData(FileUpdateType.TextFile, DisplayType.Short)]
+    public void CompleteVersion_constructor_adds_DisplayTypes(FileUpdateType fut, DisplayType dt) {
+        b.Info.Flow();
+        
+        var cv = new CompleteVersion();
+
+        cv.DisplayTypes.ShouldNotBeNull();
+        cv.DisplayTypes.ShouldContainKeyAndValue(fut, dt);
+    }
+
     [Theory(DisplayName = (nameof(DisplayTypes_WorkCorrectly)))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -112,6 +131,7 @@ public class CompleteVersionTests {
     [InlineData("1000.20004", "1000.20004.0.0", DisplayType.FourDigitNumeric)]
     [InlineData("1001-20A004", "1001.0.0.0", DisplayType.FourDigitNumeric)]
     [InlineData("1", "1.0.0.0", DisplayType.FourDigitNumeric)]
+    [InlineData("1.sometext.1.1", "1.0.0.0", DisplayType.FourDigitNumeric)]
     [InlineData("1.2.3.4", "1.2.3", DisplayType.ThreeDigitNumeric)]
     [InlineData("1", "1.0.0", DisplayType.ThreeDigitNumeric)]
     [InlineData("1001-20A004", "1001.0.0", DisplayType.ThreeDigitNumeric)]
@@ -128,19 +148,20 @@ public class CompleteVersionTests {
         output.ShouldBe(expectedDisplay);
     }
 
-    [Fact]
+    [Theory]
+    [InlineData("1.2.3.4", "+.+.+.+", "2.3.4.5")]
+    [InlineData("1.2..4", "+.+..+", "2.3..5")]
+    [InlineData(null, "....", "")]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void DisplayType_QueuedFull_WorksCorrectly() {
+    public void DisplayType_QueuedFull_WorksCorrectly(string startVer, string pattern, string endVer) {
         b.Info.Flow();
-        string version = "1.2.3.4";
-        string pendingVersion = "2.3.4.5";
-        var cv = new CompleteVersion(version, '.');
+        var cv = new CompleteVersion(startVer, '.');
 
-        cv.ApplyPendingVersion("+.+.+.+");
+        cv.ApplyPendingVersion(pattern);
         string output = cv.GetVersionString(DisplayType.QueuedFull);
 
-        output.ShouldBe(pendingVersion);
+        output.ShouldBe(endVer);
     }
 
     [Theory(DisplayName = nameof(PendingIncrementPatterns_Work))]
@@ -155,6 +176,8 @@ public class CompleteVersionTests {
     [InlineData("2.2.2.2", "...", "2.2.2.2")]
     [InlineData("2.2.2.2", "..Bealzebub.-", "2.2.Bealzebub.1")]
     [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear", "Unicorn.Peach.Applie.Pear")]
+    [InlineData("2.Pear.Apple", ".0.0", "2.0.0")]
+    [InlineData(null, ".0.0", "")]
     public void PendingIncrementPatterns_Work(string startVer, string pattern, string endVer) {
         b.Info.Flow();
 
@@ -522,12 +545,13 @@ public class CompleteVersionTests {
     [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
-    [InlineData("0", true)]
     [InlineData("*", true)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
     public void ValidateDigitOptions_ReturnsTrueForValidInput(string digitInput, bool expectedResult) {
         b.Info.Flow();
         var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-
+        
         bool actualResult = sut.ValidateDigitOptions([digitInput]);
 
         actualResult.ShouldBe(expectedResult);
