@@ -84,6 +84,26 @@ public class ExploratoryTests {
         result.ShouldBeFalse();
     }
 
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    public void Validate_digitoptions_returns_false_when_nullParameter() {
+        var cv = CompleteVersion.GetDefault();
+
+        bool result = cv.ValidateDigitOptions(null);
+
+        result.ShouldBeFalse();
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    public void Validate_digitoptions_returns_false_when_zeroLengthParameter() {
+        var cv = CompleteVersion.GetDefault();
+        
+        bool result = cv.ValidateDigitOptions([]);
+
+        result.ShouldBeFalse();
+    }
+
     [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
     [InlineData(null, VersioningCommand.BehaviourOutput)]
@@ -191,6 +211,18 @@ public class ExploratoryTests {
     }
 
     [Fact]
+    public void SetIndividualDigits_WithNoDigitsToSet_DoesNotSet() {
+        CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
+        string valueToSet = "42";
+
+        version.SetIndividualDigits([], valueToSet);
+
+        bool allSet = version.Digits.All(d => d.Value == valueToSet);
+
+        allSet.ShouldBeFalse();
+    }
+
+    [Fact]
     public void SetIndividualDigits_WithWildcard_SetsAllDigitsToValue() {
         CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
         string valueToSet = "42";
@@ -256,6 +288,18 @@ public class ExploratoryTests {
         version.Digits[1].Value.ShouldBe("6");
         version.Digits[2].Value.ShouldBe("0");
         version.Digits[3].Value.ShouldBe("0");
+    }
+
+    [Fact]
+    public void SetAllDigitsFromString_ignores_extra_parts() {
+        var version = new CompleteVersion(new VersionUnit("1"), new VersionUnit("2"));
+        string valueToSet = "5.6.7.8";
+
+        version.SetCompleteVersionFromString(valueToSet);
+
+        version.Digits.Length.ShouldBe(2);
+        version.Digits[0].Value.ShouldBe("5");
+        version.Digits[1].Value.ShouldBe("6");
     }
 
     [Theory]

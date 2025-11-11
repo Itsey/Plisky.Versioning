@@ -16,6 +16,7 @@
     <None Remove="TestFileStructure\Nuget\sample1.nuspec" />
     <None Remove="TestFileStructure\Nuget\sample2.nuspec" />
     <None Remove="TestFileStructure\Properties\AssemblyInfo.txt" />
+    <None Remove="TestFileStructure\Wix\sampleWix1.wxs" />
     <None Remove="VersionStores\default_fxfxaifx.vstore" />
   </ItemGroup>
   <ItemGroup>
@@ -34,6 +35,7 @@
     <EmbeddedResource Include="TestFileStructure\Properties\AssemblyInfo.txt" />
     <EmbeddedResource Include="TestFileStructure\StdCSProj\MissingAllElements.csproj" />
     <EmbeddedResource Include="TestFileStructure\StdCSProj\MultipleVersNetStd.csproj" />
+    <EmbeddedResource Include="TestFileStructure\Wix\sampleWix1.wxs" />
     <EmbeddedResource Include="VersionStores\one_each_behaviour.vstore" />
     <EmbeddedResource Include="VersionStores\default_fxfxaifx.vstore" />
   </ItemGroup>

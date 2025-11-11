@@ -18,6 +18,7 @@ public enum TestResourcesReferences {
     VersionV3Txt,
     DefaultVersionStore,
     OneEachBehaviourStore,
+    WixSample1,
 }
 
 public static class TestResources {
@@ -41,6 +42,7 @@ public static class TestResources {
             TestResourcesReferences.BugNuspecUpdateFail => "B_NuspecUpdateFailed.nuspec",
             TestResourcesReferences.DefaultVersionStore => "default_fxfxaifx.vstore",
             TestResourcesReferences.OneEachBehaviourStore => "one_each_behaviour.vstore",
+            TestResourcesReferences.WixSample1 => "sampleWix1.wxs",
             _ => null,
         };
     }
