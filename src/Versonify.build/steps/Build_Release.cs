@@ -1,8 +1,6 @@
 ﻿using System;
 using Nuke.Common;
-using Nuke.Common.Tools.Git;
 using Nuke.Common.Tools.NuGet;
-using Serilog;
 
 public partial class Build : NukeBuild {
 
@@ -12,15 +10,15 @@ public partial class Build : NukeBuild {
       .Before(Wrapup)
       .Executes(() => {
 
-          if (IsSucceeding) {
-              if (string.IsNullOrEmpty(FullVersionNumber)) {
-                  Log.Information("No version number, skipping Tag");
-              } else {
-                  Log.Information("Applying Git Tag");
-                  GitTasks.Git($"tag -a {FullVersionNumber} -m \"Release {FullVersionNumber}\"");
-                  GitTasks.Git($"push origin {FullVersionNumber}");
-              }
-          }
+          /* if (IsSucceeding) {
+               if (string.IsNullOrEmpty(FullVersionNumber)) {
+                   Log.Information("No version number, skipping Tag");
+               } else {
+                   Log.Information("Applying Git Tag");
+                   GitTasks.Git($"tag -a {FullVersionNumber} -m \"Release {FullVersionNumber}\"");
+                   GitTasks.Git($"push origin {FullVersionNumber}");
+               }
+           }*/
       });
 
 
