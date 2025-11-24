@@ -35,6 +35,9 @@
     <PackageDownload Include="Plisky.Versonify" Version="[1.0.1]" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Plisky.Versioning\Plisky.Versioning.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Plisky.Nuke.Fusion">
       <HintPath>C:\files\code\git\plisky-nuke-fusion\src\Plisky.Nuke.Fusion\bin\Debug\Plisky.Nuke.Fusion.dll</HintPath>
     </Reference>

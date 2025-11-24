@@ -7,21 +7,16 @@ using Plisky.Diagnostics;
 using Plisky.Versioning;
 
 public class VersioningOutputter {
-    public const string VERSIONING_PIPE_NAME = "plisky-versonify";
+    public const string ALLDIGITSWILDCARD = "*";
     public const string VERSION_MSG_SUBJECT = "version";
     public const string VERSION_REPLACE_TAG = "%VER%";
-    public const string ALLDIGITSWILDCARD = "*";
+    public const string VERSIONING_PIPE_NAME = "plisky-versonify";
     protected Bilge b = new Bilge("Plisky-Tool-Output");
     protected CompleteVersion versionToLog;
-    protected string ValToWrite => ReleaseRequested
-       ? versionToLog.ReleaseName ?? ""
-       : versionToLog.GetVersionString();
 
-    public string? FileTemplate { get; set; }
-    public string? ConsoleTemplate { get; set; }
-    public string? PverFileName { get; set; }
-    public bool ReleaseRequested { get; set; }
-    public string[] Digits { get; set; } = [ALLDIGITSWILDCARD];
+    public VersioningOutputter(CompleteVersion ver, DisplayType dt = DisplayType.Full) {
+        versionToLog = ver;
+    }
 
     public string BehToWrite {
         get {
@@ -33,15 +28,19 @@ public class VersioningOutputter {
         set { }
     }
 
-    protected virtual void SetEnvironmentWithValue() {
-        string envVarName = ReleaseRequested ? "PVER-RELEASE" : "PVER-LATEST";
-        b.Verbose.Log($"Attempting to set environment variable {envVarName} to {ValToWrite}");
-        Environment.SetEnvironmentVariable(envVarName, ValToWrite, EnvironmentVariableTarget.User);
-    }
+    public string? ConsoleTemplate { get; set; }
 
-    public VersioningOutputter(CompleteVersion ver, DisplayType dt = DisplayType.Full) {
-        versionToLog = ver;
-    }
+    public string[] Digits { get; set; } = [ALLDIGITSWILDCARD];
+
+    public string? FileTemplate { get; set; }
+
+    public string? PverFileName { get; set; }
+
+    public bool ReleaseRequested { get; set; }
+
+    protected string ValToWrite => ReleaseRequested
+                                   ? versionToLog.ReleaseName ?? ""
+       : versionToLog.GetVersionString();
 
     public void DoOutput(OutputPossibilities oo, VersioningCommand command) {
         b.Verbose.Flow($"{oo}");
@@ -53,8 +52,26 @@ public class VersioningOutputter {
             b.Verbose.Log("Behaviour output requested, writing to behaviour output");
             WriteBehaviourOutput(oo);
         } else {
-            b.Error.Log($"Invalid command for output: {command}");
+            WritePassiveOutput(oo);
         }
+    }
+
+    protected virtual void SetEnvironmentWithValue() {
+        string envVarName = ReleaseRequested ? "PVER-RELEASE" : "PVER-LATEST";
+        b.Verbose.Log($"Attempting to set environment variable {envVarName} to {ValToWrite}");
+        Environment.SetEnvironmentVariable(envVarName, ValToWrite, EnvironmentVariableTarget.User);
+    }
+
+    protected virtual void SetFileValue(string outputString) {
+        string fileName = !string.IsNullOrWhiteSpace(PverFileName)
+            ? PverFileName
+            : ReleaseRequested ? "pver-release.txt" : "pver-latest.txt";
+        string filePath = Path.Combine(Environment.CurrentDirectory, fileName);
+        File.WriteAllText(filePath, outputString);
+    }
+
+    protected virtual void WriteToConsole(string outputString) {
+        Console.WriteLine(outputString);
     }
 
     private void WriteBehaviourOutput(OutputPossibilities oo) {
@@ -101,17 +118,5 @@ public class VersioningOutputter {
             WriteToConsole($"PN4D]{versionToLog.GetVersionString(DisplayType.FourDigitNumeric)}");
             WriteToConsole($"PNFN]{versionToLog.ReleaseName}");
         }
-    }
-
-    protected virtual void SetFileValue(string outputString) {
-        string fileName = !string.IsNullOrWhiteSpace(PverFileName)
-            ? PverFileName
-            : ReleaseRequested ? "pver-release.txt" : "pver-latest.txt";
-        string filePath = Path.Combine(Environment.CurrentDirectory, fileName);
-        File.WriteAllText(filePath, outputString);
-    }
-
-    protected virtual void WriteToConsole(string outputString) {
-        Console.WriteLine(outputString);
     }
 }
