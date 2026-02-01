@@ -19,6 +19,11 @@ internal class Program {
     private static Bilge b = new Bilge();
 
     private static async Task<int> Main(string[] args) {
+        int pnfShortCircuit = CheckPnfCompatibiliyRequest(args);
+        if (pnfShortCircuit >= 200) {
+            return pnfShortCircuit;
+        }
+
         WriteGreetingMessage();
 
         CommandArgumentSupport clas = null;
@@ -70,6 +75,15 @@ internal class Program {
 
         b.Verbose.Log("Versonify - Exit.");
         await b.Flush();
+        return 0;
+    }
+
+    private static int CheckPnfCompatibiliyRequest(string[] args) {
+        if (args.Length == 1 && args[0].Equals("--QQpnf", StringComparison.OrdinalIgnoreCase)) {
+            // 200 is the first implemented compatibility exit code. Before this no compatibility exit codes existed
+            // This equates to Versonify Release 1.0.1 Austen.
+            return 200;
+        }
         return 0;
     }
 

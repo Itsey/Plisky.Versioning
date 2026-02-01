@@ -1,5 +1,8 @@
 🪵 Change Log.
 
+⬆️ 1.0.1 - Austen Compatibility Release.
+  - ✅ Feature - Implememted --QQpnf quick version return exit codes to tell PNF what compatibility version Versonify is running. See LFY-58 docs.
+   
 ⬆️ 1.0.0 - Austen.
   - First Release ( Austen Release ).
   - Behaviour Update Added.
