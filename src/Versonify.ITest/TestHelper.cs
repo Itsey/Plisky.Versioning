@@ -32,11 +32,11 @@ public class TestHelper {
 
         string? solutionPath = GetSolutionPath();
         if (solutionPath == null) {
-            throw new FileNotFoundException("Versonify executable not found.");
+            throw new FileNotFoundException($"Versonify executable not found Loc:{Directory.GetCurrentDirectory()}.");
         }
-        string locatedPathToVersonify = Path.Combine(solutionPath, @"Versonify\bin\Debug\net8.0\versonify.exe");
+        string locatedPathToVersonify = Path.Combine(solutionPath, @"Versonify\bin\Debug\net9.0\versonify.exe");
         if (!File.Exists(locatedPathToVersonify)) {
-            throw new FileNotFoundException("Versonify executable not found.", locatedPathToVersonify);
+            throw new FileNotFoundException($"Executable not found. {locatedPathToVersonify}", locatedPathToVersonify);
         }
         VersonifyPathCache = locatedPathToVersonify;
         return locatedPathToVersonify;

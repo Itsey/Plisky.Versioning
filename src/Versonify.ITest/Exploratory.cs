@@ -26,6 +26,62 @@ public class Exploratory {
         th.LastExecutionExitCode.ShouldNotBe(0, "No Parameters is an error condition.");
     }
 
+
+
+    [Fact(DisplayName = "Current Compatibility Level Is 200")]
+    public async Task Call_with_qq_returns_expected_compat_code() {
+        b.Info.Flow();
+
+        _ = await th.ExecuteVersonify($"--qqpnf");
+        th.LastExecutionExitCode.ShouldBe(200, "Current compat version is 200.");
+    }
+
+    [Fact(DisplayName = "No minmatch returns error code")]
+    public async Task No_match_is_passed_fails_when_update_requested() {
+        b.Info.Flow();
+        string output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root=z:\\temp -Increment -v=z:\\t\\t.txt -output=con");
+
+        output.ShouldContain("Error >> The Update command requires a minmatch");
+        th.LastExecutionExitCode.ShouldNotBe(0, "Failure to update files should return error.");
+    }
+
+    [Fact(DisplayName = "No Files Updated, Returns Exit Code")]
+    public async Task Failure_to_update_files_exits_non_zero() {
+        b.Info.Flow();
+
+        string pth = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+        Directory.CreateDirectory(pth);
+
+        string versionStore = Path.Combine(pth, "vstore.delme");
+        string output; // = await th.ExecuteVersonify("");
+        output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
+        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con");
+
+        output.ShouldContain("WARNING - No files found to update.");
+        th.LastExecutionExitCode.ShouldNotBe(0, "Failure to update files should return error.");
+
+        Directory.Delete(pth, true);
+    }
+
+
+    [Fact(DisplayName = "Passing Z Ensures Zero Return.")]
+    public async Task Failure_overriden_by_always_return_zero() {
+        b.Info.Flow();
+
+        string pth = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+        Directory.CreateDirectory(pth);
+
+        string versionStore = Path.Combine(pth, "vstore.delme");
+        string output; // = await th.ExecuteVersonify("");
+        output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
+        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con -z");
+
+        output.ShouldContain("WARNING - No files found to update.");
+        th.LastExecutionExitCode.ShouldBe(0, "Failure to update files should return error.");
+    }
+
+
+
     [Fact()] //Skip = "This looks like it could be a bug in current implementation while evidencing LFY-10")]
     public async Task Pre_and_release_versioning_use_case_works() {
         // Usecase where pre-release is incremented, then a release version takes over, then pre-release is incremented again.

@@ -54,6 +54,11 @@ public class VersonifyCommandline {
     [CommandLineArg("Output", Description = "Specifies output options supports:  Env,Con,AzDo,File,Np,Npo")]
     public string RawOutputOptions { get; set; }
 
+
+    [CommandLineArg("NoError")]
+    [CommandLineArg("z")]
+    public bool ReturnZero { get; set; }
+
     public string OutputOptions {
         get { return outOpts; }
         set {

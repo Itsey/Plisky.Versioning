@@ -19,63 +19,76 @@ internal class Program {
     private static Bilge b = new Bilge();
 
     private static async Task<int> Main(string[] args) {
-        int pnfShortCircuit = CheckPnfCompatibiliyRequest(args);
-        if (pnfShortCircuit >= 200) {
-            return pnfShortCircuit;
-        }
-
-        WriteGreetingMessage();
-
-        CommandArgumentSupport clas = null;
         try {
+            int pnfShortCircuit = CheckPnfCompatibiliyRequest(args);
+            if (pnfShortCircuit >= 200) {
+                return pnfShortCircuit;
+            }
+
+            WriteGreetingMessage();
+
+            CommandArgumentSupport clas = null;
+
             clas = GetCommandLineArguments(args);
 
             if (!ValidateArgumentSettings(options)) {
                 WriteErrorConditions(clas);
                 return 1;
             }
+
+            if (options.Debug) {
+                foreach (string a in args) {
+                    Console.WriteLine($"Command Line: {a}");
+                }
+            }
+
+            if (options.Debug || (!string.IsNullOrEmpty(options.Trace))) {
+                ConfigureTrace();
+            }
+
+            b = new Bilge("Versonify");
+            Bilge.Alert.Online("Versonify");
+            b.Verbose.Dump(options, "App Options");
+
+            var result = PerformActionsFromCommandline();
+            if (result.WasProcessedSuccessfully) {
+                if (versionerUsed != null) {
+                    b.Verbose.Log($"All Actions - Complete - Outputting.");
+                    var vo = new VersioningOutputter(versionerUsed) {
+                        ConsoleTemplate = options.ConsoleTemplate,
+                        PverFileName = options.PverFileName,
+                        Digits = options.GetDigits(),
+                        ReleaseRequested = options.Release != null,
+                    };
+
+                    vo.DoOutput(options.OutputsActive, options.RequestedCommand);
+                }
+
+                b.Info.Log("All Actions - Complete - Exiting.");
+            } else {
+                Console.WriteLine("Errors Occurred:");
+                foreach (string e in result.Errors) {
+                    Console.WriteLine(e);
+                }
+                Console.WriteLine();
+                // TODO : Merge this in with the same code Above
+                string s = clas.GenerateShortHelp(options, "Versonify");
+                Console.WriteLine(s);
+            }
+
+            b.Verbose.Log("Versonify - Exit.");
+            await b.Flush();
+
+            if (options.ReturnZero) {
+                Console.WriteLine($"ReturnZero option specified:  ExitCode: {result.ExitCode} suppressed.");
+                return 0;
+            }
+
+            return result.ExitCode;
         } catch (Exception ex) {
-            Console.WriteLine(ex.Message);
+            Console.WriteLine("Fatal: An unhandled exception was encountered. " + ex.Message);
             return 1;
         }
-
-        if (options.Debug) {
-            foreach (string a in args) {
-                Console.WriteLine($"Command Line: {a}");
-            }
-        }
-
-        if (options.Debug || (!string.IsNullOrEmpty(options.Trace))) {
-            ConfigureTrace();
-        }
-
-        b = new Bilge("Versonify");
-        Bilge.Alert.Online("Versonify");
-        b.Verbose.Dump(options, "App Options");
-
-        if (PerformActionsFromCommandline()) {
-            if (versionerUsed != null) {
-                b.Verbose.Log($"All Actions - Complete - Outputting.");
-                var vo = new VersioningOutputter(versionerUsed) {
-                    ConsoleTemplate = options.ConsoleTemplate,
-                    PverFileName = options.PverFileName,
-                    Digits = options.GetDigits(),
-                    ReleaseRequested = options.Release != null,
-                };
-
-                vo.DoOutput(options.OutputsActive, options.RequestedCommand);
-            }
-
-            b.Info.Log("All Actions - Complete - Exiting.");
-        } else {
-            // TODO : Merge this in with the same code Above
-            string s = clas.GenerateShortHelp(options, "Versonify");
-            Console.WriteLine(s);
-        }
-
-        b.Verbose.Log("Versonify - Exit.");
-        await b.Flush();
-        return 0;
     }
 
     private static int CheckPnfCompatibiliyRequest(string[] args) {
@@ -228,7 +241,8 @@ internal class Program {
         return true;
     }
 
-    private static bool PerformActionsFromCommandline() {
+    private static ExeuctionResult PerformActionsFromCommandline() {
+        var result = new ExeuctionResult();
         b.Verbose.Flow();
 
         Console.WriteLine("Performing Versioning Actions");
@@ -236,21 +250,32 @@ internal class Program {
         GetVersionStorageFromCommandLine();
 
         if (!ValidateVersionStorage()) {
-            return false;
+            result.WasProcessedSuccessfully = false;
+            return result;
         }
 
         switch (options.RequestedCommand) {
             case VersioningCommand.CreateNewVersion:
                 CreateNewVersionStore();
-                return true;
+                result.WasProcessedSuccessfully = true;
+                break;
 
             case VersioningCommand.Override:
                 CreateNewPendingIncrement();
-                return true;
+                result.WasProcessedSuccessfully = true;
+                break;
 
             case VersioningCommand.UpdateFiles:
-                ApplyVersionIncrement();
-                return true;
+                if (options.VersionTargetMinMatch == null || options.VersionTargetMinMatch.Length == 0) {
+                    result.AddError("Error >> The Update command requires a minmatch file to be provided. Use -M=<path to minmatch file.>¦-M=Minmatch glob");
+                    // TODO : PRoper Exit Code Map
+                    result.ExitCode = 7;
+                    result.WasProcessedSuccessfully = false;
+                } else {
+                    ApplyVersionIncrement(result);
+                    result.WasProcessedSuccessfully = true;
+                }
+                break;
 
             case VersioningCommand.PassiveOutput:
                 if (options.Release != null) {
@@ -258,32 +283,42 @@ internal class Program {
                 } else {
                     LoadVersionStore();
                 }
-                return true;
+                result.WasProcessedSuccessfully = true;
+                break;
 
             case VersioningCommand.BehaviourOutput:
                 LoadDigitBehaviour();
-                return true;
+                result.WasProcessedSuccessfully = true;
+                break;
 
             case VersioningCommand.BehaviourUpdate:
                 ApplyDigitBehaviour();
-                return true;
+                result.WasProcessedSuccessfully = true;
+                break;
 
             case VersioningCommand.SetDigitValue:
                 ApplyDigitValueUpdate();
-                return true;
+                result.WasProcessedSuccessfully = true;
+                break;
 
             case VersioningCommand.SetReleaseName:
                 ApplyReleaseNameUpdate();
-                return true;
+                result.WasProcessedSuccessfully = true;
+                break;
 
             case VersioningCommand.SetDigitPrefix:
                 ApplyDigitPrefixUpdate();
-                return true;
+                result.WasProcessedSuccessfully = true;
+                break;
 
             default:
-                Console.WriteLine("Error >> Unrecognised Command: " + options.Command);
-                return false;
+                result.AddError("Error >> Unrecognised Command: " + options.Command);
+                result.ExitCode = 8;
+                // Todo: Proper exit code map
+                result.WasProcessedSuccessfully = false;
+                break;
         }
+        return result;
     }
 
     /// <summary>
@@ -362,7 +397,7 @@ internal class Program {
         }
     }
 
-    private static void ApplyVersionIncrement() {
+    private static void ApplyVersionIncrement(ExeuctionResult result) {
         b.Verbose.Flow();
 
         var ver = new Versioning(storage, options.DryRunOnly);
@@ -391,35 +426,24 @@ internal class Program {
         if (!string.IsNullOrEmpty(options.Root) && Directory.Exists(options.Root)) {
             _ = ver.SearchForAllFiles(options.Root);
         } else {
-            Console.WriteLine($"WARNING >> Path {options.Root} is invalid, skipping.");
+            result.WasProcessedSuccessfully = false;
+            result.AddError($"Invalid or Missing Root Path: {options.Root}.");
+            // TODO: Consistant error code map
+            result.ExitCode = 5;
         }
 
-        ver.UpdateAllRegisteredFiles();
+        int filesUpdated = ver.UpdateAllRegisteredFiles();
+
+        if (filesUpdated == 0) {
+            // TODO: Consistant error code map
+            result.AddError("No files were updated, likely due to mismatches in the glob patterns.");
+            result.ExitCode = 6;
+        }
 
         ver.SaveUpdatedVersion();
     }
 
-#if FALSE
-    private static Action<string> GetActionToPerform(Versioning ver) {
-        Action<string> actionToPerform;
-        if (!options.TestMode) {
-            actionToPerform = (fn) => {
-                if (fn.EndsWith(".cs")) {
-                    ver.AddCSharpFile(fn);
-                }
-                if (fn.EndsWith(".nuspec")) {
-                    ver.AddNugetFile(fn);
-                }
-            };
-        } else {
-            actionToPerform = (fn) => {
-                Console.WriteLine("DryRun - Would Update :" + fn);
-            };
-        }
 
-        return actionToPerform;
-    }
-#endif
 
     [Conditional("DEBUG")]
     private static void DebugLog(string l) {
