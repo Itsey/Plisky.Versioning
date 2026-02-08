@@ -1,4 +1,5 @@
-﻿**/src/**/Plisky.Versioning.csproj|StdAssembly
+﻿**/src/**/changelog.md|TextFile
+**/src/**/Plisky.Versioning.csproj|StdAssembly
 **/src/**/Plisky.Versioning.csproj|StdInformational
 **/src/**/Plisky.Versioning.csproj|StdFile
 **/src/**/Versonify.csproj|StdAssembly

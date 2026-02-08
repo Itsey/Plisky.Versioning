@@ -1,9 +1,11 @@
-🪵 Change Log.
+Versonify Change Log.
 
-⬆️ 1.0.1 - Austen Compatibility Release.
-  - ✅ Feature - Implememted --QQpnf quick version return exit codes to tell PNF what compatibility version Versonify is running. See LFY-58 docs.
-   
-⬆️ 1.0.0 - Austen.
+⬆️ XXX-VERSION-XXX - Austen Compatibility Release.
+  - ✅ Feature - Implememted --QQpnf quick version return exit codes to tell PNF what compatibility version Versonify is running.
+  - ✅ Feature - Implemented -z to suppress non zero return exit codes.
+  - ✅ Feature - 💥Breaking Change💥 File Updates that do not update any files now default to returning non zero exit code.  Add -z for old functionality.
+  
+⬆️ 1.0.1 - Austen.
   - First Release ( Austen Release ).
   - Behaviour Update Added.
 
@@ -21,6 +23,3 @@
   - Updated documentation to remove references to PliskyTool.
   - 🐞 Fix - DryRun no longer updates the files on disk.
 
-⬆️ 0.0.0 - Initial.
-  - Renamed to become versonify.
-  - Released as tool package to support nuke.
