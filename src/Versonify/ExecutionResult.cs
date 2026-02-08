@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 namespace Versonify {
-    internal class ExeuctionResult {
+    internal class ExecutionResult {
         protected List<string> AllErrors { get; set; } = new List<string>();
         public bool WasProcessedSuccessfully { get; internal set; }
         public string[] Errors {

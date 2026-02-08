@@ -177,7 +177,7 @@ internal class Program {
             valid = false;
         }
         if (string.IsNullOrWhiteSpace(options.VersionPersistanceValue)) {
-            Console.WriteLine("Error >> A versioning store must be selected.  Use -VS= and pass your initialisation data");
+            Console.WriteLine("Error >> A versioning store must be selected.  Use -V= and pass your initialisation data");
             valid = false;
         }
         if (!string.IsNullOrWhiteSpace(options.PverFileName)) {
@@ -241,8 +241,8 @@ internal class Program {
         return true;
     }
 
-    private static ExeuctionResult PerformActionsFromCommandline() {
-        var result = new ExeuctionResult();
+    private static ExecutionResult PerformActionsFromCommandline() {
+        var result = new ExecutionResult();
         b.Verbose.Flow();
 
         Console.WriteLine("Performing Versioning Actions");
@@ -397,7 +397,7 @@ internal class Program {
         }
     }
 
-    private static void ApplyVersionIncrement(ExeuctionResult result) {
+    private static void ApplyVersionIncrement(ExecutionResult result) {
         b.Verbose.Flow();
 
         var ver = new Versioning(storage, options.DryRunOnly);
