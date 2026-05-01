@@ -46,6 +46,10 @@ public class VersonifyCommandline {
     [CommandLineArg("Digits", Description = "Separated characters to form digits for the version number", ArraySeparatorChar = ";")]
     public string[] DigitManipulations { get; set; }
 
+    [CommandLineArg("NoError")]
+    [CommandLineArg("z")]
+    public bool ReturnZero { get; set; }
+
     [CommandLineArg("NO")]  // Marked as deprecated. Retained for backward compatability
     [CommandLineArg("NoOverride", Description = "Allows you to ignore a saved override (see documentation).")]
     public bool NoOverride { get; set; }
@@ -53,11 +57,6 @@ public class VersonifyCommandline {
     [CommandLineArg("O")]
     [CommandLineArg("Output", Description = "Specifies output options supports:  Env,Con,AzDo,File,Np,Npo")]
     public string RawOutputOptions { get; set; }
-
-
-    [CommandLineArg("NoError")]
-    [CommandLineArg("z")]
-    public bool ReturnZero { get; set; }
 
     public string OutputOptions {
         get { return outOpts; }

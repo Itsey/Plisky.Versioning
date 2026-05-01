@@ -109,12 +109,13 @@ internal class Program {
     private static CommandArgumentSupport GetCommandLineArguments(string[] args) {
         b.Verbose.Flow();
 
+        string[] argumentsToProcess = NormaliseArgumentsForParser(args);
         var result = new CommandArgumentSupport {
             ArgumentPostfix = "="
         };
         try {
             b.Verbose.Log("Processing Arguments");
-            result.ProcessArguments(options, args);
+            result.ProcessArguments(options, argumentsToProcess);
             options.OutputOptions = options.RawOutputOptions;
             CheckForDeprecatedCommands(args);
         } catch (ArgumentOutOfRangeException aox) {
@@ -133,10 +134,30 @@ internal class Program {
         return result;
     }
 
+    private static string[] NormaliseArgumentsForParser(string[] args) {
+        string[] result = new string[args.Length];
+
+        for (int i = 0; i < args.Length; i++) {
+            if (args[i].Equals("-NoError", StringComparison.OrdinalIgnoreCase)) {
+                result[i] = "-z";
+            } else {
+                result[i] = args[i];
+            }
+        }
+
+        return result;
+    }
+
     private static void CheckForDeprecatedCommands(string[] args) {
         foreach (string arg in args) {
+            string argumentName = arg;
+            int valueSeparatorPosition = arg.IndexOf('=');
+            if (valueSeparatorPosition >= 0) {
+                argumentName = arg.Substring(0, valueSeparatorPosition);
+            }
+
             foreach (var c in VersonifyCommandline.deprecatedCommandMappings) {
-                if (arg.StartsWith(c.Key, StringComparison.OrdinalIgnoreCase) && !arg.Equals("-nooverride", StringComparison.OrdinalIgnoreCase)) {
+                if (argumentName.Equals(c.Key, StringComparison.OrdinalIgnoreCase)) {
                     Console.WriteLine($"Warning >> Argument '{c.Key}' is now deprecated. Please use '{c.Value}' instead. Refer to the documentation for updated usage.");
                     break;
                 }
