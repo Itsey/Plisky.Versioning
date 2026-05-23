@@ -1,0 +1,17 @@
+{
+  "versionSettings": {
+    "fileMatches": [
+      "**/src/**/changelog.md|TextFile",
+      "**/src/**/Plisky.Versioning.csproj|StdAssembly",
+      "**/src/**/Plisky.Versioning.csproj|StdInformational",
+      "**/src/**/Plisky.Versioning.csproj|StdFile",
+      "**/src/**/Versonify.csproj|StdAssembly",
+      "**/src/**/Versonify.csproj|StdInformational",
+      "**/src/**/Versonify.csproj|StdFile"
+    ],
+    "vstore": {
+       "base": "%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.yellowwater-365987e0.uksouth.azurecontainerapps.io/repository/plisky/vstore/",
+       "filename": "versonify.vstore"
+    }
+  }
+}

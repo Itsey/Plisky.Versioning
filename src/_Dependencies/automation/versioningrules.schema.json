@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://plisky.co.uk/schemas/versioningrules.schema.json",
+  "title": "Versonify Versioning Rules",
+  "description": "Schema for the Versonify versioning rules configuration file, defining digit behaviours and display types.",
+  "type": "object",
+  "required": ["units", "displayTypes"],
+  "additionalProperties": false,
+  "properties": {
+    "units": {
+      "type": "array",
+      "description": "The collection of version digit units, each defining how one part of the version number behaves.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/versionUnit"
+      }
+    },
+    "displayTypes": {
+      "type": "array",
+      "description": "Controls the display format for each version digit. Must have the same number of entries as 'units'.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/displayType"
+      }
+    }
+  },
+  "definitions": {
+    "versionUnit": {
+      "type": "object",
+      "description": "Represents a single digit within the version number.",
+      "required": ["Value", "PreFix", "Behaviour"],
+      "additionalProperties": false,
+      "properties": {
+        "IncrementOverride": {
+          "description": "An optional override value applied during the next increment, then cleared. Set to null when no override is active.",
+          "oneOf": [
+            { "type": "string" },
+            { "type": "null" }
+          ]
+        },
+        "Value": {
+          "type": "string",
+          "description": "The current value of this version digit. Can be numeric or a release name string."
+        },
+        "PreFix": {
+          "type": "string",
+          "description": "The separator prefix prepended to this digit when the version string is rendered (e.g. '.', '-', or empty string for the first digit)."
+        },
+        "Behaviour": {
+          "$ref": "#/definitions/digitIncrementBehaviour"
+        }
+      }
+    },
+    "digitIncrementBehaviour": {
+      "type": "integer",
+      "description": "Controls how this digit is incremented. Maps to the DigitIncrementBehaviour enum.",
+      "oneOf": [
+        { "const": 0, "title": "Fixed", "description": "The digit does not change during an increment." },
+        { "const": 2, "title": "DaysSinceDate", "description": "Reflects the number of days elapsed since the configured base date." },
+        { "const": 3, "title": "DailyAutoIncrement", "description": "Increments each build within the current day, resetting to zero the next day." },
+        { "const": 4, "title": "AutoIncrementWithReset", "description": "Increments continually, resetting to zero when the next higher digit changes." },
+        { "const": 5, "title": "AutoIncrementWithResetAny", "description": "Increments continually, resetting to zero when any higher-order digit changes." },
+        { "const": 6, "title": "ContinualIncrement", "description": "Increments without stopping; resets to zero on overflow." },
+        { "const": 7, "title": "WeeksSinceDate", "description": "Reflects the number of whole or partial weeks since the configured base date." },
+        { "const": 8, "title": "ReleaseName", "description": "Set to the literal release name string rather than a numeric value." }
+      ]
+    },
+    "displayType": {
+      "type": "integer",
+      "description": "Controls how a digit is rendered in the version string. Maps to the DisplayType enum.",
+      "oneOf": [
+        { "const": 0, "title": "Default", "description": "Default display format." },
+        { "const": 1, "title": "Short", "description": "Short version format." },
+        { "const": 2, "title": "Full", "description": "Full version format." },
+        { "const": 3, "title": "NoDisplay", "description": "The digit is not included in the rendered version string." },
+        { "const": 4, "title": "ThreeDigit", "description": "Three-digit format." },
+        { "const": 5, "title": "Release", "description": "Release format." },
+        { "const": 6, "title": "FourDigitNumeric", "description": "Four-digit numeric format, recommended for FileVersion and AssemblyVersion." },
+        { "const": 7, "title": "ThreeDigitNumeric", "description": "Three-digit numeric format." },
+        { "const": 8, "title": "QueuedFull", "description": "Queued full format." },
+        { "const": 9, "title": "FourDigit", "description": "Four-digit format." }
+      ]
+    }
+  }
+}

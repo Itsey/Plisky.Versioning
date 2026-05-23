@@ -2,7 +2,8 @@
 status: todo
 title: Migrate Versonify CLI parsing from Plisky.Plumbing to System.CommandLine
 created: 2026-05-02
-priority: high
+priority: medium
+reference: 1
 ---
 
 # What
@@ -17,7 +18,7 @@ The migration also removes deprecated aliases that are no longer required (`-DG`
 
 # Acceptance
 - Parsing for `Versonify` is implemented with `System.CommandLine`; the migration is scoped to the CLI layer under `src/Versonify` and must not move versioning business logic out of `Plisky.Versioning` or otherwise rewrite the core versioning engine.
-- The CLI continues to recognize the existing command names `createversion`, `override`, `updatefiles`, `passive`, `behaviour`, `set`, and `prefix` case-insensitively, and maps them to the same behaviors now exposed by `RequestedCommand`.
+- The CLI continues to recognize the existing command names `createversion`, `override`, `updatefiles`, `passive`, `behaviour`, `set`, and `prefix` case-insensitively, and maps them to the same behaviours now exposed by `RequestedCommand`.
 - Command selection remains compatibility-first:
   - the first bare token is treated as the command argument;
   - the implementation does not introduce required `System.CommandLine` subcommands;
@@ -52,7 +53,7 @@ The migration also removes deprecated aliases that are no longer required (`-DG`
   - validation failures after parsing still print the specific validation errors plus help/usage and exit non-zero;
   - help/usage text documents the positional command token model and the supported retained option names/aliases;
   - output remains compatible with existing greeting/error flows where tests or callers rely on them, but it no longer depends on `CommandArgumentSupport.GenerateShortHelp`.
-- The special compatibility probe `--QQpnf` remains supported as a case-insensitive short-circuit before normal parsing and still returns exit code `200`, unless maintained repo consumers or documentation are proven to no longer require it; absent that proof, keep it unchanged.
+- The special compatibility probe `--QQpnf` remains supported as a case-insensitive short-circuit before normal parsing and still returns exit code `200`.
 - Parser-specific plumbing is removed from `src/Versonify` once the `System.CommandLine` path is in place, including no-longer-needed reflection attributes, `CommandArgumentSupport`, parser normalization added only for the old parser, and deprecated-alias scanning/warning code.
 - Project/package references are updated to match the new parser contract:
   - `src/Versonify/Versonify.csproj` adds the required `System.CommandLine` dependency;
