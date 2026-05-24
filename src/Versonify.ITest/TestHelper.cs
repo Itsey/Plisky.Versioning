@@ -44,11 +44,14 @@ public class TestHelper {
 
     public int LastExecutionExitCode { get; set; } = 0;
 
-    internal async Task<string> ExecuteVersonify(string v) {
+    internal async Task<string> ExecuteVersonify(string v, string? workingDirectory = null) {
         var psi = new ProcessStartInfo();
         psi.FileName = GetVersonifyPath();
         psi.Arguments = v;
         psi.RedirectStandardOutput = true;
+        if (!string.IsNullOrEmpty(workingDirectory)) {
+            psi.WorkingDirectory = workingDirectory;
+        }
 
         var p = Process.Start(psi);
 

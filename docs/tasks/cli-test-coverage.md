@@ -1,5 +1,6 @@
 ---
-status: todo
+status: done
+completed: 2026-05-23
 title: Add missing CLI argument and validation ITest coverage
 created: 2026-05-18
 priority: highest
