@@ -5,7 +5,7 @@ using Shouldly;
 
 namespace Versonify.ITest;
 
-public class CommandLineArgumentCoverageTests {
+public class CommandLineArgumentCoverageTests : IDisposable {
     protected Bilge b = new Bilge("Versonify-ITest");
     protected UnitTestHelper uth;
     protected TestHelper th;
@@ -17,87 +17,166 @@ public class CommandLineArgumentCoverageTests {
         th = new TestHelper(uth);
     }
 
-    ~CommandLineArgumentCoverageTests() {
+    public void Dispose() {
         uth.ClearUpTestFiles();
     }
 
-    [Theory]
-    [InlineData("-Digits", false)]
-    [InlineData("-DG", true)]
-    public async Task Digits_argument_aliases_load_behaviour_output(string digitsArgument, bool shouldWarn) {
+    [Fact]
+    public async Task Digits_argument_loads_behaviour_output() {
         b.Info.Flow();
         string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
         string versionStorePath = uth.GetTestDataFile(resourceName);
-
-        string output = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} {digitsArgument}=*");
-
+        string output = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -Digits=*");
         output.ShouldContain("[0]:Fixed(0)");
         output.ShouldContain("[7]:ReleaseName(8)");
-        if (shouldWarn) {
-            output.ShouldContain($"Warning >> Argument '{digitsArgument}' is now deprecated.");
-        }
         th.LastExecutionExitCode.ShouldBe(0);
     }
 
-    [Theory]
-    [InlineData("-VersionSource", false)]
-    [InlineData("-VS", true)]
-    public async Task VersionSource_argument_aliases_load_passive_output(string versionSourceArgument, bool shouldWarn) {
+    [Fact]
+    public async Task VersionSource_argument_loads_passive_output() {
         b.Info.Flow();
         string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
         string versionStorePath = uth.GetTestDataFile(resourceName);
-
-        string output = await th.ExecuteVersonify($"passive {versionSourceArgument}={versionStorePath}");
-
+        string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
         output.ShouldContain("Loaded [");
-        if (shouldWarn) {
-            output.ShouldContain($"Warning >> Argument '{versionSourceArgument}' is now deprecated.");
-        }
         th.LastExecutionExitCode.ShouldBe(0);
     }
 
-    [Theory]
-    [InlineData("-MinMatch", false)]
-    [InlineData("-MM", true)]
-    public async Task MinMatch_argument_aliases_update_files(string minMatchArgument, bool shouldWarn) {
+    [Fact]
+    public async Task MinMatch_argument_updates_files() {
         b.Info.Flow();
         string workingDirectory = CreateTemporaryDirectory();
-
         try {
             string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
             string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
-
-            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} {minMatchArgument}={projectFilePath}|StdFile");
-
+            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile");
             output.ShouldContain("Version Increment Requested - Currently");
             output.ShouldContain("Version To Write:");
-            if (shouldWarn) {
-                output.ShouldContain($"Warning >> Argument '{minMatchArgument}' is now deprecated.");
-            }
             th.LastExecutionExitCode.ShouldBe(0);
         } finally {
             Directory.Delete(workingDirectory, true);
         }
     }
 
-    [Theory]
-    [InlineData("-NoOverride", false)]
-    [InlineData("-NO", true)]
-    public async Task NoOverride_argument_aliases_disable_pending_override(string noOverrideArgument, bool shouldWarn) {
+    [Fact]
+    public async Task NoOverride_argument_disables_pending_override() {
         b.Info.Flow();
         string workingDirectory = CreateTemporaryDirectory();
-
         try {
             string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
             string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
-
             _ = await th.ExecuteVersonify($"override -VersionSource={versionStorePath} -QuickValue=9.9.9");
-            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile {noOverrideArgument}");
-
+            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile -NoOverride");
             output.ShouldContain("Version Increment Override, Disabled");
-            if (shouldWarn) {
-                output.ShouldContain($"Warning >> Argument '{noOverrideArgument}' is now deprecated.");
-            }
+            th.LastExecutionExitCode.ShouldBe(0);
+        } finally {
+            Directory.Delete(workingDirectory, true);
+        }
+    }
+
+    [Fact]
+    public async Task Deprecated_DG_alias_is_not_accepted() {
+        b.Info.Flow();
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
+        string versionStorePath = uth.GetTestDataFile(resourceName);
+        _ = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -DG=*");
+        th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -DG must not be accepted.");
+    }
+
+    [Fact]
+    public async Task Deprecated_VS_alias_is_not_accepted() {
+        b.Info.Flow();
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string versionStorePath = uth.GetTestDataFile(resourceName);
+        _ = await th.ExecuteVersonify($"passive -VS={versionStorePath}");
+        th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -VS must not be accepted.");
+    }
+
+    [Fact]
+    public async Task Deprecated_MM_alias_is_not_accepted() {
+        b.Info.Flow();
+        string workingDirectory = CreateTemporaryDirectory();
+        try {
+            string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
+            string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
+            _ = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MM={projectFilePath}|StdFile");
+            th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -MM must not be accepted.");
+        } finally {
+            Directory.Delete(workingDirectory, true);
+        }
+    }
+
+    [Fact]
+    public async Task Deprecated_NO_alias_is_not_accepted() {
+        b.Info.Flow();
+        string workingDirectory = CreateTemporaryDirectory();
+        try {
+            string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
+            string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
+            _ = await th.ExecuteVersonify($"override -VersionSource={versionStorePath} -QuickValue=9.9.9");
+            _ = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile -NO");
+            th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -NO must not be accepted.");
+        } finally {
+            Directory.Delete(workingDirectory, true);
+        }
+    }
+
+    [Fact]
+    public async Task QQpnf_compatibility_probe_returns_200() {
+        b.Info.Flow();
+        _ = await th.ExecuteVersonify("--QQpnf");
+        th.LastExecutionExitCode.ShouldBe(200);
+    }
+
+    [Fact]
+    public async Task No_arguments_prints_help_and_exits_nonzero() {
+        b.Info.Flow();
+        string output = await th.ExecuteVersonify("");
+        output.ShouldContain("Parameter help for Versonify.");
+        th.LastExecutionExitCode.ShouldNotBe(0);
+    }
+
+    [Fact]
+    public async Task Invalid_argument_prints_error_and_exits_nonzero() {
+        b.Info.Flow();
+        string output = await th.ExecuteVersonify("--totally-unknown-option");
+        output.ShouldContain("Fatal:");
+        th.LastExecutionExitCode.ShouldNotBe(0);
+    }
+
+    [Fact]
+    public async Task Single_dash_long_VersionSource_option_is_accepted() {
+        b.Info.Flow();
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string versionStorePath = uth.GetTestDataFile(resourceName);
+        string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
+        output.ShouldContain("Loaded [");
+        th.LastExecutionExitCode.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Single_dash_long_MinMatch_option_is_accepted() {
+        b.Info.Flow();
+        string workingDirectory = CreateTemporaryDirectory();
+        try {
+            string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
+            string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
+            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile");
+            output.ShouldContain("Version To Write:");
+            th.LastExecutionExitCode.ShouldBe(0);
+        } finally {
+            Directory.Delete(workingDirectory, true);
+        }
+    }
+
+    [Fact]
+    public async Task NoError_suppresses_exit_code_via_dash_z_alias() {
+        b.Info.Flow();
+        string workingDirectory = CreateTemporaryDirectory();
+        try {
+            string versionStorePath = await CreateVersionStore(workingDirectory, "2.0.0");
+            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -Increment -VersionSource={versionStorePath} -MinMatch=*.zzz -Output=con -z");
+            output.ShouldContain("WARNING - No files found to update.");
             th.LastExecutionExitCode.ShouldBe(0);
         } finally {
             Directory.Delete(workingDirectory, true);

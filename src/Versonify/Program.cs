@@ -1,6 +1,7 @@
-﻿namespace Versonify;
+namespace Versonify;
 
 using System;
+using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -8,7 +9,6 @@ using System.Threading.Tasks;
 using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Diagnostics.Listeners;
-using Plisky.Plumbing;
 using Plisky.Versioning;
 
 internal class Program {
@@ -17,6 +17,23 @@ internal class Program {
     private static CompleteVersion versionerUsed;
     private static VersionStorage storage;
     private static Bilge b = new Bilge();
+
+    private static RootCommand rootCommand;
+    private static Argument<string> commandArg;
+    private static Option<string> commandOpt;
+    private static Option<bool> debugOpt;
+    private static Option<bool> dryRunOpt;
+    private static Option<string> digitsOpt;
+    private static Option<bool> noErrorOpt;
+    private static Option<bool> noOverrideOpt;
+    private static Option<string> outputOpt;
+    private static Option<bool> incrementOpt;
+    private static Option<string> quickValueOpt;
+    private static Option<string> releaseOpt;
+    private static Option<string> rootPathOpt;
+    private static Option<string> traceOpt;
+    private static Option<string> versionSourceOpt;
+    private static Option<string> minMatchOpt;
 
     private static async Task<int> Main(string[] args) {
         try {
@@ -27,12 +44,13 @@ internal class Program {
 
             WriteGreetingMessage();
 
-            CommandArgumentSupport clas = null;
-
-            clas = GetCommandLineArguments(args);
+            if (!GetCommandLineArguments(args)) {
+                WriteErrorConditions();
+                return 1;
+            }
 
             if (!ValidateArgumentSettings(options)) {
-                WriteErrorConditions(clas);
+                WriteErrorConditions();
                 return 1;
             }
 
@@ -71,9 +89,7 @@ internal class Program {
                     Console.WriteLine(e);
                 }
                 Console.WriteLine();
-                // TODO : Merge this in with the same code Above
-                string s = clas.GenerateShortHelp(options, "Versonify");
-                Console.WriteLine(s);
+                rootCommand.Parse(new[] { "--help" }).Invoke(new System.CommandLine.InvocationConfiguration());
             }
 
             b.Verbose.Log("Versonify - Exit.");
@@ -106,71 +122,122 @@ internal class Program {
         Console.WriteLine($"💖 Versioning By Versonify 💖 ({verString}).");
     }
 
-    private static CommandArgumentSupport GetCommandLineArguments(string[] args) {
-        b.Verbose.Flow();
+    private static RootCommand BuildRootCommand() {
+        var rc = new RootCommand("Parameter help for Versonify.");
+        rc.TreatUnmatchedTokensAsErrors = true;
 
-        string[] argumentsToProcess = NormaliseArgumentsForParser(args);
-        var result = new CommandArgumentSupport {
-            ArgumentPostfix = "="
-        };
-        try {
-            b.Verbose.Log("Processing Arguments");
-            result.ProcessArguments(options, argumentsToProcess);
-            options.OutputOptions = options.RawOutputOptions;
-            CheckForDeprecatedCommands(args);
-        } catch (ArgumentOutOfRangeException aox) {
+        commandArg = new Argument<string>("command");
+        commandArg.Description = "Command to execute: createversion|override|updatefiles|passive|behaviour|set|prefix";
+        commandArg.Arity = ArgumentArity.ZeroOrOne;
+        commandArg.DefaultValueFactory = _ => null;
+        rc.Add(commandArg);
+
+        commandOpt = new Option<string>("-Command", Array.Empty<string>());
+        commandOpt.Description = "Command name (legacy -Command=<name> form)";
+        rc.Add(commandOpt);
+
+        debugOpt = new Option<bool>("-Debug", Array.Empty<string>());
+        debugOpt.Description = "Enables debug logging and echoes command-line arguments";
+        rc.Add(debugOpt);
+
+        dryRunOpt = new Option<bool>("-DryRun", Array.Empty<string>());
+        dryRunOpt.Description = "Runs in output-only mode; no changes are persisted";
+        rc.Add(dryRunOpt);
+
+        digitsOpt = new Option<string>("-Digits", new[] { "-D", "-d" });
+        digitsOpt.Description = "Semicolon-separated digit indices or * for all";
+        rc.Add(digitsOpt);
+
+        noErrorOpt = new Option<bool>("-NoError", new[] { "-z" });
+        noErrorOpt.Description = "Forces zero exit code on otherwise failing executions";
+        rc.Add(noErrorOpt);
+
+        noOverrideOpt = new Option<bool>("-NoOverride", Array.Empty<string>());
+        noOverrideOpt.Description = "Ignores any saved pending-increment override";
+        rc.Add(noOverrideOpt);
+
+        outputOpt = new Option<string>("-Output", new[] { "-O", "-o", "-output" });
+        outputOpt.Description = "Output mode: env|con|azdo[:VarName]|file[:FileName]|con-nf";
+        rc.Add(outputOpt);
+
+        incrementOpt = new Option<bool>("-Increment", new[] { "-I", "-i" });
+        incrementOpt.Description = "Performs a version increment before other operations";
+        rc.Add(incrementOpt);
+
+        quickValueOpt = new Option<string>("-QuickValue", new[] { "-Q" });
+        quickValueOpt.Description = "Quick value parameter used by set/override/behaviour/prefix commands";
+        rc.Add(quickValueOpt);
+
+        releaseOpt = new Option<string>("-Release", new[] { "-R" });
+        releaseOpt.Description = "Release name associated with this version";
+        rc.Add(releaseOpt);
+
+        rootPathOpt = new Option<string>("-Root", Array.Empty<string>());
+        rootPathOpt.Description = "Root directory from which to search for versionable files";
+        rc.Add(rootPathOpt);
+
+        traceOpt = new Option<string>("-Trace", Array.Empty<string>());
+        traceOpt.Description = "Trace level: info|verbose|off";
+        rc.Add(traceOpt);
+
+        versionSourceOpt = new Option<string>("-VersionSource", new[] { "-V", "-v" });
+        versionSourceOpt.Description = "Version store initialisation string";
+        rc.Add(versionSourceOpt);
+
+        minMatchOpt = new Option<string>("-MinMatch", new[] { "-M", "-m" });
+        minMatchOpt.Description = "Semicolon-separated minmatch patterns for file update";
+        rc.Add(minMatchOpt);
+
+        return rc;
+    }
+
+    private static bool GetCommandLineArguments(string[] args) {
+        rootCommand = BuildRootCommand();
+        var parseResult = rootCommand.Parse(args);
+
+        if (parseResult.Errors.Count > 0) {
             Console.WriteLine("Fatal: Invalid Arguments Passed to Versonify.");
-            Console.WriteLine($"{aox.ParamName} - {aox.Message}");
-            throw;
-        } catch (TargetInvocationException tox) {
-            if (tox.InnerException.GetType() == typeof(ArgumentOutOfRangeException)) {
-                var axx = (ArgumentOutOfRangeException)tox.InnerException;
-                Console.WriteLine("Fatal: Invalid Arguments Passed to Versonify.");
-                Console.WriteLine($"{axx.ParamName} - {axx.Message}");
-            } else {
-                throw;
+            foreach (var error in parseResult.Errors) {
+                Console.WriteLine(error.Message);
             }
-        }
-        return result;
-    }
-
-    private static string[] NormaliseArgumentsForParser(string[] args) {
-        string[] result = new string[args.Length];
-
-        for (int i = 0; i < args.Length; i++) {
-            if (args[i].Equals("-NoError", StringComparison.OrdinalIgnoreCase)) {
-                result[i] = "-z";
-            } else {
-                result[i] = args[i];
-            }
+            return false;
         }
 
-        return result;
+        string cmdFromPositional = parseResult.GetValue(commandArg);
+        string cmdFromOption = parseResult.GetValue(commandOpt);
+        options.Command = cmdFromPositional ?? cmdFromOption;
+
+        options.Debug = parseResult.GetValue(debugOpt);
+        options.DryRunOnly = parseResult.GetValue(dryRunOpt);
+        options.ReturnZero = parseResult.GetValue(noErrorOpt);
+        options.NoOverride = parseResult.GetValue(noOverrideOpt);
+        options.PerformIncrement = parseResult.GetValue(incrementOpt);
+        options.QuickValue = parseResult.GetValue(quickValueOpt);
+        options.Release = parseResult.GetValue(releaseOpt);
+        options.Root = parseResult.GetValue(rootPathOpt);
+        options.Trace = parseResult.GetValue(traceOpt);
+        options.VersionPersistanceValue = parseResult.GetValue(versionSourceOpt);
+
+        string rawDigits = parseResult.GetValue(digitsOpt);
+        options.DigitManipulations = rawDigits != null
+            ? rawDigits.Split(';', StringSplitOptions.RemoveEmptyEntries)
+            : null;
+
+        string rawMinMatch = parseResult.GetValue(minMatchOpt);
+        options.VersionTargetMinMatch = rawMinMatch != null
+            ? rawMinMatch.Split(';', StringSplitOptions.RemoveEmptyEntries)
+            : null;
+
+        options.RawOutputOptions = parseResult.GetValue(outputOpt);
+        options.OutputOptions = options.RawOutputOptions;
+
+        return true;
     }
 
-    private static void CheckForDeprecatedCommands(string[] args) {
-        foreach (string arg in args) {
-            string argumentName = arg;
-            int valueSeparatorPosition = arg.IndexOf('=');
-            if (valueSeparatorPosition >= 0) {
-                argumentName = arg.Substring(0, valueSeparatorPosition);
-            }
-
-            foreach (var c in VersonifyCommandline.deprecatedCommandMappings) {
-                if (argumentName.Equals(c.Key, StringComparison.OrdinalIgnoreCase)) {
-                    Console.WriteLine($"Warning >> Argument '{c.Key}' is now deprecated. Please use '{c.Value}' instead. Refer to the documentation for updated usage.");
-                    break;
-                }
-            }
-        }
-    }
-
-    private static void WriteErrorConditions(CommandArgumentSupport clas) {
-        // TODO : Merge this in with the same code below
+    private static void WriteErrorConditions() {
         Console.WriteLine("Fatal:  Argument Validation Failed.");
         Console.WriteLine();
-        string s = clas.GenerateShortHelp(options, "Versonify.");
-        Console.WriteLine(s);
+        rootCommand.Parse(new[] { "--help" }).Invoke(new System.CommandLine.InvocationConfiguration());
     }
 
     private static void ConfigureTrace() {
@@ -256,7 +323,7 @@ internal class Program {
 
     private static bool ValidateDigitsPresent(string[] digits, string commandName) {
         if (digits == null || digits.Length == 0) {
-            Console.WriteLine($"Error >> The {commandName} command requires at least one digit to update. Use -DG=<digit> or -DG=*.");
+            Console.WriteLine($"Error >> The {commandName} command requires at least one digit to update. Use -D=<digit> or -D=*.");
             return false;
         }
         return true;
@@ -272,6 +339,7 @@ internal class Program {
 
         if (!ValidateVersionStorage()) {
             result.WasProcessedSuccessfully = false;
+            result.ExitCode = 1;
             return result;
         }
 

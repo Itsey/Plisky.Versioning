@@ -1,13 +1,14 @@
 ---
-status: todo
+status: done
 title: Migrate Versonify CLI parsing from Plisky.Plumbing to System.CommandLine
 created: 2026-05-02
 priority: medium
 reference: 1
+completed: 2026-05-24
 ---
 
 # What
-Migrate the `Versonify` command-line parsing layer from `Plisky.Plumbing` / `CommandArgumentSupport` to `System.CommandLine` without changing the underlying versioning behaviors in `Plisky.Versioning`. The migration is limited to the CLI surface in `src/Versonify`, especially `Program.cs` and `VersonifyCommandline.cs`, plus the related tests in `src/Versonify.ITest` and `src/Plisky.Versioning.Test`.
+Migrate the `Versonify` command-line parsing layer from `Plisky.Plumbing` / `CommandArgumentSupport` to `System.CommandLine` without changing the underlying versioning behaviours in `Plisky.Versioning`. The migration is limited to the CLI surface in `src/Versonify`, especially `Program.cs` and `VersonifyCommandline.cs`, plus the related tests in `src/Versonify.ITest` and `src/Plisky.Versioning.Test`.
 
 The replacement parser must keep the current command vocabulary (`createversion`, `override`, `updatefiles`, `passive`, `behaviour`, `set`, `prefix`) and the current non-deprecated options working for existing callers. For compatibility, the first token must continue to be interpreted as the command name rather than moving to real `System.CommandLine` subcommands. Existing single-dash long options such as `-VersionSource` and `-QuickValue` are part of the supported surface and must remain accepted.
 

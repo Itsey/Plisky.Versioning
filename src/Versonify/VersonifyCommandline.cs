@@ -1,15 +1,12 @@
 ﻿namespace Versonify;
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Plisky.CodeCraft;
 using Plisky.Diagnostics;
-using Plisky.Plumbing;
 using Plisky.Versioning;
 
-[CommandLineArguments]
 public class VersonifyCommandline {
     protected Bilge b = new Bilge("CommandLineArguments");
     private OutputPossibilities outcache = OutputPossibilities.None;
@@ -20,42 +17,22 @@ public class VersonifyCommandline {
         VersionTargetMinMatch = null;
     }
 
-    [CommandLineArg("Command", Description = "Choose one of: CreateVersion,Override,UpdateFiles,Passive,Behaviour,Set,Prefix", IsSingleParameterDefault = true)]
     public string Command { get; set; }
 
     public string ConsoleTemplate { get; private set; }
     public string PverFileName { get; set; }
     public DigitIncrementBehaviour IncrementBehaviour { get; set; }
 
-    public static readonly Dictionary<string, string> deprecatedCommandMappings = new(StringComparer.OrdinalIgnoreCase) {
-        { "-DG", "-d" },
-        { "-VS", "-v" },
-        { "-NO", "-NoOverride" },
-        { "-MM", "-m" }
-    };
-
-    //Current bug in Plisky.Plumbing 1.7.25 means -debug and -dryrun must be above -Digits in the code to work correctly.
-    [CommandLineArg("Debug", Description = "Enables Debug Logging")]
     public bool Debug { get; set; }
 
-    [CommandLineArg("DryRun", Description = "Runs the tool in output mode only, no changes are made")]
     public bool DryRunOnly { get; set; }
 
-    [CommandLineArg("DG")]  // Marked as deprecated. Retained for backward compatability
-    [CommandLineArg("D")]
-    [CommandLineArg("Digits", Description = "Separated characters to form digits for the version number", ArraySeparatorChar = ";")]
     public string[] DigitManipulations { get; set; }
 
-    [CommandLineArg("NoError")]
-    [CommandLineArg("z")]
     public bool ReturnZero { get; set; }
 
-    [CommandLineArg("NO")]  // Marked as deprecated. Retained for backward compatability
-    [CommandLineArg("NoOverride", Description = "Allows you to ignore a saved override (see documentation).")]
     public bool NoOverride { get; set; }
 
-    [CommandLineArg("O")]
-    [CommandLineArg("Output", Description = "Specifies output options supports:  Env,Con,AzDo,File,Np,Npo")]
     public string RawOutputOptions { get; set; }
 
     public string OutputOptions {
@@ -73,19 +50,12 @@ public class VersonifyCommandline {
         }
     }
 
-    [CommandLineArg("I")]
-    [CommandLineArg("Increment", Description = "Perform increment prior to updating the files.")]
     public bool PerformIncrement { get; set; }
 
-    [CommandLineArg("Q")]
-    [CommandLineArg("QuickValue")]
     public string QuickValue { get; set; }
 
-    [CommandLineArg("R")]
-    [CommandLineArg("Release", Description = "The release name associated with this version number")]
     public string Release { get; set; }
 
-    [CommandLineArg("Root", Description = "The root disk location to start searching for versionable files in")]
     public string Root {
         get {
             if (string.IsNullOrEmpty(pathPassed)) {
@@ -99,17 +69,10 @@ public class VersonifyCommandline {
     }
 
 
-    [CommandLineArg("Trace", Description = "Enables Debug Tracing, set to Info,Verbose,Off")]
     public string Trace { get; set; }
 
-    [CommandLineArg("V")]
-    [CommandLineArg("VS")]  // Marked as deprecated. Retained for backward compatability
-    [CommandLineArg("VersionSource", Description = "Provides the source for retrieving version information")]
     public string VersionPersistanceValue { get; set; }
 
-    [CommandLineArg("M")]
-    [CommandLineArg("MM")]  // Marked as deprecated. Retained for backward compatability
-    [CommandLineArg("MinMatch", ArraySeparatorChar = ";", Description = "A series of minmatch path descriptions to files to update")]
     public string[] VersionTargetMinMatch { get; set; }
 
     public VersioningCommand RequestedCommand {
