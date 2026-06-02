@@ -215,7 +215,7 @@ public class Exploratory {
         string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        string args = $"passive -v={vStoreFilePath} -O=con-nf -Debug=v-** -Q=1.9.4.3";
+        string args = $"passive -v={vStoreFilePath} -O=con-nf -Debug -Q=1.9.4.3";
         string s = await th.ExecuteVersonify(args);
 
         s.ShouldContain("PNFV]", customMessage: "Nuke Marker not found in output");
@@ -228,7 +228,7 @@ public class Exploratory {
         string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        string args = $"passive -v={vStoreFilePath} -O=con -Debug=v-** -Q=1.9.4.3";
+        string args = $"passive -v={vStoreFilePath} -O=con -Debug -Q=1.9.4.3";
         string s = await th.ExecuteVersonify(args);
 
         s.ShouldNotContain("PNFV]");

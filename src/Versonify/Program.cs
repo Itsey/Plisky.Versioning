@@ -1,6 +1,7 @@
 namespace Versonify;
 
 using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +14,23 @@ using Plisky.Versioning;
 
 internal class Program {
     private const string ALL_DIGITS_WILDCARD = "*";
+    private static readonly IReadOnlyDictionary<string, string> deprecatedAliasMap = new Dictionary<string, string>(StringComparer.Ordinal) {
+        ["-Command"] = "--command",
+        ["-Debug"] = "--debug",
+        ["-DryRun"] = "--dry-run",
+        ["-Digits"] = "--digits",
+        ["-NoError"] = "--no-error",
+        ["-NoOverride"] = "--no-override",
+        ["-Output"] = "--output",
+        ["-Increment"] = "--increment",
+        ["-QuickValue"] = "--quick-value",
+        ["-Release"] = "--release",
+        ["-Root"] = "--root",
+        ["-Trace"] = "--trace",
+        ["-VersionSource"] = "--version-source",
+        ["-MinMatch"] = "--min-match",
+        ["-output"] = "--output",
+    };
     public static VersonifyCommandline options = new();
     private static CompleteVersion versionerUsed;
     private static VersionStorage storage;
@@ -43,6 +61,11 @@ internal class Program {
             }
 
             WriteGreetingMessage();
+
+            if (IsHelpRequested(args)) {
+                DisplayHelp();
+                return 0;
+            }
 
             if (!GetCommandLineArguments(args)) {
                 WriteErrorConditions();
@@ -89,7 +112,7 @@ internal class Program {
                     Console.WriteLine(e);
                 }
                 Console.WriteLine();
-                rootCommand.Parse(new[] { "--help" }).Invoke(new System.CommandLine.InvocationConfiguration());
+                DisplayHelp();
             }
 
             b.Verbose.Log("Versonify - Exit.");
@@ -122,7 +145,18 @@ internal class Program {
         Console.WriteLine($"💖 Versioning By Versonify 💖 ({verString}).");
     }
 
-    private static RootCommand BuildRootCommand() {
+    private static bool IsHelpRequested(string[] args) {
+        foreach (string arg in args) {
+            if (arg.Equals("--help", StringComparison.OrdinalIgnoreCase) ||
+                arg.Equals("-h", StringComparison.OrdinalIgnoreCase)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static RootCommand BuildRootCommand(bool includeDeprecatedAliases = true) {
         var rc = new RootCommand("Parameter help for Versonify.");
         rc.TreatUnmatchedTokensAsErrors = true;
 
@@ -132,59 +166,73 @@ internal class Program {
         commandArg.DefaultValueFactory = _ => null;
         rc.Add(commandArg);
 
-        commandOpt = new Option<string>("-Command", Array.Empty<string>());
-        commandOpt.Description = "Command name (legacy -Command=<name> form)";
+        string[] commandAliases = includeDeprecatedAliases ? new[] { "-Command" } : Array.Empty<string>();
+        commandOpt = new Option<string>("--command", commandAliases);
+        commandOpt.Description = "Command name";
         rc.Add(commandOpt);
 
-        debugOpt = new Option<bool>("-Debug", Array.Empty<string>());
+        string[] debugAliases = includeDeprecatedAliases ? new[] { "-Debug" } : Array.Empty<string>();
+        debugOpt = new Option<bool>("--debug", debugAliases);
         debugOpt.Description = "Enables debug logging and echoes command-line arguments";
         rc.Add(debugOpt);
 
-        dryRunOpt = new Option<bool>("-DryRun", Array.Empty<string>());
+        string[] dryRunAliases = includeDeprecatedAliases ? new[] { "-DryRun" } : Array.Empty<string>();
+        dryRunOpt = new Option<bool>("--dry-run", dryRunAliases);
         dryRunOpt.Description = "Runs in output-only mode; no changes are persisted";
         rc.Add(dryRunOpt);
 
-        digitsOpt = new Option<string>("-Digits", new[] { "-D", "-d" });
+        string[] digitsAliases = includeDeprecatedAliases ? new[] { "-D", "-d", "-Digits" } : new[] { "-D", "-d" };
+        digitsOpt = new Option<string>("--digits", digitsAliases);
         digitsOpt.Description = "Semicolon-separated digit indices or * for all";
         rc.Add(digitsOpt);
 
-        noErrorOpt = new Option<bool>("-NoError", new[] { "-z" });
+        string[] noErrorAliases = includeDeprecatedAliases ? new[] { "-z", "-NoError" } : new[] { "-z" };
+        noErrorOpt = new Option<bool>("--no-error", noErrorAliases);
         noErrorOpt.Description = "Forces zero exit code on otherwise failing executions";
         rc.Add(noErrorOpt);
 
-        noOverrideOpt = new Option<bool>("-NoOverride", Array.Empty<string>());
+        string[] noOverrideAliases = includeDeprecatedAliases ? new[] { "-NoOverride" } : Array.Empty<string>();
+        noOverrideOpt = new Option<bool>("--no-override", noOverrideAliases);
         noOverrideOpt.Description = "Ignores any saved pending-increment override";
         rc.Add(noOverrideOpt);
 
-        outputOpt = new Option<string>("-Output", new[] { "-O", "-o", "-output" });
+        string[] outputAliases = includeDeprecatedAliases ? new[] { "-O", "-o", "-Output", "-output" } : new[] { "-O", "-o" };
+        outputOpt = new Option<string>("--output", outputAliases);
         outputOpt.Description = "Output mode: env|con|azdo[:VarName]|file[:FileName]|con-nf";
         rc.Add(outputOpt);
 
-        incrementOpt = new Option<bool>("-Increment", new[] { "-I", "-i" });
+        string[] incrementAliases = includeDeprecatedAliases ? new[] { "-I", "-i", "-Increment" } : new[] { "-I", "-i" };
+        incrementOpt = new Option<bool>("--increment", incrementAliases);
         incrementOpt.Description = "Performs a version increment before other operations";
         rc.Add(incrementOpt);
 
-        quickValueOpt = new Option<string>("-QuickValue", new[] { "-Q" });
+        string[] quickValueAliases = includeDeprecatedAliases ? new[] { "-Q", "-QuickValue" } : new[] { "-Q" };
+        quickValueOpt = new Option<string>("--quick-value", quickValueAliases);
         quickValueOpt.Description = "Quick value parameter used by set/override/behaviour/prefix commands";
         rc.Add(quickValueOpt);
 
-        releaseOpt = new Option<string>("-Release", new[] { "-R" });
+        string[] releaseAliases = includeDeprecatedAliases ? new[] { "-R", "-Release" } : new[] { "-R" };
+        releaseOpt = new Option<string>("--release", releaseAliases);
         releaseOpt.Description = "Release name associated with this version";
         rc.Add(releaseOpt);
 
-        rootPathOpt = new Option<string>("-Root", Array.Empty<string>());
+        string[] rootPathAliases = includeDeprecatedAliases ? new[] { "-Root" } : Array.Empty<string>();
+        rootPathOpt = new Option<string>("--root", rootPathAliases);
         rootPathOpt.Description = "Root directory from which to search for versionable files";
         rc.Add(rootPathOpt);
 
-        traceOpt = new Option<string>("-Trace", Array.Empty<string>());
+        string[] traceAliases = includeDeprecatedAliases ? new[] { "-Trace" } : Array.Empty<string>();
+        traceOpt = new Option<string>("--trace", traceAliases);
         traceOpt.Description = "Trace level: info|verbose|off";
         rc.Add(traceOpt);
 
-        versionSourceOpt = new Option<string>("-VersionSource", new[] { "-V", "-v" });
+        string[] versionSourceAliases = includeDeprecatedAliases ? new[] { "-V", "-v", "-VersionSource" } : new[] { "-V", "-v" };
+        versionSourceOpt = new Option<string>("--version-source", versionSourceAliases);
         versionSourceOpt.Description = "Version store initialisation string";
         rc.Add(versionSourceOpt);
 
-        minMatchOpt = new Option<string>("-MinMatch", new[] { "-M", "-m" });
+        string[] minMatchAliases = includeDeprecatedAliases ? new[] { "-M", "-m", "-MinMatch" } : new[] { "-M", "-m" };
+        minMatchOpt = new Option<string>("--min-match", minMatchAliases);
         minMatchOpt.Description = "Semicolon-separated minmatch patterns for file update";
         rc.Add(minMatchOpt);
 
@@ -202,6 +250,8 @@ internal class Program {
             }
             return false;
         }
+
+        EmitDeprecatedAliasWarnings(args);
 
         string cmdFromPositional = parseResult.GetValue(commandArg);
         string cmdFromOption = parseResult.GetValue(commandOpt);
@@ -237,7 +287,43 @@ internal class Program {
     private static void WriteErrorConditions() {
         Console.WriteLine("Fatal:  Argument Validation Failed.");
         Console.WriteLine();
-        rootCommand.Parse(new[] { "--help" }).Invoke(new System.CommandLine.InvocationConfiguration());
+        DisplayHelp();
+    }
+
+    private static void DisplayHelp() {
+        var helpCommand = BuildRootCommand(false);
+        helpCommand.Parse(new[] { "--help" }).Invoke(new System.CommandLine.InvocationConfiguration());
+    }
+
+    private static void EmitDeprecatedAliasWarnings(string[] args) {
+        var seenAliases = new HashSet<string>(StringComparer.Ordinal);
+        foreach (string arg in args) {
+            string extractedToken = ExtractOptionToken(arg);
+            if (!deprecatedAliasMap.TryGetValue(extractedToken, out string canonicalAlias)) {
+                continue;
+            }
+
+            if (seenAliases.Add(extractedToken)) {
+                Console.Error.WriteLine(FormatDeprecationWarning(extractedToken, canonicalAlias));
+            }
+        }
+    }
+
+    private static string ExtractOptionToken(string rawArg) {
+        if (string.IsNullOrWhiteSpace(rawArg) || !rawArg.StartsWith("-", StringComparison.Ordinal)) {
+            return string.Empty;
+        }
+
+        int equalsIndex = rawArg.IndexOf('=');
+        if (equalsIndex >= 0) {
+            return rawArg.Substring(0, equalsIndex);
+        }
+
+        return rawArg;
+    }
+
+    private static string FormatDeprecationWarning(string deprecatedAlias, string canonicalAlias) {
+        return $"WARNING: '{deprecatedAlias}' is deprecated. Use '{canonicalAlias}' instead.";
     }
 
     private static void ConfigureTrace() {
@@ -357,7 +443,7 @@ internal class Program {
             case VersioningCommand.UpdateFiles:
                 if (options.VersionTargetMinMatch == null || options.VersionTargetMinMatch.Length == 0) {
                     result.AddError("Error >> The Update command requires a minmatch file to be provided. Use -M=<path to minmatch file.>¦-M=Minmatch glob");
-                    // TODO : PRoper Exit Code Map
+                    // TODO : Proper Exit Code Map
                     result.ExitCode = 7;
                     result.WasProcessedSuccessfully = false;
                 } else {
@@ -533,14 +619,6 @@ internal class Program {
     }
 
 
-
-    [Conditional("DEBUG")]
-    private static void DebugLog(string l) {
-#if DEBUG
-        Console.WriteLine(l);
-#endif
-    }
-
     private static void CreateNewVersionStore() {
         string startVer = "0.0.0.0";
         if (!string.IsNullOrEmpty(options.QuickValue)) {
@@ -552,10 +630,10 @@ internal class Program {
         }
         Console.WriteLine($"Creating New Version Store: {startVer}");
 
-        var cv = new CompleteVersion(startVer);
+        var cv = new CompleteVersion(startVer) {
+            ReleaseName = options.Release
+        };
         versionerUsed = cv;
-
-        cv.ReleaseName = options.Release;
 
         Console.WriteLine($"Saving {cv.GetVersionString()}");
         storage.Persist(cv);

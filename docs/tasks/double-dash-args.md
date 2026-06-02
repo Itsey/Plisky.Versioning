@@ -1,9 +1,10 @@
 ---
-status: todo
+status: done
 title: Migrate CLI options to double-dash POSIX-style naming
 created: 2026-05-24
 priority: high
 reference: 5
+completed: 2026-05-25
 ---
 # Reference
 5 — Replace single-dash long options with double-dash kebab-case options and deprecate the old forms with a console warning

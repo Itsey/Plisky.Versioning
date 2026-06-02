@@ -1,7 +1,14 @@
 ﻿using System.Diagnostics;
 using Plisky.Test;
+using Shouldly;
 
 namespace Versonify.ITest;
+
+internal sealed class VersonifyExecutionResult {
+    public string StdOut { get; init; } = string.Empty;
+    public string StdErr { get; init; } = string.Empty;
+    public int ExitCode { get; init; }
+}
 
 public class TestHelper {
     private UnitTestHelper uth;
@@ -45,21 +52,36 @@ public class TestHelper {
     public int LastExecutionExitCode { get; set; } = 0;
 
     internal async Task<string> ExecuteVersonify(string v, string? workingDirectory = null) {
+        var result = await ExecuteVersonifyWithStreams(v, workingDirectory);
+        return result.StdOut;
+    }
+
+    internal async Task<VersonifyExecutionResult> ExecuteVersonifyWithStreams(string v, string? workingDirectory = null) {
         var psi = new ProcessStartInfo();
         psi.FileName = GetVersonifyPath();
         psi.Arguments = v;
         psi.RedirectStandardOutput = true;
+        psi.RedirectStandardError = true;
         if (!string.IsNullOrEmpty(workingDirectory)) {
             psi.WorkingDirectory = workingDirectory;
         }
 
         var p = Process.Start(psi);
 
-        Assert.NotNull(p);
+        p.ShouldNotBeNull();
 
-        string s = await p.StandardOutput.ReadToEndAsync();
+        var stdOutReadTask = p.StandardOutput.ReadToEndAsync();
+        var stdErrReadTask = p.StandardError.ReadToEndAsync();
         await p.WaitForExitAsync();
+        string stdOut = await stdOutReadTask;
+        string stdErr = await stdErrReadTask;
         LastExecutionExitCode = p.ExitCode;
-        return s;
+
+        var result = new VersonifyExecutionResult {
+            StdOut = stdOut,
+            StdErr = stdErr,
+            ExitCode = p.ExitCode,
+        };
+        return result;
     }
 }
