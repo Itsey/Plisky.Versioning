@@ -1,0 +1,4 @@
+﻿#1
+/versonify Create a Versonify VStore with the following details.  Version: 1.0.0.0, Name: testVstore Version Store Location: {0}
+#2
+/versonify What is the next version number using the vstore {0}

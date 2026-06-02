@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.13.35806.99
+# Visual Studio Version 18
+VisualStudioVersion = 18.5.11801.241 oobstable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_Dependencies", "_Dependencies\_Dependencies.csproj", "{DB121786-9FDC-4DA8-AA41-937F014C6BE5}"
 EndProject
@@ -17,13 +17,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
 		..\.github\copilot-instructions.md = ..\.github\copilot-instructions.md
-		..\readme.md = ..\readme.md
 		..\.github\prompts\nuke.prompt.md = ..\.github\prompts\nuke.prompt.md
+		..\readme.md = ..\readme.md
 		..\build\versonify-ci.yml = ..\build\versonify-ci.yml
 		..\build\versonify-release.yml = ..\build\versonify-release.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "versonify.build", "Versonify.build\versonify.build.csproj", "{6D55FDF4-F56B-F680-3246-3583DC529375}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Versonify.ManualTest", "Versonify.ManualTest\Versonify.ManualTest.csproj", "{3ABEF9FB-04B2-4E30-A576-81519850FEA4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,10 @@ Global
 		{7F8748F3-FAC8-45D0-B75C-426C2575375C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6D55FDF4-F56B-F680-3246-3583DC529375}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6D55FDF4-F56B-F680-3246-3583DC529375}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ABEF9FB-04B2-4E30-A576-81519850FEA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ABEF9FB-04B2-4E30-A576-81519850FEA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ABEF9FB-04B2-4E30-A576-81519850FEA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ABEF9FB-04B2-4E30-A576-81519850FEA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
