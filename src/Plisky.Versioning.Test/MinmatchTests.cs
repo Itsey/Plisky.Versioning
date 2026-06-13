@@ -90,7 +90,7 @@ public class MinmatchTests {
     public void Versioning_MMLoadedFromFile() {
         b.Info.Flow();
 
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.MMTypeData);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.MMTypeData)!;
         string srcFile = uth.GetTestDataFile(reid);
 
         var mva = new MockVersionStorage("");

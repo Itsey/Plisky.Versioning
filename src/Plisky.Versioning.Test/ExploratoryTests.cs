@@ -76,10 +76,10 @@ public class ExploratoryTests {
     [Trait(Traits.Age, Traits.Fresh)]
     [InlineData("")]
     [InlineData(null)]
-    public void Validate_digitoptions_returns_false_when_nullOrEmpty_options(string digitrequested) {
+    public void Validate_digitoptions_returns_false_when_nullOrEmpty_options(string? digitrequested) {
         var cv = CompleteVersion.GetDefault();
 
-        bool result = cv.ValidateDigitOptions([digitrequested]);
+        bool result = cv.ValidateDigitOptions([digitrequested!]);
 
         result.ShouldBeFalse();
     }
@@ -89,7 +89,7 @@ public class ExploratoryTests {
     public void Validate_digitoptions_returns_false_when_nullParameter() {
         var cv = CompleteVersion.GetDefault();
 
-        bool result = cv.ValidateDigitOptions(null);
+        bool result = cv.ValidateDigitOptions(null!);
 
         result.ShouldBeFalse();
     }
@@ -113,7 +113,7 @@ public class ExploratoryTests {
     [InlineData("DailyAutoIncrement", VersioningCommand.BehaviourUpdate)]
     [InlineData("ContinualIncrement", VersioningCommand.BehaviourUpdate)]
     [InlineData("Bannana", VersioningCommand.Invalid)]
-    public void CommandLine_correctly_sets_behviourtypes(string quickValue, VersioningCommand cmd) {
+    public void CommandLine_correctly_sets_behviourtypes(string? quickValue, VersioningCommand cmd) {
         VersonifyCommandline sut = new();
         sut.Command = "behaviour";
         sut.QuickValue = quickValue;
@@ -128,7 +128,7 @@ public class ExploratoryTests {
     [Trait(Traits.Style, Traits.Integration)]
     [Trait("Cause", "Bug:464")]
     public void Build_version_does_not_update_during_build() {
-        string ident = TestResources.GetIdentifiers(TestResourcesReferences.Bug464RefContent);
+        string ident = TestResources.GetIdentifiers(TestResourcesReferences.Bug464RefContent)!;
         string srcFile = uth.GetTestDataFile(ident);
         string fn = ts.GetFileAsTemporary(srcFile);
         CompleteVersion cv = new(new VersionUnit("2"), new VersionUnit("0", "."), new VersionUnit("Unicorn", "-"), new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement));
@@ -241,9 +241,9 @@ public class ExploratoryTests {
 
         version.SetIndividualDigits(["1"], valueToSet);
 
-        string d0 = version.Digits[0].Value;
-        string d1 = version.Digits[1].Value;
-        string d2 = version.Digits[2].Value;
+        string? d0 = version.Digits[0].Value;
+        string? d1 = version.Digits[1].Value;
+        string? d2 = version.Digits[2].Value;
 
         d0.ShouldBe("1");
         d1.ShouldBe(valueToSet);
@@ -257,9 +257,9 @@ public class ExploratoryTests {
 
         version.SetIndividualDigits(["0", "2"], valueToSet);
 
-        string d0 = version.Digits[0].Value;
-        string d1 = version.Digits[1].Value;
-        string d2 = version.Digits[2].Value;
+        string? d0 = version.Digits[0].Value;
+        string? d1 = version.Digits[1].Value;
+        string? d2 = version.Digits[2].Value;
 
         d0.ShouldBe(valueToSet);
         d1.ShouldBe("2");
@@ -312,7 +312,7 @@ public class ExploratoryTests {
 
         version.ApplyValueUpdate(0, valueToSet);
 
-        string d0 = version.Digits[0].Value;
+        string? d0 = version.Digits[0].Value;
 
         d0.ShouldBe(valueToSet);
     }
@@ -348,7 +348,7 @@ public class ExploratoryTests {
 
         version.ApplyValueUpdate(0, "ReleaseName");
 
-        string d0 = version.Digits[0].Value;
+        string? d0 = version.Digits[0].Value;
 
         d0.ShouldBe(expectedReleaseName);
     }
@@ -371,7 +371,7 @@ public class ExploratoryTests {
     [InlineData(null, "")]
     [InlineData("myNewRelease", "myNewRelease")]
     [InlineData("release123", "release123")]
-    public void Outputter_File_WritesReleaseNameToFile(string releaseName, string expectedOutput) {
+    public void Outputter_File_WritesReleaseNameToFile(string? releaseName, string expectedOutput) {
         b.Info.Flow();
 
         MockVersionStorage mvs = new("0.0.0.1");
@@ -443,12 +443,12 @@ public class ExploratoryTests {
     [InlineData(null, "ImNoLongerNull")]
     [InlineData("", "ImNoLongerEmpty")]
     [InlineData("releaseA", "release space123")]
-    public void SetReleaseNameCommand_SetsReleaseNameInVersionStore(string currentRelease, string newRelease) {
+    public void SetReleaseNameCommand_SetsReleaseNameInVersionStore(string? currentRelease, string newRelease) {
         CompleteVersion cv = new("1.2.3.4") { ReleaseName = currentRelease };
 
         cv.SetReleaseName(newRelease);
 
-        string releaseName = cv.ReleaseName;
+        string? releaseName = cv.ReleaseName;
 
         releaseName.ShouldBe(newRelease);
     }

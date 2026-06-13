@@ -111,7 +111,7 @@ public class VersonifyCommandLineTests {
         };
         Assert.Equal(OutputPossibilities.None, sut.OutputsActive);
 
-        sut.OutputOptions = null;
+        sut.OutputOptions = null!;
         Assert.Equal(OutputPossibilities.None, sut.OutputsActive);
     }
 }

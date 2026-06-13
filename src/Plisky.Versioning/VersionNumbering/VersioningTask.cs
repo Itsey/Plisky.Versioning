@@ -17,7 +17,9 @@ public class VersioningTask {
 
     public delegate void LogEventHandler(object sender, LogEventArgs e);
 
-    public event LogEventHandler? Logger = null;
+#pragma warning disable CS0067 // Event is never used
+    public event LogEventHandler? Logger;
+#pragma warning restore CS0067
 
     protected VersionStorage? storage;
     public string? VersionString { get; set; }

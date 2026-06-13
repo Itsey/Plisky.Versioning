@@ -252,7 +252,7 @@ public class KebabCaseOptions : IDisposable {
     }
 
     private string CopyResourceToDirectory(TestResourcesReferences resourceReference, string workingDirectory, string destinationFileName) {
-        string resourceName = TestResources.GetIdentifiers(resourceReference);
+        string resourceName = TestResources.GetIdentifiers(resourceReference)!;
         string sourcePath = uth.GetTestDataFile(resourceName);
         string result = Path.Combine(workingDirectory, destinationFileName);
 

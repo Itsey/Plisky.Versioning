@@ -1,4 +1,4 @@
-﻿namespace Plisky.CodeCraft;
+namespace Plisky.CodeCraft;
 
 using System.IO;
 using System.Text.Json;
@@ -17,7 +17,7 @@ public class JsonVersionPersister : VersionStorage {
     }
 
     public JsonVersionPersister(string initialisationValue) {
-        this.InitValue = new VersionStorageOptions() {
+        InitValue = new VersionStorageOptions() {
             InitialisationString = initialisationValue
         };
 
@@ -43,7 +43,9 @@ public class JsonVersionPersister : VersionStorage {
 
     protected override void ActualPersist(CompleteVersion cv) {
         string val = JsonSerializer.Serialize(cv);
-        File.WriteAllText(InitValue.InitialisationString, val);
+        if (InitValue != null) {
+            File.WriteAllText(InitValue.InitialisationString, val);
+        }
     }
 
     protected override bool ActualDoesVstoreExist(VersionStorageOptions? opts) {

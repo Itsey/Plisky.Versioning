@@ -1,4 +1,4 @@
-﻿namespace Plisky.CodeCraft;
+namespace Plisky.CodeCraft;
 
 using System;
 using System.Globalization;
@@ -39,12 +39,12 @@ internal class VersionableDigit {
     /// </summary>
     /// <remarks>Set to -1 to perform no pending update</remarks>
     internal int? OverrideValueDuringIncrement {
-        get { return this.overrideValue; }
+        get { return overrideValue; }
         set {
             if (value >= 0) {
-                this.overrideValue = value;
+                overrideValue = value;
             } else {
-                this.overrideValue = null;
+                overrideValue = null;
             }
         }
     }
@@ -54,21 +54,23 @@ internal class VersionableDigit {
     /// when prompts are used for version numbers to reflect the prompt request without popping the dialig up
     /// more than once.
     /// </summary>
-    internal string PromptValueDuringIncrement {
+    internal string? PromptValueDuringIncrement {
         get { return overrideValue.ToString(); }
         set {
-            // b.Assert.True(this.Behaviour == DigitIncrementBehaviour.Prompt, "Invalid operation when the behaviour is not prompt");
+            if (value != null) {
+                overrideValue = int.Parse(value, CultureInfo.CurrentUICulture);
 
-            this.overrideValue = int.Parse(value, CultureInfo.CurrentUICulture);
-
-            if (this.overrideValue <= 0) {
-                this.overrideValue = -1;
+                if (overrideValue <= 0) {
+                    overrideValue = -1;
+                }
+            } else {
+                overrideValue = null;
             }
         }
     }
 
     public override string ToString() {
-        return this.currentValue.ToString(CultureInfo.CurrentUICulture);
+        return currentValue.ToString(CultureInfo.CurrentUICulture);
     }
 
     internal void SetFromString(string value) {
@@ -77,8 +79,8 @@ internal class VersionableDigit {
     }
 
     internal void Initialise(DigitName currentPosition, DigitIncrementBehaviour beh) {
-        this.position = currentPosition;
-        this.behaviour = beh;
+        position = currentPosition;
+        behaviour = beh;
     }
 
     internal VersionableDigit() {
@@ -86,12 +88,12 @@ internal class VersionableDigit {
 
     internal VersionableDigit(DigitName currentPosition, DigitIncrementBehaviour beh) {
         Initialise(currentPosition, beh);
-        this.overrideValue = null;
+        overrideValue = null;
     }
 
     internal VersionableDigit(DigitName currentPosition, DigitIncrementBehaviour beh, int startValue)
         : this(currentPosition, beh) {
-        this.DigitValue = startValue;
+        DigitValue = startValue;
     }
 
     /// <summary>
@@ -120,7 +122,7 @@ internal class VersionableDigit {
 
         if (overrideValue >= 0) {
             //Tex.FurtherInfo("A version override was detected, replacing the value");
-            this.currentValue = overrideValue.Value;
+            currentValue = overrideValue.Value;
             overrideValue = -1;
         } else {
             // Else there was no override.

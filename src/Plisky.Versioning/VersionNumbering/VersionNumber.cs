@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Plisky.CodeCraft {
@@ -100,10 +100,10 @@ namespace Plisky.CodeCraft {
         }
 
         public override string ToString() {
-            return string.Format("{0}.{1}.{2}.{3}", this.Major, this.Minor, this.Build, this.Revision);
+            return string.Format("{0}.{1}.{2}.{3}", Major, Minor, Build, Revision);
         }
 
-        public override bool Equals(object obj) {
+        public override bool Equals(object? obj) {
             var target = obj as VersionNumber;
             if (!ReferenceEquals(target, null)) {
                 return this == target;

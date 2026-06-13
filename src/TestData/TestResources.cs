@@ -23,7 +23,7 @@ public enum TestResourcesReferences {
 
 public static class TestResources {
 
-    public static string GetIdentifiers(TestResourcesReferences refNo) {
+    public static string? GetIdentifiers(TestResourcesReferences refNo) {
         return refNo switch {
             TestResourcesReferences.Bug464RefContent => "B464_AsmInfo_Source",
             TestResourcesReferences.JustAssemblyVer => "JustAssemblyVersion.txt",

@@ -25,14 +25,14 @@ public class CompleteVersionTests {
     [InlineData("1234", "1234", null, null, null)]
     [InlineData("12.34", "12", "34", null, null)]
     [InlineData("12.3-4", "12", "3", "4", null)]
-    public void Completeversion_constructor_sets_digit_values(string initialValue, string dg1, string dg2, string dg3, string dg4) {
+    public void Completeversion_constructor_sets_digit_values(string initialValue, string dg1, string? dg2, string? dg3, string? dg4) {
         b.Info.Flow();
         var sut = new CompleteVersion(initialValue, '.', '-', '+');
 
-        string d0 = sut.Digits.Length > 0 ? sut.Digits[0].Value : null;
-        string d1 = sut.Digits.Length > 1 ? sut.Digits[1].Value : null;
-        string d2 = sut.Digits.Length > 2 ? sut.Digits[2].Value : null;
-        string d3 = sut.Digits.Length > 3 ? sut.Digits[3].Value : null;
+        string? d0 = sut.Digits.Length > 0 ? sut.Digits[0].Value : null;
+        string? d1 = sut.Digits.Length > 1 ? sut.Digits[1].Value : null;
+        string? d2 = sut.Digits.Length > 2 ? sut.Digits[2].Value : null;
+        string? d3 = sut.Digits.Length > 3 ? sut.Digits[3].Value : null;
 
         d0.ShouldBe(dg1);
 
@@ -65,10 +65,10 @@ public class CompleteVersionTests {
         b.Info.Flow();
         var sut = new CompleteVersion(initialValue, '.', '-', '+');
 
-        string p0 = sut.Digits.Length > 0 ? sut.Digits[0].PreFix : null;
-        string p1 = sut.Digits.Length > 1 ? sut.Digits[1].PreFix : null;
-        string p2 = sut.Digits.Length > 2 ? sut.Digits[2].PreFix : null;
-        string p3 = sut.Digits.Length > 3 ? sut.Digits[3].PreFix : null;
+        string? p0 = sut.Digits.Length > 0 ? sut.Digits[0].PreFix : null;
+        string? p1 = sut.Digits.Length > 1 ? sut.Digits[1].PreFix : null;
+        string? p2 = sut.Digits.Length > 2 ? sut.Digits[2].PreFix : null;
+        string? p3 = sut.Digits.Length > 3 ? sut.Digits[3].PreFix : null;
 
         p0.ShouldBe(dg1);
         p1.ShouldBe(dg2);
@@ -105,7 +105,7 @@ public class CompleteVersionTests {
     [InlineData(FileUpdateType.TextFile, DisplayType.Short)]
     public void CompleteVersion_constructor_adds_DisplayTypes(FileUpdateType fut, DisplayType dt) {
         b.Info.Flow();
-        
+
         var cv = new CompleteVersion();
 
         cv.DisplayTypes.ShouldNotBeNull();
@@ -154,9 +154,9 @@ public class CompleteVersionTests {
     [InlineData(null, "....", "")]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void DisplayType_QueuedFull_WorksCorrectly(string startVer, string pattern, string endVer) {
+    public void DisplayType_QueuedFull_WorksCorrectly(string? startVer, string pattern, string endVer) {
         b.Info.Flow();
-        var cv = new CompleteVersion(startVer, '.');
+        var cv = new CompleteVersion(startVer ?? string.Empty, '.');
 
         cv.ApplyPendingVersion(pattern);
         string output = cv.GetVersionString(DisplayType.QueuedFull);
@@ -178,10 +178,10 @@ public class CompleteVersionTests {
     [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear", "Unicorn.Peach.Applie.Pear")]
     [InlineData("2.Pear.Apple", ".0.0", "2.0.0")]
     [InlineData(null, ".0.0", "")]
-    public void PendingIncrementPatterns_Work(string startVer, string pattern, string endVer) {
+    public void PendingIncrementPatterns_Work(string? startVer, string pattern, string endVer) {
         b.Info.Flow();
 
-        var cv = new CompleteVersion(startVer);
+        var cv = new CompleteVersion(startVer ?? string.Empty);
 
         cv.ApplyPendingVersion(pattern);
         cv.Increment();
@@ -202,17 +202,17 @@ public class CompleteVersionTests {
     [InlineData("2.2.2.2", "...", null, null, null, null)]
     [InlineData("2.2.2.2", "..Bealzebub.-", null, null, "Bealzebub", "1")]
     [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear", "Unicorn", "Peach", "Applie", "Pear")]
-    public void PendingIncrement_IsAppliedCorrectly(string startVer, string pattern, string d1Expected, string d2Expected, string d3Expected, string d4Expected) {
+    public void PendingIncrement_IsAppliedCorrectly(string startVer, string pattern, string? d1Expected, string? d2Expected, string? d3Expected, string? d4Expected) {
         b.Info.Flow();
 
         var cv = new CompleteVersion(startVer);
 
         cv.ApplyPendingVersion(pattern);
 
-        string d1 = cv.Digits[0].IncrementOverride;
-        string d2 = cv.Digits[1].IncrementOverride;
-        string d3 = cv.Digits[2].IncrementOverride;
-        string d4 = cv.Digits[3].IncrementOverride;
+        string? d1 = cv.Digits[0].IncrementOverride;
+        string? d2 = cv.Digits[1].IncrementOverride;
+        string? d3 = cv.Digits[2].IncrementOverride;
+        string? d4 = cv.Digits[3].IncrementOverride;
 
         d1.ShouldBe(d1Expected);
         d2.ShouldBe(d2Expected);
@@ -239,10 +239,10 @@ public class CompleteVersionTests {
         cv.ApplyPendingVersion(pattern);
         cv.Increment();
 
-        string d1 = cv.Digits[0].IncrementOverride;
-        string d2 = cv.Digits[1].IncrementOverride;
-        string d3 = cv.Digits[2].IncrementOverride;
-        string d4 = cv.Digits[3].IncrementOverride;
+        string? d1 = cv.Digits[0].IncrementOverride;
+        string? d2 = cv.Digits[1].IncrementOverride;
+        string? d3 = cv.Digits[2].IncrementOverride;
+        string? d4 = cv.Digits[3].IncrementOverride;
 
         d1.ShouldBeNull();
         d2.ShouldBeNull();
@@ -287,10 +287,10 @@ public class CompleteVersionTests {
     [InlineData("9", "", null)]
     [InlineData("9", "6", "6")]
     [InlineData("bannana", "pEEl", "pEEl")]
-    public void ManipulateVersionTests(string value, string pattern, string result) {
+    public void ManipulateVersionTests(string value, string pattern, string? result) {
         var sut = new CompleteVersionMock();
 
-        string res = sut.Mock.ManipulateVersionBasedOnPattern(pattern, value);
+        string? res = sut.Mock.ManipulateVersionBasedOnPattern(pattern, value);
 
         res.ShouldBe(result);
     }
@@ -303,7 +303,7 @@ public class CompleteVersionTests {
 
         var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."));
 
-        string releaseName = sut.ReleaseName;
+        string? releaseName = sut.ReleaseName;
 
         releaseName.ShouldBeNull();
     }
@@ -551,7 +551,7 @@ public class CompleteVersionTests {
     public void ValidateDigitOptions_ReturnsTrueForValidInput(string digitInput, bool expectedResult) {
         b.Info.Flow();
         var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-        
+
         bool actualResult = sut.ValidateDigitOptions([digitInput]);
 
         actualResult.ShouldBe(expectedResult);

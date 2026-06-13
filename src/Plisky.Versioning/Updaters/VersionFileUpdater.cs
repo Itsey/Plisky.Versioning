@@ -1,4 +1,4 @@
-﻿namespace Plisky.CodeCraft;
+namespace Plisky.CodeCraft;
 
 using System;
 using System.IO;
@@ -24,8 +24,8 @@ public class VersionFileUpdater {
         cv = new CompleteVersion();
     }
 
-    public VersionFileUpdater(CompleteVersion cv, IHookVersioningChanges? actions = null) {
-        this.cv = cv;
+    public VersionFileUpdater(CompleteVersion completeVersion, IHookVersioningChanges? actions = null) {
+        cv = completeVersion;
     }
 
     public static Regex GetRegex(string targetAttribute) {

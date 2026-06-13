@@ -26,7 +26,7 @@ public class UseCaseTests {
 
         // Early cut of versioning only made a single update to a file, once it had been updated it was not updated again. Test case
         // ensures that this is no longer the case and now every MM based match is respected and triggers its correspoing update.
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone)!;
         string srcFile = uth.GetTestDataFile(reid);
 
         // Find This file
@@ -110,7 +110,7 @@ public class UseCaseTests {
     public void UC_UpdateNuspecFile_Works() {
         b.Info.Flow();
 
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NuspecSample1);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NuspecSample1)!;
         string srcFile = uth.GetTestDataFile(reid);
 
         var mvs = new MockVersionStorage("0.0.0.1");
@@ -128,7 +128,7 @@ public class UseCaseTests {
         var mvs = new MockVersionStorage("0.0.0.1");
         var sut = new Versioning(mvs);
 
-        _ = Assert.Throws<ArgumentNullException>(() => { sut.AddNugetFile(null); });
+        _ = Assert.Throws<ArgumentNullException>(() => { sut.AddNugetFile(null!); });
         _ = Assert.Throws<FileNotFoundException>(() => { sut.AddNugetFile(""); });
         _ = Assert.Throws<FileNotFoundException>(() => { sut.AddNugetFile("c:\\arflebarflegloop.txt"); });
     }
@@ -140,7 +140,7 @@ public class UseCaseTests {
         string tfn1 = uth.NewTemporaryFileName(false);
         string tfn2 = ts.CreateStoredVersionNumer();
         var sut = new VersioningTask();
-        string directory = Path.GetDirectoryName(tfn1);
+        string? directory = Path.GetDirectoryName(tfn1);
         sut.BaseSearchDir = directory;
         sut.SetPersistanceValue(tfn2);
         sut.AddUpdateType(tfn1, FileUpdateType.NetAssembly);

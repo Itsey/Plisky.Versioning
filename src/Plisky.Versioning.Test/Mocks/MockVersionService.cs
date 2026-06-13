@@ -28,14 +28,14 @@ namespace Plisky.CodeCraft.Test {
             return store[g][branchIndicator];
         }
 
-        public void RegisterVersion(Guid g, string branch, VersionNumber v) {
+        public void RegisterVersion(Guid g, string branch, VersionNumber? v) {
 
             #region entry code
 
             if (string.IsNullOrEmpty(branch)) {
                 throw new ArgumentOutOfRangeException(nameof(branch), "branch must be specified, use 'default' if not known");
             }
-            if (v == null) {
+            if (v is null) {
                 throw new ArgumentNullException(nameof(v));
             }
 

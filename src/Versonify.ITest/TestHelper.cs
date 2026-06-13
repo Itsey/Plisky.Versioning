@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Plisky.Test;
 using Shouldly;
 
@@ -13,8 +13,8 @@ internal sealed class VersonifyExecutionResult {
 public class TestHelper {
     private UnitTestHelper uth;
 
-    public TestHelper(UnitTestHelper uth) {
-        this.uth = uth;
+    public TestHelper(UnitTestHelper unitTestHelper) {
+        uth = unitTestHelper;
     }
 
     protected static string? SolutionPathCache { get; set; } = null;

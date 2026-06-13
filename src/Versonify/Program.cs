@@ -32,26 +32,26 @@ internal class Program {
         ["-output"] = "--output",
     };
     public static VersonifyCommandline options = new();
-    private static CompleteVersion versionerUsed;
-    private static VersionStorage storage;
+    private static CompleteVersion? versionerUsed;
+    private static VersionStorage? storage;
     private static Bilge b = new Bilge();
 
-    private static RootCommand rootCommand;
-    private static Argument<string> commandArg;
-    private static Option<string> commandOpt;
-    private static Option<bool> debugOpt;
-    private static Option<bool> dryRunOpt;
-    private static Option<string> digitsOpt;
-    private static Option<bool> noErrorOpt;
-    private static Option<bool> noOverrideOpt;
-    private static Option<string> outputOpt;
-    private static Option<bool> incrementOpt;
-    private static Option<string> quickValueOpt;
-    private static Option<string> releaseOpt;
-    private static Option<string> rootPathOpt;
-    private static Option<string> traceOpt;
-    private static Option<string> versionSourceOpt;
-    private static Option<string> minMatchOpt;
+    private static RootCommand? rootCommand;
+    private static Argument<string>? commandArg;
+    private static Option<string>? commandOpt;
+    private static Option<bool>? debugOpt;
+    private static Option<bool>? dryRunOpt;
+    private static Option<string>? digitsOpt;
+    private static Option<bool>? noErrorOpt;
+    private static Option<bool>? noOverrideOpt;
+    private static Option<string>? outputOpt;
+    private static Option<bool>? incrementOpt;
+    private static Option<string>? quickValueOpt;
+    private static Option<string>? releaseOpt;
+    private static Option<string>? rootPathOpt;
+    private static Option<string>? traceOpt;
+    private static Option<string>? versionSourceOpt;
+    private static Option<string>? minMatchOpt;
 
     private static async Task<int> Main(string[] args) {
         try {
@@ -141,7 +141,7 @@ internal class Program {
 
     private static void WriteGreetingMessage() {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
-        string verString = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        string verString = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "";
         Console.WriteLine($"💖 Versioning By Versonify 💖 ({verString}).");
     }
 
@@ -163,7 +163,7 @@ internal class Program {
         commandArg = new Argument<string>("command");
         commandArg.Description = "Command to execute: createversion|override|updatefiles|passive|behaviour|set|prefix";
         commandArg.Arity = ArgumentArity.ZeroOrOne;
-        commandArg.DefaultValueFactory = _ => null;
+        commandArg.DefaultValueFactory = _ => null!;
         rc.Add(commandArg);
 
         string[] commandAliases = includeDeprecatedAliases ? new[] { "-Command" } : Array.Empty<string>();
@@ -241,7 +241,7 @@ internal class Program {
 
     private static bool GetCommandLineArguments(string[] args) {
         rootCommand = BuildRootCommand();
-        var parseResult = rootCommand.Parse(args);
+        var parseResult = rootCommand!.Parse(args);
 
         if (parseResult.Errors.Count > 0) {
             Console.WriteLine("Fatal: Invalid Arguments Passed to Versonify.");
@@ -253,33 +253,33 @@ internal class Program {
 
         EmitDeprecatedAliasWarnings(args);
 
-        string cmdFromPositional = parseResult.GetValue(commandArg);
-        string cmdFromOption = parseResult.GetValue(commandOpt);
+        string? cmdFromPositional = parseResult.GetValue(commandArg!);
+        string? cmdFromOption = parseResult.GetValue(commandOpt!);
         options.Command = cmdFromPositional ?? cmdFromOption;
 
-        options.Debug = parseResult.GetValue(debugOpt);
-        options.DryRunOnly = parseResult.GetValue(dryRunOpt);
-        options.ReturnZero = parseResult.GetValue(noErrorOpt);
-        options.NoOverride = parseResult.GetValue(noOverrideOpt);
-        options.PerformIncrement = parseResult.GetValue(incrementOpt);
-        options.QuickValue = parseResult.GetValue(quickValueOpt);
-        options.Release = parseResult.GetValue(releaseOpt);
-        options.Root = parseResult.GetValue(rootPathOpt);
-        options.Trace = parseResult.GetValue(traceOpt);
-        options.VersionPersistanceValue = parseResult.GetValue(versionSourceOpt);
+        options.Debug = parseResult.GetValue(debugOpt!);
+        options.DryRunOnly = parseResult.GetValue(dryRunOpt!);
+        options.ReturnZero = parseResult.GetValue(noErrorOpt!);
+        options.NoOverride = parseResult.GetValue(noOverrideOpt!);
+        options.PerformIncrement = parseResult.GetValue(incrementOpt!);
+        options.QuickValue = parseResult.GetValue(quickValueOpt!);
+        options.Release = parseResult.GetValue(releaseOpt!);
+        options.Root = parseResult.GetValue(rootPathOpt!);
+        options.Trace = parseResult.GetValue(traceOpt!);
+        options.VersionPersistanceValue = parseResult.GetValue(versionSourceOpt!);
 
-        string rawDigits = parseResult.GetValue(digitsOpt);
+        string? rawDigits = parseResult.GetValue(digitsOpt!);
         options.DigitManipulations = rawDigits != null
             ? rawDigits.Split(';', StringSplitOptions.RemoveEmptyEntries)
             : null;
 
-        string rawMinMatch = parseResult.GetValue(minMatchOpt);
+        string? rawMinMatch = parseResult.GetValue(minMatchOpt!);
         options.VersionTargetMinMatch = rawMinMatch != null
             ? rawMinMatch.Split(';', StringSplitOptions.RemoveEmptyEntries)
             : null;
 
-        options.RawOutputOptions = parseResult.GetValue(outputOpt);
-        options.OutputOptions = options.RawOutputOptions;
+        options.RawOutputOptions = parseResult.GetValue(outputOpt!);
+        options.OutputOptions = options.RawOutputOptions ?? "";
 
         return true;
     }
@@ -299,7 +299,7 @@ internal class Program {
         var seenAliases = new HashSet<string>(StringComparer.Ordinal);
         foreach (string arg in args) {
             string extractedToken = ExtractOptionToken(arg);
-            if (!deprecatedAliasMap.TryGetValue(extractedToken, out string canonicalAlias)) {
+            if (!deprecatedAliasMap.TryGetValue(extractedToken, out string? canonicalAlias)) {
                 continue;
             }
 
@@ -407,7 +407,7 @@ internal class Program {
         return valid;
     }
 
-    private static bool ValidateDigitsPresent(string[] digits, string commandName) {
+    private static bool ValidateDigitsPresent(string[]? digits, string commandName) {
         if (digits == null || digits.Length == 0) {
             Console.WriteLine($"Error >> The {commandName} command requires at least one digit to update. Use -D=<digit> or -D=*.");
             return false;
@@ -501,12 +501,12 @@ internal class Program {
     /// initialisation data that is passed in to determine which version store to load.
     /// </summary>
     private static void GetVersionStorageFromCommandLine() {
-        string vpv = Environment.ExpandEnvironmentVariables(options.VersionPersistanceValue);
+        string vpv = Environment.ExpandEnvironmentVariables(options.VersionPersistanceValue ?? "");
         storage = VersionStorage.CreateFromInitialisation(vpv);
     }
 
     private static void LoadVersionStore() {
-        var ver = new Versioning(storage, options.DryRunOnly);
+        var ver = new Versioning(storage!, options.DryRunOnly);
         versionerUsed = ver.Version;
 
         if (options.PerformIncrement) {
@@ -522,7 +522,7 @@ internal class Program {
     }
 
     private static bool ValidateVersionStorage() {
-        if (!storage.IsValid) {
+        if (storage == null || !storage.IsValid) {
             return false;
         }
 
@@ -540,7 +540,7 @@ internal class Program {
 
     private static void LoadReleaseName() {
         b.Verbose.Flow();
-        var ver = new Versioning(storage, options.DryRunOnly);
+        var ver = new Versioning(storage!, options.DryRunOnly);
         versionerUsed = ver.Version;
 
         if (string.IsNullOrEmpty(ver.Version.ReleaseName)) {
@@ -554,16 +554,16 @@ internal class Program {
     private static void CreateNewPendingIncrement() {
         b.Verbose.Flow();
 
-        var ver = new Versioning(storage, options.DryRunOnly);
+        var ver = new Versioning(storage!, options.DryRunOnly);
         versionerUsed = ver.Version;
 
-        string verPendPattern = options.QuickValue;
+        string? verPendPattern = options.QuickValue;
 
         Console.WriteLine($"Apply Delayed Increment. [{ver.ToString()}] using [{verPendPattern}]");
-        ver.Version.ApplyPendingVersion(verPendPattern);
+        ver.Version.ApplyPendingVersion(verPendPattern!);
 
         if (!options.DryRunOnly) {
-            storage.Persist(ver.Version);
+            storage!.Persist(ver.Version);
             ver.Increment();
             Console.WriteLine($"Saving Overridden Version [{ver.GetVersion()}]");
         } else {
@@ -575,7 +575,7 @@ internal class Program {
     private static void ApplyVersionIncrement(ExecutionResult result) {
         b.Verbose.Flow();
 
-        var ver = new Versioning(storage, options.DryRunOnly);
+        var ver = new Versioning(storage!, options.DryRunOnly);
         versionerUsed = ver.Version;
 
         ver.Logger = Console.WriteLine;
@@ -596,7 +596,7 @@ internal class Program {
         Console.WriteLine("Version To Write: " + ver.GetVersion());
 
         // Increment done, now persist and then update the pages 
-        ver.LoadMiniMatches(options.VersionTargetMinMatch);
+        ver.LoadMiniMatches(options.VersionTargetMinMatch!);
 
         if (!string.IsNullOrEmpty(options.Root) && Directory.Exists(options.Root)) {
             _ = ver.SearchForAllFiles(options.Root);
@@ -636,13 +636,13 @@ internal class Program {
         versionerUsed = cv;
 
         Console.WriteLine($"Saving {cv.GetVersionString()}");
-        storage.Persist(cv);
+        storage!.Persist(cv);
     }
 
     private static void LoadDigitBehaviour() {
-        var ver = new Versioning(storage, options.DryRunOnly);
+        var ver = new Versioning(storage!, options.DryRunOnly);
         versionerUsed = ver.Version;
-        if (!ver.Version.ValidateDigitOptions(options.DigitManipulations)) {
+        if (!ver.Version.ValidateDigitOptions(options.DigitManipulations!)) {
             return;
         }
 
@@ -660,10 +660,10 @@ internal class Program {
 
     private static void ApplyDigitBehaviour() {
         var newBehaviour = options.IncrementBehaviour;
-        var ver = new Versioning(storage, options.DryRunOnly);
+        var ver = new Versioning(storage!, options.DryRunOnly);
         versionerUsed = ver.Version;
 
-        if (!ver.Version.ValidateDigitOptions(options.DigitManipulations)) {
+        if (!ver.Version.ValidateDigitOptions(options.DigitManipulations!)) {
             return;
         }
 
@@ -694,14 +694,14 @@ internal class Program {
     }
 
     private static void ApplyDigitValueUpdate() {
-        var ver = new Versioning(storage, options.DryRunOnly);
+        var ver = new Versioning(storage!, options.DryRunOnly);
         versionerUsed = ver.Version;
 
         string[] digitsToUpdate = options.GetDigits();
-        string valueToSet = options.QuickValue;
+        string? valueToSet = options.QuickValue;
 
         if (ShouldSetCompleteVersionFromString(digitsToUpdate, valueToSet)) {
-            ver.Version.SetCompleteVersionFromString(valueToSet);
+            ver.Version.SetCompleteVersionFromString(valueToSet!);
             Console.WriteLine($"Set version to: {ver.Version.GetVersionString()}");
         } else {
             if (!ver.Version.ValidateDigitOptions(digitsToUpdate)) {
@@ -713,7 +713,7 @@ internal class Program {
             } else {
                 Console.WriteLine($"Setting digit(s) [{string.Join(',', digitsToUpdate)}] to value: {valueToSet}");
             }
-            ver.Version.SetIndividualDigits(digitsToUpdate, valueToSet);
+            ver.Version.SetIndividualDigits(digitsToUpdate, valueToSet!);
         }
 
         if (!options.DryRunOnly) {
@@ -726,7 +726,7 @@ internal class Program {
         }
     }
 
-    private static bool ShouldSetCompleteVersionFromString(string[] digitsToUpdate, string valueToSet) {
+    private static bool ShouldSetCompleteVersionFromString(string[] digitsToUpdate, string? valueToSet) {
         if (string.IsNullOrWhiteSpace(valueToSet)) {
             return false;
         }
@@ -737,11 +737,11 @@ internal class Program {
     }
 
     private static void ApplyReleaseNameUpdate() {
-        var ver = new Versioning(storage, options.DryRunOnly);
+        var ver = new Versioning(storage!, options.DryRunOnly);
         versionerUsed = ver.Version;
-        string newReleaseName = options.Release;
+        string? newReleaseName = options.Release;
 
-        ver.Version.SetReleaseName(newReleaseName);
+        ver.Version.SetReleaseName(newReleaseName!);
         if (!options.DryRunOnly) {
             Console.WriteLine($"Saving new Release Name as: {newReleaseName}");
             ver.SaveUpdatedVersion();
@@ -752,19 +752,19 @@ internal class Program {
     }
 
     private static void ApplyDigitPrefixUpdate() {
-        var ver = new Versioning(storage, options.DryRunOnly);
+        var ver = new Versioning(storage!, options.DryRunOnly);
         versionerUsed = ver.Version;
 
         string[] digitsToUpdate = options.GetDigits();
-        string prefixToSet = options.QuickValue;
+        string? prefixToSet = options.QuickValue;
 
         if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
             Console.WriteLine($"Setting prefix for all digits to: {prefixToSet}");
-            ver.Version.SetPrefixForDigit(ALL_DIGITS_WILDCARD, prefixToSet);
+            ver.Version.SetPrefixForDigit(ALL_DIGITS_WILDCARD, prefixToSet!);
         } else {
             Console.WriteLine($"Setting prefix for digit(s) [{string.Join(',', digitsToUpdate)}] to: {prefixToSet}");
             foreach (string digit in digitsToUpdate) {
-                ver.Version.SetPrefixForDigit(digit, prefixToSet);
+                ver.Version.SetPrefixForDigit(digit, prefixToSet!);
             }
         }
 

@@ -7,7 +7,7 @@ namespace Plisky.CodeCraft.Test {
         public bool EnvWasSet { get; set; }
         public bool FileWasWritten { get; set; }
 
-        public string WrittenToConsole { get; set; }
+        public string? WrittenToConsole { get; set; }
         public string[] OutputLines { get { return outputReceived.ToArray(); } }
 
         protected override void SetEnvironmentWithValue() {

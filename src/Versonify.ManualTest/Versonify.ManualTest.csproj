@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -8,17 +8,17 @@
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Prompts.txt" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Prompts.txt" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Plisky.Diagnostics" Version="3.2.5" />
     <PackageReference Include="Plisky.Listeners" Version="3.2.5" />
+  </ItemGroup>
+
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Plisky.Versioning\Plisky.Versioning.csproj" />
   </ItemGroup>
 
 </Project>

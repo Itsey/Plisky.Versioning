@@ -42,8 +42,8 @@ namespace Plisky.CodeCraft.Test {
         public string GetVersionFromCSProj(string srcFile, string propName) {
             var xd2 = XDocument.Load(srcFile);
             var el2 = xd2.Element("Project")?.Element("PropertyGroup")?.Element(propName);
-            if (el2 == null) { return null; }
-            string after = el2.Value;
+            if (el2 == null) { return null!; }
+            string after = el2!.Value;
             return after;
         }
 
@@ -51,14 +51,14 @@ namespace Plisky.CodeCraft.Test {
             XNamespace ns = "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd";
             var xd2 = XDocument.Load(srcFile);
             var el2 = xd2.Element(ns + "package")?.Element(ns + "metadata")?.Element(ns + "version");
-            string after = el2.Value;
+            string after = el2!.Value;
             return after;
         }
         public string GetVersionFromWix(string srcFile) {
             XNamespace ns = "http://schemas.microsoft.com/wix/2006/wi";
             var xd2 = XDocument.Load(srcFile);
             var el2 = xd2.Element(ns + "Wix")?.Element(ns + "Product")?.Attribute("Version");
-            string after = el2.Value;
+            string after = el2!.Value;
             return after;
         }
 

@@ -1,4 +1,4 @@
-﻿namespace Plisky.CodeCraft;
+namespace Plisky.CodeCraft;
 
 using System.IO;
 using System.Text;
@@ -7,10 +7,10 @@ using System.Text.Json;
 
 public class NexusVersionPersister : VersionStorage {
     protected NexusSupport remote;
-    protected NexusConfig config;
+    protected NexusConfig? config;
 
     public NexusVersionPersister(string initialisationValue) {
-        this.InitValue = new VersionStorageOptions() {
+        InitValue = new VersionStorageOptions() {
             InitialisationString = initialisationValue
         };
 
@@ -24,23 +24,29 @@ public class NexusVersionPersister : VersionStorage {
     }
 
     protected override CompleteVersion ActualLoad() {
-        CompleteVersion result = null;
+        var result = CompleteVersion.GetDefault();
 
+        if (config != null && InitValue != null) {
+            CompleteVersion? downloadedResult = null;
+            var tsk = remote.DownloadFileAsync(config.Url, (byteArray, fileName) => {
 
-        var tsk = remote.DownloadFileAsync(config.Url, (byteArray, fileName) => {
+                string json = Encoding.UTF8.GetString(byteArray);
+                downloadedResult = JsonSerializer.Deserialize<CompleteVersion>(json);
 
-            string json = Encoding.UTF8.GetString(byteArray);
-            result = JsonSerializer.Deserialize<CompleteVersion>(json);
+            }, InitValue.InitialisationString, config.Username, config.Password);
 
-        }, InitValue.InitialisationString, config.Username, config.Password);
-
-        tsk.Wait();
+            tsk.Wait();
+            
+            if (downloadedResult != null) {
+                result = downloadedResult;
+            }
+        }
 
         return result;
     }
 
     protected override void ActualPersist(CompleteVersion cv) {
-        if (!IsValid) { return; }
+        if (!IsValid || config == null || InitValue == null) { return; }
 
         byte[] val = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(cv));
         var t = remote.UploadFileAsync(new MemoryStream(val), config.Url, config.Username, config.Password);

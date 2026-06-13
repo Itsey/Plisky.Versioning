@@ -160,7 +160,7 @@ public class Exploratory {
     [Fact]
     public async Task Behaviour_command_shows_all_digits() {
         b.Info.Flow();
-        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
         string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d=*");
@@ -182,7 +182,7 @@ public class Exploratory {
     [InlineData("[4]:AutoIncrementWithResetAny", "Fixed", 4)]
     public async Task Behaviour_command_shows_correct_digits(string outputData, string noOutputData, int digitPosition) {
         b.Info.Flow();
-        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
         string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition}");
@@ -199,7 +199,7 @@ public class Exploratory {
     [InlineData(4, "6", DigitIncrementBehaviour.ContinualIncrement)]
     public async Task Behaviour_command_sets_correct_digits(int digitPosition, string quickValue, DigitIncrementBehaviour outputdata) {
         b.Info.Flow();
-        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
         string vStoreFilePath = uth.GetTestDataFile(resName);
         string expectedOutput = $"Setting Behaviour for Digit[{digitPosition}] to {outputdata}({(int)outputdata})";
 
@@ -212,7 +212,7 @@ public class Exploratory {
     [Fact]
     public async Task Console_with_nuke_has_markers() {
         b.Info.Flow();
-        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
         string args = $"passive -v={vStoreFilePath} -O=con-nf -Debug -Q=1.9.4.3";
@@ -225,7 +225,7 @@ public class Exploratory {
     public async Task Console_does_not_have_nuke_markers() {
         b.Info.Flow();
 
-        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
         string args = $"passive -v={vStoreFilePath} -O=con -Debug -Q=1.9.4.3";
@@ -243,7 +243,7 @@ public class Exploratory {
     [Trait("Cause", "Bug:LFY-25")]
     public async Task VersionStorage_DoesVstoreExist_ValidatesFileExistence(string command, bool isVstoreValid, bool shouldError) {
         b.Info.Flow();
-        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string vStoreFilePath = uth.GetTestDataFile(resName);
         if (!isVstoreValid) {
             vStoreFilePath = vStoreFilePath + ".invalid";

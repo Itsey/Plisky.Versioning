@@ -13,7 +13,7 @@ public class CompleteVersionMock : CompleteVersion {
             parent = p;
         }
 
-        public string ManipulateVersionBasedOnPattern(string pattern, string currentValue) {
+        public string? ManipulateVersionBasedOnPattern(string pattern, string currentValue) {
             return parent.ManipulateValueBasedOnPattern(pattern, currentValue);
         }
     }

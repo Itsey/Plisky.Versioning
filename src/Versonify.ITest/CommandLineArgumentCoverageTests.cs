@@ -24,7 +24,7 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     [Fact]
     public async Task Digits_argument_loads_behaviour_output() {
         b.Info.Flow();
-        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
         string output = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -Digits=*");
         output.ShouldContain("[0]:Fixed(0)");
@@ -35,7 +35,7 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     [Fact]
     public async Task VersionSource_argument_loads_passive_output() {
         b.Info.Flow();
-        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
         string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
         output.ShouldContain("Loaded [");
@@ -77,7 +77,7 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     [Fact]
     public async Task Deprecated_DG_alias_is_not_accepted() {
         b.Info.Flow();
-        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
         _ = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -DG=*");
         th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -DG must not be accepted.");
@@ -86,7 +86,7 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     [Fact]
     public async Task Deprecated_VS_alias_is_not_accepted() {
         b.Info.Flow();
-        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
         _ = await th.ExecuteVersonify($"passive -VS={versionStorePath}");
         th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -VS must not be accepted.");
@@ -147,7 +147,7 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     [Fact]
     public async Task Single_dash_long_VersionSource_option_is_accepted() {
         b.Info.Flow();
-        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
         string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
         output.ShouldContain("Loaded [");
@@ -206,7 +206,7 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     [Fact]
     public async Task Trace_argument_enables_trace_handler_output() {
         b.Info.Flow();
-        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
 
         string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath} -Trace=info");
@@ -235,7 +235,7 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     [Fact]
     public async Task QuickValue_long_argument_updates_behaviour() {
         b.Info.Flow();
-        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore);
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
 
         string output = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -D=1 -QuickValue=Fixed");
@@ -247,7 +247,7 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     [Fact]
     public async Task Release_short_argument_sets_release_name() {
         b.Info.Flow();
-        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore);
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
         string releaseName = "ShortRelease";
 
@@ -272,7 +272,7 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     }
 
     private string CopyResourceToDirectory(TestResourcesReferences resourceReference, string workingDirectory, string destinationFileName) {
-        string resourceName = TestResources.GetIdentifiers(resourceReference);
+        string resourceName = TestResources.GetIdentifiers(resourceReference)!;
         string sourcePath = uth.GetTestDataFile(resourceName);
         string result = Path.Combine(workingDirectory, destinationFileName);
 

@@ -1,4 +1,4 @@
-﻿namespace Plisky.CodeCraft;
+namespace Plisky.CodeCraft;
 
 using System;
 using Plisky.Diagnostics;
@@ -26,8 +26,8 @@ public class VersionUnit {
     }
 
     public VersionUnit(string versionValue, string versionPrefix, DigitIncrementBehaviour beh = DigitIncrementBehaviour.Fixed) {
-        this.Value = versionValue;
-        this.PreFix = versionPrefix;
+        Value = versionValue;
+        PreFix = versionPrefix;
         SetBehaviour(beh);
     }
 
@@ -70,7 +70,7 @@ public class VersionUnit {
         }
 
         TimeSpan ts;
-        int versionPriorToIncrement = int.Parse(Value);
+        int versionPriorToIncrement = int.Parse(Value ?? "0");
         b.Verbose.Log("No override, moving to perform increment");
 
         //unchecked to make it explicit that an overflow wraps around.
@@ -137,7 +137,7 @@ public class VersionUnit {
     private void ValidateForBehaviour() {
         if ((Behaviour != DigitIncrementBehaviour.Fixed) && (Behaviour != DigitIncrementBehaviour.ReleaseName)) {
             try {
-                int.Parse(Value);
+                int.Parse(Value ?? "0");
             } catch (Exception inr) {
                 throw new InvalidOperationException($"Behaviour set to {Behaviour}.  This requires an integer value for the digit. Only Fixed and ReleaseName behaviours can be strings", inr);
             }

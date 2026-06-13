@@ -8,6 +8,7 @@
     <FileVersion>0.0.0.0</FileVersion>
     <Version>0.0.0</Version>
     <AssemblyName>Versonify</AssemblyName>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup>
     <Summary>Versioning By Versonify, a dotnet versioning tool supporting different versioning approaches.</Summary>

@@ -10,30 +10,30 @@ using Plisky.Versioning;
 public class VersonifyCommandline {
     protected Bilge b = new Bilge("CommandLineArguments");
     private OutputPossibilities outcache = OutputPossibilities.None;
-    private string outOpts;
-    private string pathPassed;
+    private string outOpts = string.Empty;
+    private string? pathPassed;
 
     public VersonifyCommandline() {
-        VersionTargetMinMatch = null;
+        VersionTargetMinMatch = null!;
     }
 
-    public string Command { get; set; }
+    public string? Command { get; set; }
 
-    public string ConsoleTemplate { get; private set; }
-    public string PverFileName { get; set; }
+    public string? ConsoleTemplate { get; private set; }
+    public string? PverFileName { get; set; }
     public DigitIncrementBehaviour IncrementBehaviour { get; set; }
 
     public bool Debug { get; set; }
 
     public bool DryRunOnly { get; set; }
 
-    public string[] DigitManipulations { get; set; }
+    public string[]? DigitManipulations { get; set; }
 
     public bool ReturnZero { get; set; }
 
     public bool NoOverride { get; set; }
 
-    public string RawOutputOptions { get; set; }
+    public string? RawOutputOptions { get; set; }
 
     public string OutputOptions {
         get { return outOpts; }
@@ -52,11 +52,11 @@ public class VersonifyCommandline {
 
     public bool PerformIncrement { get; set; }
 
-    public string QuickValue { get; set; }
+    public string? QuickValue { get; set; }
 
-    public string Release { get; set; }
+    public string? Release { get; set; }
 
-    public string Root {
+    public string? Root {
         get {
             if (string.IsNullOrEmpty(pathPassed)) {
                 return null;
@@ -69,11 +69,11 @@ public class VersonifyCommandline {
     }
 
 
-    public string Trace { get; set; }
+    public string? Trace { get; set; }
 
-    public string VersionPersistanceValue { get; set; }
+    public string? VersionPersistanceValue { get; set; }
 
-    public string[] VersionTargetMinMatch { get; set; }
+    public string[]? VersionTargetMinMatch { get; set; }
 
     public VersioningCommand RequestedCommand {
         get {

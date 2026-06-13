@@ -12,7 +12,7 @@ public class FileUpdateTests {
     private readonly UnitTestHelper uth;
     private readonly TestSupport ts;
     protected static InMemoryHandler imh = new(100000);
-    protected static Bilge b;
+    protected static Bilge b = null!;
 
     public FileUpdateTests() {
         if (b == null) {
@@ -37,7 +37,7 @@ public class FileUpdateTests {
     public void LiteralReplace_DefaultReplacesVersionAndReleaseName() {
         b.Info.Flow();
 
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.ReleaseNameAndVerTxt);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.ReleaseNameAndVerTxt)!;
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", ".")) {
             ReleaseName = "Unicorn"
@@ -59,7 +59,7 @@ public class FileUpdateTests {
     public void LiteralReplace_Version3_IsThreeDigits() {
         b.Info.Flow();
 
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.VersionV3Txt);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.VersionV3Txt)!;
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
 
@@ -78,7 +78,7 @@ public class FileUpdateTests {
     public void LiteralReplace_Version2_IsTwoDigits() {
         b.Info.Flow();
 
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.VersionV3Txt);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.VersionV3Txt)!;
         string srcFile = uth.GetTestDataFile(reid);
         File.WriteAllText(srcFile, File.ReadAllText(srcFile).Replace("XXX-VERSION3-XXX", "XXX-VERSION2-XXX"));
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
@@ -100,7 +100,7 @@ public class FileUpdateTests {
     public void LiteralReplace_NoDisplay_DoesNotUpdateVersion() {
         b.Info.Flow();
 
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.ReleaseNameAndVerTxt);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.ReleaseNameAndVerTxt)!;
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", ".")) {
             ReleaseName = "Unicorn"
@@ -197,7 +197,7 @@ public class FileUpdateTests {
     public void Update_AsmVersion_Works() {
         b.Info.Flow();
 
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.JustAssemblyVer);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.JustAssemblyVer)!;
 
         string srcFile = uth.GetTestDataFile(reid);
 
@@ -219,7 +219,7 @@ public class FileUpdateTests {
     public void Update_DoesNotAlterOtherAttributes() {
         b.Info.Flow();
 
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NoChangeAssemInfo);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NoChangeAssemInfo)!;
         string srcFile = uth.GetTestDataFile(reid);
 
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
@@ -241,7 +241,7 @@ public class FileUpdateTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Update_AsmInfVer_Works() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.JustInformational);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.JustInformational)!;
         string srcFile = uth.GetTestDataFile(reid);
 
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
@@ -261,7 +261,7 @@ public class FileUpdateTests {
     [Trait(Traits.Style, Traits.Unit)]
     public void Update_AsmFileVer_Works() {
         b.Info.Flow();
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.JustFileVer);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.JustFileVer)!;
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         string fn = ts.GetFileAsTemporary(srcFile);
@@ -279,7 +279,7 @@ public class FileUpdateTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Update_Nuspec_Works() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NuspecSample1);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NuspecSample1)!;
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
@@ -297,7 +297,7 @@ public class FileUpdateTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Update_StdCSProjAsm_Works() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdAll3);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdAll3)!;
         string srcFile = uth.GetTestDataFile(reid); // Value is zero
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
@@ -315,7 +315,7 @@ public class FileUpdateTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void UpdateStd_AddsFileWhenMissing() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone)!;
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
@@ -332,7 +332,7 @@ public class FileUpdateTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void UpdateStd_AddsAsmWhenMissing() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone)!;
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
@@ -350,7 +350,7 @@ public class FileUpdateTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void UpdateStd_AddsStdInfoWhenMissing() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone)!;
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
@@ -368,7 +368,7 @@ public class FileUpdateTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Update_StdCSProjFile_Works() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdAll3);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdAll3)!;
         string srcFile = uth.GetTestDataFile(reid); // Value is zero
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
@@ -386,7 +386,7 @@ public class FileUpdateTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Update_StdCSProjInfo_Works() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdAll3);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdAll3)!;
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
@@ -404,7 +404,7 @@ public class FileUpdateTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Update_Wix_Works() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.WixSample1);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.WixSample1)!;
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
@@ -425,7 +425,7 @@ public class FileUpdateTests {
         b.Info.Flow();
         // BUG Case - for some reason nuspec was not being updated. B_NuspecUpdateFailed
 
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.BugNuspecUpdateFail);
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.BugNuspecUpdateFail)!;
         string srcFile = uth.GetTestDataFile(reid);
 
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));

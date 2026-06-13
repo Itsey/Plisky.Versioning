@@ -10,11 +10,15 @@ This is a versioning library and corresponding command line tool to apply versio
 
 #### 1.0.4 - Internal structure release (May Be Bronte)
 
-Intent is to update internal structure so that its using MS command line parser not plisky and to restructure so that JSON output is viable, this should pave the way for a Versonify skill to be added to the solution.  Intent is to have that skill as a resource that can be output by the tool.
+Adding in manual tester to support the use of the prompt so that its easier to identify if something has broken, using a series of prompts and expected values so that you can run the prompt then test whether or not the outcome was the expected one.
+
+Also moved all code to nullable enabled, interestingly the ai decided to generate a md spec file and run a ralph loop all on its own for this one - all I said was fix the nullable warnings.  
+
+Intent is to update internal structure so that its using MS command line parser not Plisky and to restructure so that JSON output is viable, this should pave the way for a Versonify skill to be added to the solution.  Intent is to have that skill as a resource that can be output by the tool.
 
 Also note much more heavy use of AI now, look for (ai) commits, these are entirely coded and reviewed by ai.  
 
-Commit to add kebab-case double hyphen arguments threw up an inconsistency during secondary review.  The secondary review pointed out that there were -Debug=v-** statements in the test cases - which would make sense for debug levels of tracing.  However at that time the implementation had switched to a boolean Debug flag.  Its not clear at the current time if this was an error in the test cases ( mis understanding / mismatch / bad copy paste) or if the argument refactoring had switched it from a string parameter to a boolean.  If regression testing highlights this in command line options then this is what has happened.  It was not clear from the code that the trace identifier there was actually used.
+Commit to add kebab-case double hyphen arguments threw up an inconsistency during secondary review.  The secondary review pointed out that there were -Debug=v-** statements in the test cases - which would make sense for debug levels of tracing.  However at that time the implementation had switched to a Boolean Debug flag.  Its not clear at the current time if this was an error in the test cases ( mis understanding / mismatch / bad copy paste) or if the argument refactoring had switched it from a string parameter to a Boolean.  If regression testing highlights this in command line options then this is what has happened.  It was not clear from the code that the trace identifier there was actually used.
 
 ⚠️ Note documentation update will be required for this release.  
 

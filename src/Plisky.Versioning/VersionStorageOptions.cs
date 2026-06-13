@@ -1,5 +1,5 @@
 ﻿namespace Plisky.CodeCraft;
 
 public class VersionStorageOptions {
-    public string InitialisationString { get; set; }
+    public string InitialisationString { get; set; } = string.Empty;
 }
