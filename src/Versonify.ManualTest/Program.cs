@@ -6,9 +6,10 @@ namespace Versonify.ManualTest {
 
         [STAThread]
         static void Main(string[] args) {
-            VerifyablePrompt.LoadPrompts();
-            if (VerifyablePrompt.Prompts.Count != 4) {
-                throw new InvalidOperationException($"Expected exactly 4 prompts loaded, but found {VerifyablePrompt.Prompts.Count}.");
+            var vp = new VerifyablePrompt();
+            vp.LoadPrompts();
+            if (vp.Prompts.Count != 4) {
+                throw new InvalidOperationException($"Expected exactly 4 prompts loaded, but found {vp.Prompts.Count}.");
             }
 
             Bilge.AddHandler(new TCPHandler(new TCPHandlerOptions("127.0.0.1", 9060, true)));
@@ -24,7 +25,7 @@ namespace Versonify.ManualTest {
             bool fne;
 
             try {
-                foreach (var bp in VerifyablePrompt.Prompts) {
+                foreach (var bp in vp.Prompts) {
                     fne = GetAndExecutePrompt(temporaryVstore, bp);
                     Fail(!fne, $"Failure Prompt {bp.Name}.");
                 }
@@ -39,7 +40,9 @@ namespace Versonify.ManualTest {
             string prompt = bp.Prompt;
 
             Clipboard.SetText(prompt);
-            MessageBox.Show($"Execute AI Prompt {bp.Name}");
+            if (DialogResult.Cancel == MessageBox.Show($"Execute AI Prompt {bp.Name}", "Versonify Skill", MessageBoxButtons.OKCancel)) {
+                throw new OperationCanceledException("Aborted by user");
+            }
 
             bool result = File.Exists(filenameToken);
             Console.WriteLine($"Expected - Vstore File Exists {result}");

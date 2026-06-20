@@ -46,7 +46,7 @@ public class ExploratoryTests {
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     public void Commandline_digits_allows_multiple_digits() {
-        VersonifyCommandline sut = new();
+        VersonifyOptions sut = new();
         sut.DigitManipulations = new[] { "1", "2", "3" };
 
         string[] gd = sut.GetDigits();
@@ -114,7 +114,7 @@ public class ExploratoryTests {
     [InlineData("ContinualIncrement", VersioningCommand.BehaviourUpdate)]
     [InlineData("Bannana", VersioningCommand.Invalid)]
     public void CommandLine_correctly_sets_behviourtypes(string? quickValue, VersioningCommand cmd) {
-        VersonifyCommandline sut = new();
+        VersonifyOptions sut = new();
         sut.Command = "behaviour";
         sut.QuickValue = quickValue;
 
@@ -202,7 +202,7 @@ public class ExploratoryTests {
     [InlineData("NotAValidBehaviour", default(DigitIncrementBehaviour), false)]
     [InlineData("", default(DigitIncrementBehaviour), false)]
     public void TryParseDigitIncrementBehaviour_ParsesExpectedValues(string input, DigitIncrementBehaviour expected, bool shouldParse) {
-        bool parseResult = VersonifyCommandline.TryParseDigitIncrementBehaviour(input, out var result);
+        bool parseResult = VersonifyOptions.TryParseDigitIncrementBehaviour(input, out var result);
 
         parseResult.ShouldBe(shouldParse);
         if (shouldParse) {
@@ -456,7 +456,7 @@ public class ExploratoryTests {
     [Fact]
     public void SetReleaseNameCommand_SetsCorrectly() {
         string releaseName = "QuantumBanana";
-        VersonifyCommandline cmd = new() {
+        VersonifyOptions cmd = new() {
             Command = "set",
             Release = releaseName
         };

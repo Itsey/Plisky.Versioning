@@ -28,7 +28,7 @@ public class VersionOutputterTests {
     public void Args_OutputterParseConsole_Works() {
         b.Info.Flow();
 
-        var cla = new VersonifyCommandline {
+        var cla = new VersonifyOptions {
             OutputOptions = "con"
         };
 
@@ -47,7 +47,7 @@ public class VersionOutputterTests {
     public void Args_OutputterParseSetsConsoleString(string argument, string contains) {
         b.Info.Flow();
 
-        var cla = new VersonifyCommandline {
+        var cla = new VersonifyOptions {
             OutputOptions = argument
         };
 
@@ -63,7 +63,7 @@ public class VersionOutputterTests {
         string argument = "file:myfile.txt";
         string expectedFilename = "myfile.txt";
 
-        var cla = new VersonifyCommandline {
+        var cla = new VersonifyOptions {
             OutputOptions = argument
         };
 

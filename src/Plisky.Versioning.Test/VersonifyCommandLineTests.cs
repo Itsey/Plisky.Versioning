@@ -34,7 +34,7 @@ public class VersonifyCommandLineTests {
     [InlineData("passIVE", VersioningCommand.PassiveOutput)]
     [InlineData("behaviour", VersioningCommand.BehaviourOutput)]
     public void CommandLine_correctly_sets_command_from_argument(string commandString, VersioningCommand cmd) {
-        var sut = new VersonifyCommandline();
+        var sut = new VersonifyOptions();
         sut.Command = commandString;
         sut.RequestedCommand.ShouldBe(cmd, "The command should be set correctly from the command line argument.");
     }
@@ -42,7 +42,7 @@ public class VersonifyCommandLineTests {
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     public void CommandLine_will_only_allow_asterisk_once() {
-        var sut = new VersonifyCommandline();
+        var sut = new VersonifyOptions();
         sut.DigitManipulations = new[] { "1", "*", "2", "*" };
 
         string[] gd = sut.GetDigits();
@@ -57,7 +57,7 @@ public class VersonifyCommandLineTests {
     public void Output_environment_selected_works() {
         b.Info.Flow();
 
-        var sut = new VersonifyCommandline {
+        var sut = new VersonifyOptions {
             OutputOptions = "env"
         };
 
@@ -70,7 +70,7 @@ public class VersonifyCommandLineTests {
     public void Output_file_selected_works() {
         b.Info.Flow();
 
-        var sut = new VersonifyCommandline {
+        var sut = new VersonifyOptions {
             OutputOptions = "file"
         };
 
@@ -84,7 +84,7 @@ public class VersonifyCommandLineTests {
         b.Info.Flow();
 
         _ = Assert.Throws<ArgumentOutOfRangeException>(() => {
-            var sut = new VersonifyCommandline {
+            var sut = new VersonifyOptions {
                 OutputOptions = "MyIncrediblyWrongArgument"
             };
         });
@@ -96,7 +96,7 @@ public class VersonifyCommandLineTests {
     public void Output_defaults_to_none() {
         b.Info.Flow();
 
-        var sut = new VersonifyCommandline();
+        var sut = new VersonifyOptions();
         Assert.Equal(OutputPossibilities.None, sut.OutputsActive);
     }
 
@@ -106,7 +106,7 @@ public class VersonifyCommandLineTests {
     public void Output_null_is_same_as_none() {
         b.Info.Flow();
 
-        var sut = new VersonifyCommandline {
+        var sut = new VersonifyOptions {
             OutputOptions = ""
         };
         Assert.Equal(OutputPossibilities.None, sut.OutputsActive);

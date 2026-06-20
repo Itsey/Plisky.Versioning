@@ -7,13 +7,14 @@ using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Versioning;
 
-public class VersonifyCommandline {
-    protected Bilge b = new Bilge("CommandLineArguments");
+public class VersonifyOptions {
+    protected Bilge b = new Bilge("Options");
+
     private OutputPossibilities outcache = OutputPossibilities.None;
     private string outOpts = string.Empty;
     private string? pathPassed;
 
-    public VersonifyCommandline() {
+    public VersonifyOptions() {
         VersionTargetMinMatch = null!;
     }
 
@@ -51,6 +52,8 @@ public class VersonifyCommandline {
     }
 
     public bool PerformIncrement { get; set; }
+
+    public bool GetMdHelp { get; set; }
 
     public string? QuickValue { get; set; }
 

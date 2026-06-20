@@ -261,6 +261,24 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         th.LastExecutionExitCode.ShouldBe(0);
     }
 
+    [Fact]
+    public async Task GetMdHelp_argument_writes_docs_file_to_current_directory() {
+        b.Info.Flow();
+        string workingDirectory = CreateTemporaryDirectory();
+
+        try {
+            var result = await th.ExecuteVersonifyWithStreams("--get-md-help", workingDirectory);
+            string docsPath = Path.Combine(workingDirectory, "docs.md");
+
+            result.ExitCode.ShouldBe(0);
+            result.StdOut.ShouldContain("Wrote markdown help to");
+            File.Exists(docsPath).ShouldBeTrue();
+            File.ReadAllText(docsPath).ShouldContain("Versonify CLI arguments");
+        } finally {
+            Directory.Delete(workingDirectory, true);
+        }
+    }
+
     private async Task<string> CreateVersionStore(string workingDirectory, string versionValue) {
         string result = Path.Combine(workingDirectory, "versionstore.vstore");
         string output = await th.ExecuteVersonify($"createversion -V={result} -Q={versionValue}");

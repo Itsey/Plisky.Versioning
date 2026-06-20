@@ -10,7 +10,9 @@ This is a versioning library and corresponding command line tool to apply versio
 
 #### 1.0.4 - Internal structure release (May Be Bronte)
 
-Adding in manual tester to support the use of the prompt so that its easier to identify if something has broken, using a series of prompts and expected values so that you can run the prompt then test whether or not the outcome was the expected one.
+➕ The manual tester has highlighted that there are a lot of tokens being spent trying to work out what the command line for versonify is, and this involves reading the web, reading the help and a bit of trial and error.  Added a local embedded version of the help and a specific instruction to ai agents to extract this to get help about the tool.  Requested a refactor of program.cs too to simplify it as it was getting heavy.   docs\docs.md now contains a document embedded within versonify to spit out better quality help instructions.
+
+➕ Adding in manual tester to support the use of the prompt so that its easier to identify if something has broken, using a series of prompts and expected values so that you can run the prompt then test whether or not the outcome was the expected one.
 
 Also moved all code to nullable enabled, interestingly the ai decided to generate a md spec file and run a ralph loop all on its own for this one - all I said was fix the nullable warnings.  
 

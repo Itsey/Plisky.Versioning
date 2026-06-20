@@ -14,44 +14,10 @@ using Plisky.Versioning;
 
 internal class Program {
     private const string ALL_DIGITS_WILDCARD = "*";
-    private static readonly IReadOnlyDictionary<string, string> deprecatedAliasMap = new Dictionary<string, string>(StringComparer.Ordinal) {
-        ["-Command"] = "--command",
-        ["-Debug"] = "--debug",
-        ["-DryRun"] = "--dry-run",
-        ["-Digits"] = "--digits",
-        ["-NoError"] = "--no-error",
-        ["-NoOverride"] = "--no-override",
-        ["-Output"] = "--output",
-        ["-Increment"] = "--increment",
-        ["-QuickValue"] = "--quick-value",
-        ["-Release"] = "--release",
-        ["-Root"] = "--root",
-        ["-Trace"] = "--trace",
-        ["-VersionSource"] = "--version-source",
-        ["-MinMatch"] = "--min-match",
-        ["-output"] = "--output",
-    };
-    public static VersonifyCommandline options = new();
+    public static VersonifyOptions options = new();
     private static CompleteVersion? versionerUsed;
     private static VersionStorage? storage;
     private static Bilge b = new Bilge();
-
-    private static RootCommand? rootCommand;
-    private static Argument<string>? commandArg;
-    private static Option<string>? commandOpt;
-    private static Option<bool>? debugOpt;
-    private static Option<bool>? dryRunOpt;
-    private static Option<string>? digitsOpt;
-    private static Option<bool>? noErrorOpt;
-    private static Option<bool>? noOverrideOpt;
-    private static Option<string>? outputOpt;
-    private static Option<bool>? incrementOpt;
-    private static Option<string>? quickValueOpt;
-    private static Option<string>? releaseOpt;
-    private static Option<string>? rootPathOpt;
-    private static Option<string>? traceOpt;
-    private static Option<string>? versionSourceOpt;
-    private static Option<string>? minMatchOpt;
 
     private static async Task<int> Main(string[] args) {
         try {
@@ -62,17 +28,23 @@ internal class Program {
 
             WriteGreetingMessage();
 
-            if (IsHelpRequested(args)) {
-                DisplayHelp();
+            if (CommandLineParser.IsHelpRequested(args)) {
+                CommandLineParser.DisplayHelp();
                 return 0;
             }
 
-            if (!GetCommandLineArguments(args)) {
+            var parseResult = CommandLineParser.Parse(args);
+            if (!parseResult.Success) {
                 WriteErrorConditions();
                 return 1;
             }
+            options = parseResult.Options;
 
-            if (!ValidateArgumentSettings(options)) {
+            if (options.GetMdHelp) {
+                return await WriteMarkdownHelpFileAsync();
+            }
+
+            if (!ArgumentValidator.ValidateArgumentSettings(options)) {
                 WriteErrorConditions();
                 return 1;
             }
@@ -84,7 +56,7 @@ internal class Program {
             }
 
             if (options.Debug || (!string.IsNullOrEmpty(options.Trace))) {
-                ConfigureTrace();
+                DiagnosticsConfig.ConfigureTrace(options);
             }
 
             b = new Bilge("Versonify");
@@ -112,7 +84,7 @@ internal class Program {
                     Console.WriteLine(e);
                 }
                 Console.WriteLine();
-                DisplayHelp();
+                CommandLineParser.DisplayHelp();
             }
 
             b.Verbose.Log("Versonify - Exit.");
@@ -132,8 +104,8 @@ internal class Program {
 
     private static int CheckPnfCompatibiliyRequest(string[] args) {
         if (args.Length == 1 && args[0].Equals("--QQpnf", StringComparison.OrdinalIgnoreCase)) {
-            // 200 is the first implemented compatibility exit code. Before this no compatibility exit codes existed
-            // This equates to Versonify Release 1.0.1 Austen.
+            // 200 is the first implemented compatibility exit code. Before this no compatibility exit codes existed  - Versonify Release 1.0.1 Austen.
+            // 201 is the new command line interface.  Versonify Release 2.0 Bronte.
             return 200;
         }
         return 0;
@@ -145,274 +117,29 @@ internal class Program {
         Console.WriteLine($"💖 Versioning By Versonify 💖 ({verString}).");
     }
 
-    private static bool IsHelpRequested(string[] args) {
-        foreach (string arg in args) {
-            if (arg.Equals("--help", StringComparison.OrdinalIgnoreCase) ||
-                arg.Equals("-h", StringComparison.OrdinalIgnoreCase)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static RootCommand BuildRootCommand(bool includeDeprecatedAliases = true) {
-        var rc = new RootCommand("Parameter help for Versonify.");
-        rc.TreatUnmatchedTokensAsErrors = true;
-
-        commandArg = new Argument<string>("command");
-        commandArg.Description = "Command to execute: createversion|override|updatefiles|passive|behaviour|set|prefix";
-        commandArg.Arity = ArgumentArity.ZeroOrOne;
-        commandArg.DefaultValueFactory = _ => null!;
-        rc.Add(commandArg);
-
-        string[] commandAliases = includeDeprecatedAliases ? new[] { "-Command" } : Array.Empty<string>();
-        commandOpt = new Option<string>("--command", commandAliases);
-        commandOpt.Description = "Command name";
-        rc.Add(commandOpt);
-
-        string[] debugAliases = includeDeprecatedAliases ? new[] { "-Debug" } : Array.Empty<string>();
-        debugOpt = new Option<bool>("--debug", debugAliases);
-        debugOpt.Description = "Enables debug logging and echoes command-line arguments";
-        rc.Add(debugOpt);
-
-        string[] dryRunAliases = includeDeprecatedAliases ? new[] { "-DryRun" } : Array.Empty<string>();
-        dryRunOpt = new Option<bool>("--dry-run", dryRunAliases);
-        dryRunOpt.Description = "Runs in output-only mode; no changes are persisted";
-        rc.Add(dryRunOpt);
-
-        string[] digitsAliases = includeDeprecatedAliases ? new[] { "-D", "-d", "-Digits" } : new[] { "-D", "-d" };
-        digitsOpt = new Option<string>("--digits", digitsAliases);
-        digitsOpt.Description = "Semicolon-separated digit indices or * for all";
-        rc.Add(digitsOpt);
-
-        string[] noErrorAliases = includeDeprecatedAliases ? new[] { "-z", "-NoError" } : new[] { "-z" };
-        noErrorOpt = new Option<bool>("--no-error", noErrorAliases);
-        noErrorOpt.Description = "Forces zero exit code on otherwise failing executions";
-        rc.Add(noErrorOpt);
-
-        string[] noOverrideAliases = includeDeprecatedAliases ? new[] { "-NoOverride" } : Array.Empty<string>();
-        noOverrideOpt = new Option<bool>("--no-override", noOverrideAliases);
-        noOverrideOpt.Description = "Ignores any saved pending-increment override";
-        rc.Add(noOverrideOpt);
-
-        string[] outputAliases = includeDeprecatedAliases ? new[] { "-O", "-o", "-Output", "-output" } : new[] { "-O", "-o" };
-        outputOpt = new Option<string>("--output", outputAliases);
-        outputOpt.Description = "Output mode: env|con|azdo[:VarName]|file[:FileName]|con-nf";
-        rc.Add(outputOpt);
-
-        string[] incrementAliases = includeDeprecatedAliases ? new[] { "-I", "-i", "-Increment" } : new[] { "-I", "-i" };
-        incrementOpt = new Option<bool>("--increment", incrementAliases);
-        incrementOpt.Description = "Performs a version increment before other operations";
-        rc.Add(incrementOpt);
-
-        string[] quickValueAliases = includeDeprecatedAliases ? new[] { "-Q", "-QuickValue" } : new[] { "-Q" };
-        quickValueOpt = new Option<string>("--quick-value", quickValueAliases);
-        quickValueOpt.Description = "Quick value parameter used by set/override/behaviour/prefix commands";
-        rc.Add(quickValueOpt);
-
-        string[] releaseAliases = includeDeprecatedAliases ? new[] { "-R", "-Release" } : new[] { "-R" };
-        releaseOpt = new Option<string>("--release", releaseAliases);
-        releaseOpt.Description = "Release name associated with this version";
-        rc.Add(releaseOpt);
-
-        string[] rootPathAliases = includeDeprecatedAliases ? new[] { "-Root" } : Array.Empty<string>();
-        rootPathOpt = new Option<string>("--root", rootPathAliases);
-        rootPathOpt.Description = "Root directory from which to search for versionable files";
-        rc.Add(rootPathOpt);
-
-        string[] traceAliases = includeDeprecatedAliases ? new[] { "-Trace" } : Array.Empty<string>();
-        traceOpt = new Option<string>("--trace", traceAliases);
-        traceOpt.Description = "Trace level: info|verbose|off";
-        rc.Add(traceOpt);
-
-        string[] versionSourceAliases = includeDeprecatedAliases ? new[] { "-V", "-v", "-VersionSource" } : new[] { "-V", "-v" };
-        versionSourceOpt = new Option<string>("--version-source", versionSourceAliases);
-        versionSourceOpt.Description = "Version store initialisation string";
-        rc.Add(versionSourceOpt);
-
-        string[] minMatchAliases = includeDeprecatedAliases ? new[] { "-M", "-m", "-MinMatch" } : new[] { "-M", "-m" };
-        minMatchOpt = new Option<string>("--min-match", minMatchAliases);
-        minMatchOpt.Description = "Semicolon-separated minmatch patterns for file update";
-        rc.Add(minMatchOpt);
-
-        return rc;
-    }
-
-    private static bool GetCommandLineArguments(string[] args) {
-        rootCommand = BuildRootCommand();
-        var parseResult = rootCommand!.Parse(args);
-
-        if (parseResult.Errors.Count > 0) {
-            Console.WriteLine("Fatal: Invalid Arguments Passed to Versonify.");
-            foreach (var error in parseResult.Errors) {
-                Console.WriteLine(error.Message);
-            }
-            return false;
-        }
-
-        EmitDeprecatedAliasWarnings(args);
-
-        string? cmdFromPositional = parseResult.GetValue(commandArg!);
-        string? cmdFromOption = parseResult.GetValue(commandOpt!);
-        options.Command = cmdFromPositional ?? cmdFromOption;
-
-        options.Debug = parseResult.GetValue(debugOpt!);
-        options.DryRunOnly = parseResult.GetValue(dryRunOpt!);
-        options.ReturnZero = parseResult.GetValue(noErrorOpt!);
-        options.NoOverride = parseResult.GetValue(noOverrideOpt!);
-        options.PerformIncrement = parseResult.GetValue(incrementOpt!);
-        options.QuickValue = parseResult.GetValue(quickValueOpt!);
-        options.Release = parseResult.GetValue(releaseOpt!);
-        options.Root = parseResult.GetValue(rootPathOpt!);
-        options.Trace = parseResult.GetValue(traceOpt!);
-        options.VersionPersistanceValue = parseResult.GetValue(versionSourceOpt!);
-
-        string? rawDigits = parseResult.GetValue(digitsOpt!);
-        options.DigitManipulations = rawDigits != null
-            ? rawDigits.Split(';', StringSplitOptions.RemoveEmptyEntries)
-            : null;
-
-        string? rawMinMatch = parseResult.GetValue(minMatchOpt!);
-        options.VersionTargetMinMatch = rawMinMatch != null
-            ? rawMinMatch.Split(';', StringSplitOptions.RemoveEmptyEntries)
-            : null;
-
-        options.RawOutputOptions = parseResult.GetValue(outputOpt!);
-        options.OutputOptions = options.RawOutputOptions ?? "";
-
-        return true;
-    }
-
     private static void WriteErrorConditions() {
         Console.WriteLine("Fatal:  Argument Validation Failed.");
         Console.WriteLine();
-        DisplayHelp();
+        CommandLineParser.DisplayHelp();
     }
 
-    private static void DisplayHelp() {
-        var helpCommand = BuildRootCommand(false);
-        helpCommand.Parse(new[] { "--help" }).Invoke(new System.CommandLine.InvocationConfiguration());
-    }
+    private static async Task<int> WriteMarkdownHelpFileAsync() {
+        const string resourceName = "Versonify.docs.md";
+        const string fileName = "docs.md";
 
-    private static void EmitDeprecatedAliasWarnings(string[] args) {
-        var seenAliases = new HashSet<string>(StringComparer.Ordinal);
-        foreach (string arg in args) {
-            string extractedToken = ExtractOptionToken(arg);
-            if (!deprecatedAliasMap.TryGetValue(extractedToken, out string? canonicalAlias)) {
-                continue;
-            }
-
-            if (seenAliases.Add(extractedToken)) {
-                Console.Error.WriteLine(FormatDeprecationWarning(extractedToken, canonicalAlias));
-            }
-        }
-    }
-
-    private static string ExtractOptionToken(string rawArg) {
-        if (string.IsNullOrWhiteSpace(rawArg) || !rawArg.StartsWith("-", StringComparison.Ordinal)) {
-            return string.Empty;
+        using Stream? resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
+        if (resourceStream == null) {
+            Console.WriteLine($"Fatal: Embedded markdown resource '{resourceName}' was not found.");
+            return 1;
         }
 
-        int equalsIndex = rawArg.IndexOf('=');
-        if (equalsIndex >= 0) {
-            return rawArg.Substring(0, equalsIndex);
-        }
+        using var reader = new StreamReader(resourceStream);
+        string markdown = await reader.ReadToEndAsync();
+        string outputPath = Path.Combine(Environment.CurrentDirectory, fileName);
 
-        return rawArg;
-    }
-
-    private static string FormatDeprecationWarning(string deprecatedAlias, string canonicalAlias) {
-        return $"WARNING: '{deprecatedAlias}' is deprecated. Use '{canonicalAlias}' instead.";
-    }
-
-    private static void ConfigureTrace() {
-        Console.WriteLine("Debug Mode, Adding Trace Handler");
-
-        _ = Bilge.AddHandler(new ConsoleHandler(), HandlerAddOptions.SingleType);
-
-        Bilge.SetConfigurationResolver((name, inLevel) => {
-            var returnLvl = SourceLevels.Verbose;
-
-            if ((options.Trace != null) && (options.Trace.ToLowerInvariant() == "info")) {
-                returnLvl = SourceLevels.Information;
-            }
-
-            return name.Contains("Plisky-Versioning") || name.Contains("Versonify") ? returnLvl : inLevel;
-        });
-    }
-
-    private static bool ValidateArgumentSettings(VersonifyCommandline options) {
-        bool valid = true;
-
-        // Common checks
-        if (!string.IsNullOrWhiteSpace(options.Root) && !Directory.Exists(options.Root)) {
-            Console.WriteLine("Error >> Invalid Directory For Root:" + options.Root);
-            valid = false;
-        }
-        if (string.IsNullOrWhiteSpace(options.VersionPersistanceValue)) {
-            Console.WriteLine("Error >> A versioning store must be selected.  Use -V= and pass your initialisation data");
-            valid = false;
-        }
-        if (!string.IsNullOrWhiteSpace(options.PverFileName)) {
-            char[] invalidChars = Path.GetInvalidFileNameChars();
-            if (options.PverFileName.IndexOfAny(invalidChars) >= 0) {
-                Console.WriteLine($"The output file name [{options.PverFileName}] contains invalid characters.");
-                valid = false;
-            }
-        }
-
-        // Command-specific checks
-        switch (options.RequestedCommand) {
-            case VersioningCommand.BehaviourOutput:
-            case VersioningCommand.BehaviourUpdate:
-                valid &= ValidateDigitsPresent(options.DigitManipulations, "Behaviour");
-                break;
-            case VersioningCommand.SetDigitValue:
-                if (string.IsNullOrWhiteSpace(options.QuickValue)) {
-                    Console.WriteLine("Error >> The Set command requires a value to set. Use -Q=<value> to set digit value. Use -Release=<value> to set release name.");
-                    valid = false;
-                } else if (!options.QuickValue.Contains('.')) {
-                    // Only require digits if not setting the full version string
-                    valid &= ValidateDigitsPresent(options.DigitManipulations, "Set");
-                }
-                break;
-            case VersioningCommand.Override:
-                if (string.IsNullOrWhiteSpace(options.QuickValue)) {
-                    Console.WriteLine("Error >> The Override command requires a version pattern to apply. Use -Q=<pattern> to set the override pattern.");
-                    valid = false;
-                }
-                break;
-            case VersioningCommand.SetReleaseName:
-                if (!string.IsNullOrEmpty(options.QuickValue)) {
-                    Console.WriteLine("Error >> Both QuickValue (-Q) and Release (-R) cannot be provided for the Set command. Please specify only one.");
-                    valid = false;
-                }
-                break;
-            case VersioningCommand.SetDigitPrefix:
-                valid &= ValidateDigitsPresent(options.DigitManipulations, "Prefix");
-                if (options.QuickValue == null) {    // Allow empty string or whitespace as valid prefix
-                    Console.WriteLine("Error >> The Prefix command requires a prefix value. Use -Q=<prefix> (can be empty string).");
-                    valid = false;
-                }
-                break;
-            case VersioningCommand.UpdateFiles:
-                if ((options.VersionTargetMinMatch == null) || (options.VersionTargetMinMatch.Length == 0)) {
-                    Console.WriteLine("Error >> The Update command requires a minmatch .txt file to be provided. Use -M=<path to minmatch file.>");
-                    valid = false;
-                }
-                break;
-        }
-
-        return valid;
-    }
-
-    private static bool ValidateDigitsPresent(string[]? digits, string commandName) {
-        if (digits == null || digits.Length == 0) {
-            Console.WriteLine($"Error >> The {commandName} command requires at least one digit to update. Use -D=<digit> or -D=*.");
-            return false;
-        }
-        return true;
+        await File.WriteAllTextAsync(outputPath, markdown);
+        Console.WriteLine($"Wrote markdown help to {outputPath}");
+        return 0;
     }
 
     private static ExecutionResult PerformActionsFromCommandline() {
@@ -423,7 +150,7 @@ internal class Program {
 
         GetVersionStorageFromCommandLine();
 
-        if (!ValidateVersionStorage()) {
+        if (!ArgumentValidator.ValidateVersionStorage(storage, options)) {
             result.WasProcessedSuccessfully = false;
             result.ExitCode = 1;
             return result;
@@ -521,22 +248,7 @@ internal class Program {
         Console.WriteLine($"Loaded [{ver.GetVersion()}]");
     }
 
-    private static bool ValidateVersionStorage() {
-        if (storage == null || !storage.IsValid) {
-            return false;
-        }
 
-        bool vstoreExists = storage.DoesVstoreExist();
-        if (!vstoreExists && options.RequestedCommand != VersioningCommand.CreateNewVersion) {
-            Console.WriteLine($"Error >> Version Store {options.VersionPersistanceValue} does not exist or is inaccessible.");
-            return false;
-        }
-        if (vstoreExists && options.RequestedCommand == VersioningCommand.CreateNewVersion) {
-            Console.WriteLine($"Error >> Version store {options.VersionPersistanceValue} already exists.");
-            return false;
-        }
-        return true;
-    }
 
     private static void LoadReleaseName() {
         b.Verbose.Flow();
@@ -700,7 +412,7 @@ internal class Program {
         string[] digitsToUpdate = options.GetDigits();
         string? valueToSet = options.QuickValue;
 
-        if (ShouldSetCompleteVersionFromString(digitsToUpdate, valueToSet)) {
+        if (ArgumentValidator.ShouldSetCompleteVersionFromString(digitsToUpdate, valueToSet)) {
             ver.Version.SetCompleteVersionFromString(valueToSet!);
             Console.WriteLine($"Set version to: {ver.Version.GetVersionString()}");
         } else {
@@ -724,16 +436,6 @@ internal class Program {
             Console.WriteLine("DryRun - Would Save:");
             Console.WriteLine($"[{ver.Version.GetVersionString()}]");
         }
-    }
-
-    private static bool ShouldSetCompleteVersionFromString(string[] digitsToUpdate, string? valueToSet) {
-        if (string.IsNullOrWhiteSpace(valueToSet)) {
-            return false;
-        }
-        if (digitsToUpdate.Length == 0 && valueToSet.Contains('.')) {
-            return true;
-        }
-        return false;
     }
 
     private static void ApplyReleaseNameUpdate() {

@@ -34,6 +34,7 @@
   <ItemGroup>
     <None Include="..\_Dependencies\SupportingFiles\heart-icon.png" Pack="true" PackagePath="" />
     <None Include="..\_Dependencies\SupportingFiles\readme.md" Pack="true" PackagePath="" />
+    <EmbeddedResource Include="docs\docs.md" LogicalName="Versonify.docs.md" />
   </ItemGroup>
   <Target Name="AddReleaseNotesToPackage" BeforeTargets="GenerateNuspec">
     <Message Importance="high" Text="Creating Custom Release Notes." />

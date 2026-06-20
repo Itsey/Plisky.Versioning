@@ -145,6 +145,7 @@ public class KebabCaseOptions : IDisposable {
         result.StdOut.ShouldContain("--dry-run");
         result.StdOut.ShouldContain("--digits");
         result.StdOut.ShouldContain("--no-error");
+        result.StdOut.ShouldContain("--get-md-help");
         result.StdOut.ShouldContain("--no-override");
         result.StdOut.ShouldContain("--output");
         result.StdOut.ShouldContain("--increment");
