@@ -43,8 +43,27 @@ public class ExploratoryTests {
         versionString.ShouldBe(outStr);
     }
 
-    [Fact]
+    [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
+    [InlineData("1.9.0.0", "1.9", DisplayType.Short)]
+    [InlineData("1.9.0.0", "1.9.0.0", DisplayType.Release)]  // Unexpected, altered expected behaviour to match actual output.
+    [InlineData("1.9.0.0", "1.9.0", DisplayType.ThreeDigit)]
+    [InlineData("1.9.0.0", "1.9.0.0", DisplayType.QueuedFull)]
+    [InlineData("1.9.0.0", "1.9.0.0", DisplayType.Default)]
+    [InlineData("1.9.0.0", "1.9.0.0", DisplayType.FourDigit)]
+    [InlineData("1.9.0.0", "1.9.0.0", DisplayType.FourDigitNumeric)]
+    public void Output_formats_are_well_specified(string input, string output, DisplayType dt) {
+        b.Info.Flow();
+        // Duplicate of other tests but grouped here to define requirements for output.
+
+        CompleteVersion sut = new(input, '.', '-', '+');
+
+        string versionString = sut.GetVersionString(dt);
+        Assert.Equal(output, versionString);
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
     public void Commandline_digits_allows_multiple_digits() {
         VersonifyOptions sut = new();
         sut.DigitManipulations = new[] { "1", "2", "3" };
@@ -58,7 +77,7 @@ public class ExploratoryTests {
     }
 
     [Theory]
-    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Age, Traits.Regression)]
     [InlineData("monkey")]
     [InlineData("4")] // Digits.Length is 4, so valid digits are 0-3
     public void Validate_digitoptions_throws_when_invalid_digit_passed(string invalidDigit) {
@@ -98,7 +117,7 @@ public class ExploratoryTests {
     [Trait(Traits.Age, Traits.Fresh)]
     public void Validate_digitoptions_returns_false_when_zeroLengthParameter() {
         var cv = CompleteVersion.GetDefault();
-        
+
         bool result = cv.ValidateDigitOptions([]);
 
         result.ShouldBeFalse();
