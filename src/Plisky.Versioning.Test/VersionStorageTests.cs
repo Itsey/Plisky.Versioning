@@ -1,6 +1,7 @@
 ﻿namespace Plisky.CodeCraft.Test;
 
 using System.IO;
+using System.Text.Json;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Xunit;
@@ -152,5 +153,27 @@ public class VersionStorageTests {
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"));
         sut.Persist(cv);
         Assert.True(File.Exists(fn), "The file must be created");
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Integration)]
+    public void VersionStorage_Json_BackwardCompatibleWithoutGroupName() {
+        string fn = uth.NewTemporaryFileName(true);
+        string legacyStore = "{\"Digits\":[{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"1\",\"PreFix\":\"\"},{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"2\",\"PreFix\":\".\"},{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"3\",\"PreFix\":\".\"}],\"DisplayTypes\":{\"NetAssembly\":1,\"NetFile\":2,\"NetInformational\":2,\"Wix\":2,\"Nuspec\":4,\"StdAssembly\":1,\"StdFile\":2,\"StdInformational\":2,\"TextFile\":1},\"IsDefault\":false,\"ReleaseName\":null}";
+        File.WriteAllText(fn, legacyStore);
+
+        var sut = new JsonVersionPersister(fn);
+        var loaded = sut.GetVersion();
+
+        Assert.Equal(3, loaded.Digits.Length);
+        Assert.Equal(string.Empty, loaded.Digits[0].GroupName);
+        Assert.Equal(string.Empty, loaded.Digits[1].GroupName);
+        Assert.Equal(string.Empty, loaded.Digits[2].GroupName);
+
+        sut.Persist(loaded);
+        using var doc = JsonDocument.Parse(File.ReadAllText(fn));
+        string groupName = doc.RootElement.GetProperty("Digits")[0].GetProperty("GroupName").GetString() ?? "missing";
+        Assert.Equal(string.Empty, groupName);
     }
 }

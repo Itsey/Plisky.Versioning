@@ -44,7 +44,7 @@ public class FileUpdateTests {
         };
 
         var sut = new VersionFileUpdater(cv);
-        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Release);
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Full);
 
         string result = File.ReadAllText(srcFile);
         result.ShouldNotContain("XXX-RELEASENAME-XXX");
@@ -435,7 +435,7 @@ public class FileUpdateTests {
         string destinationPoint = "<version>1.1.1.1</version>";
         string txt = File.ReadAllText(srcFile);
 
-        _ = sut.PerformUpdate(srcFile, FileUpdateType.Nuspec, DisplayType.Release);
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.Nuspec, DisplayType.Full);
         string txt2 = File.ReadAllText(srcFile);
 
         (txt.IndexOf(knownStartPoint) > 0).ShouldBeTrue();

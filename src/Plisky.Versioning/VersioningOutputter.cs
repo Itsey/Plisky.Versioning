@@ -38,9 +38,11 @@ public class VersioningOutputter {
 
     public bool ReleaseRequested { get; set; }
 
+    public string? PassiveOutputOverride { get; set; }
+
     protected string ValToWrite => ReleaseRequested
                                    ? versionToLog.ReleaseName ?? ""
-       : versionToLog.GetVersionString();
+       : PassiveOutputOverride ?? versionToLog.GetVersionString();
 
     public void DoOutput(OutputPossibilities oo, VersioningCommand command) {
         b.Verbose.Flow($"{oo}");

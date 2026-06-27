@@ -187,6 +187,26 @@ public class VersionOutputterTests {
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
+    public void Outputter_Environment_UsesGroupedPassiveOverrideValue() {
+        b.Info.Flow();
+
+        var version = new CompleteVersion("1.2.3.4");
+        version.Digits[2].GroupName = "pre-release";
+        string groupedValue = version.GetVersionStringByGroup("pre-release");
+
+        var sut = new MockVersioningOutputter(version) {
+            PassiveOutputOverride = groupedValue
+        };
+
+        sut.DoOutput(OutputPossibilities.Environment, VersioningCommand.PassiveOutput);
+
+        sut.EnvWasSet.ShouldBeTrue("Environment output should still be selected.");
+        sut.GetTheValueRequestedToWrite().ShouldBe(".3");
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
     public void Outputter_PNF_WritesPNFToConsole() {
         b.Info.Flow();
         string version = "1.1.oranges.0.0";

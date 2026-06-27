@@ -12,6 +12,7 @@ public class CompleteVersion {
     private string? actualReleaseName;
     private string? pendingReleaseName;
     private const string ALLDIGITSWILDCARD = "*";
+    private const string DEFAULTDIGITGROUP = "default";
 
     /// <summary>
     /// Returns the default, empty, version instance which is four digits and all fixed except the
@@ -157,6 +158,8 @@ public class CompleteVersion {
                 return NumericDisplayString(3);
             case DisplayType.QueuedFull:
                 return QueuedDisplayString();
+            case DisplayType.Release:
+                return ReleaseName ?? string.Empty;
             case DisplayType.Short when Digits.Length > 2:
                 stopPoint = 2;
                 break;
@@ -368,5 +371,110 @@ public class CompleteVersion {
         b.Verbose.Log($"Applying prefix update for digit {digitToUpdate} to prefix {newPrefix}");
         int idx = int.Parse(digitToUpdate);
         Digits[idx].PreFix = newPrefix;
+    }
+
+    public static string NormalizeDigitGroup(string? groupName) {
+        if (string.IsNullOrWhiteSpace(groupName)) {
+            return string.Empty;
+        }
+
+        string result = groupName.Trim();
+        if (result.Equals(DEFAULTDIGITGROUP, StringComparison.OrdinalIgnoreCase)) {
+            return string.Empty;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Gets the indices of digits that belong to one or more specified groups.
+    /// </summary>
+    /// <param name="groupNames">Comma-separated group names (empty string means default group)</param>
+    /// <returns>Array of digit indices matching the specified groups</returns>
+    public int[] GetDigitsByGroup(string groupNames) {
+        if (groupNames == ALLDIGITSWILDCARD) {
+            // Return all digit indices
+            int[] allIndices = new int[Digits.Length];
+            for (int i = 0; i < Digits.Length; i++) {
+                allIndices[i] = i;
+            }
+            return allIndices;
+        }
+
+        var requestedGroups = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string group in groupNames.Split(',', StringSplitOptions.RemoveEmptyEntries)) {
+            requestedGroups.Add(NormalizeDigitGroup(group));
+        }
+        if (requestedGroups.Count == 0) {
+            requestedGroups.Add(string.Empty);
+        }
+
+        var matchingIndices = new List<int>();
+        for (int i = 0; i < Digits.Length; i++) {
+            string digitGroup = NormalizeDigitGroup(Digits[i].GroupName);
+            if (requestedGroups.Contains(digitGroup)) {
+                matchingIndices.Add(i);
+            }
+        }
+
+        return matchingIndices.ToArray();
+    }
+
+    /// <summary>
+    /// Gets a version string containing only digits from the specified groups, preserving their original indices.
+    /// </summary>
+    /// <param name="groupNames">Comma-separated group names</param>
+    /// <returns>Version string with only specified group digits</returns>
+    public string GetVersionStringByGroup(string groupNames) {
+        int[] indices = GetDigitsByGroup(groupNames);
+        if (indices.Length == 0) {
+            return string.Empty;
+        }
+
+        string result = string.Empty;
+        for (int i = 0; i < indices.Length; i++) {
+            int digitIndex = indices[i];
+            result += Digits[digitIndex].ToString();
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Increments only the digits belonging to specified groups.
+    /// </summary>
+    /// <param name="groupNames">Comma-separated group names; null or empty means increment only default group</param>
+    public void IncrementByGroup(string? groupNames) {
+        bool lastChanged = false;
+        bool anyChanged = false;
+        var t1 = DateTime.Now;
+
+        if (pendingReleaseName != null) {
+            ReleaseName = pendingReleaseName;
+            pendingReleaseName = null;
+        }
+
+        string groupsToIncrement = string.IsNullOrWhiteSpace(groupNames) ? string.Empty : groupNames;
+        b.Verbose.Log($"Incrementing Version by group [{groupsToIncrement}].", ReleaseName);
+
+        int[] indicesToIncrement = GetDigitsByGroup(groupsToIncrement);
+
+        // Sort indices to ensure proper carry-over behavior
+        Array.Sort(indicesToIncrement);
+
+        for (int idx = 0; idx < indicesToIncrement.Length; idx++) {
+            int digitIndex = indicesToIncrement[idx];
+            var un = Digits[digitIndex];
+
+            if (un.Value == null) {
+                b.Warning.Log($"Digit {digitIndex} is null, skipping increment.");
+                continue;
+            }
+
+            string tmp = un.Value;
+            lastChanged = un.PerformIncrement(lastChanged, anyChanged, t1, t1);
+            b.Verbose.Log($"{tmp}>{un.Value} using {un.Behaviour}");
+            if (lastChanged) { anyChanged = true; }
+        }
     }
 }

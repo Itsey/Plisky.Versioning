@@ -42,6 +42,8 @@ public class KebabCaseOptions : IDisposable {
     [InlineData("passive --version-source={VS} --trace=info")]
     [InlineData("passive --version-source={VS}")]
     [InlineData("updatefiles --root={ROOT} --version-source={VS} --increment --min-match={MM}|StdFile")]
+    [InlineData("passive --version-source={VS} --digit-group=default")]
+    [InlineData("passive --version-source={VS} --pre-release")]
     public async Task Canonical_long_options_parse_without_warning(string argsTemplate) {
         string workingDirectory = CreateTemporaryDirectory();
         string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
@@ -110,6 +112,8 @@ public class KebabCaseOptions : IDisposable {
     [InlineData("-M")]
     [InlineData("-m")]
     [InlineData("-z")]
+    [InlineData("-g")]
+    [InlineData("-p")]
     public async Task Short_aliases_are_silent_and_functional(string shortAlias) {
         string workingDirectory = CreateTemporaryDirectory();
         string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
@@ -155,8 +159,12 @@ public class KebabCaseOptions : IDisposable {
         result.StdOut.ShouldContain("--trace");
         result.StdOut.ShouldContain("--version-source");
         result.StdOut.ShouldContain("--min-match");
+        result.StdOut.ShouldContain("--digit-group");
+        result.StdOut.ShouldContain("--pre-release");
         result.StdOut.ShouldContain("-D");
         result.StdOut.ShouldContain("-d");
+        result.StdOut.ShouldContain("-g");
+        result.StdOut.ShouldContain("-p");
         result.StdOut.ShouldContain("-O");
         result.StdOut.ShouldContain("-o");
         result.StdOut.ShouldContain("-I");
@@ -239,6 +247,8 @@ public class KebabCaseOptions : IDisposable {
             "-M" => $"updatefiles --root={workingDirectory} --increment --version-source={versionStorePath} {alias}={projectFilePath}|StdFile",
             "-m" => $"updatefiles --root={workingDirectory} --increment --version-source={versionStorePath} {alias}={projectFilePath}|StdFile",
             "-z" => $"updatefiles --root={workingDirectory} --increment --version-source={versionStorePath} --min-match=*.zzz --output=con {alias}",
+            "-g" => $"passive --version-source={versionStorePath} {alias}=default",
+            "-p" => $"passive --version-source={versionStorePath} {alias}",
             _ => throw new InvalidOperationException($"Unsupported alias: {alias}"),
         };
     }

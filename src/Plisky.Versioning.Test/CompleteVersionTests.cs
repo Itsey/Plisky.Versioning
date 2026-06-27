@@ -642,4 +642,106 @@ public class CompleteVersionTests {
             verString.ShouldBe("2.0-Unicorn.2");
         }
     }
+
+    public class DigitGroups {
+        [Theory]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        [InlineData(null, "")]
+        [InlineData("", "")]
+        [InlineData("   ", "")]
+        [InlineData("default", "")]
+        [InlineData(" DEFAULT ", "")]
+        [InlineData("pre-release", "pre-release")]
+        [InlineData("  pre-release  ", "pre-release")]
+        public void NormalizeDigitGroup_when_called_returns_expected_value(string? input, string expected) {
+            string result = CompleteVersion.NormalizeDigitGroup(input);
+
+            result.ShouldBe(expected);
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Passive_defaults_to_unnamed_group_only() {
+            var sut = new CompleteVersion("1.2.3.4");
+            sut.Digits[2].GroupName = "pre-release";
+
+            string result = sut.GetVersionStringByGroup(string.Empty);
+
+            result.ShouldBe("1.2.4");
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Passive_can_select_named_group_only() {
+            var sut = new CompleteVersion("1.2.3.4");
+            sut.Digits[2].GroupName = "pre-release";
+
+            string result = sut.GetVersionStringByGroup("pre-release");
+
+            result.ShouldBe(".3");
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Passive_can_select_multiple_groups_in_original_order() {
+            var sut = new CompleteVersion("1.2.3.4");
+            sut.Digits[2].GroupName = "pre-release";
+
+            string result = sut.GetVersionStringByGroup("default,pre-release");
+
+            result.ShouldBe("1.2.3.4");
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void IncrementByGroup_defaults_to_unnamed_group_only() {
+            var sut = new CompleteVersion(
+                new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement),
+                new VersionUnit("2", ".", DigitIncrementBehaviour.ContinualIncrement),
+                new VersionUnit("3", ".", DigitIncrementBehaviour.ContinualIncrement),
+                new VersionUnit("4", ".", DigitIncrementBehaviour.ContinualIncrement));
+            sut.Digits[2].GroupName = "pre-release";
+
+            sut.IncrementByGroup(string.Empty);
+
+            sut.GetVersionString().ShouldBe("2.3.3.5");
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void IncrementByGroup_named_group_only_increments_target_group() {
+            var sut = new CompleteVersion(
+                new VersionUnit("2", "", DigitIncrementBehaviour.ContinualIncrement),
+                new VersionUnit("3", ".", DigitIncrementBehaviour.ContinualIncrement),
+                new VersionUnit("3", ".", DigitIncrementBehaviour.ContinualIncrement),
+                new VersionUnit("5", ".", DigitIncrementBehaviour.ContinualIncrement));
+            sut.Digits[2].GroupName = "pre-release";
+
+            sut.IncrementByGroup("pre-release");
+
+            sut.GetVersionString().ShouldBe("2.3.4.5");
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void IncrementByGroup_wildcard_increments_all_groups() {
+            var sut = new CompleteVersion(
+                new VersionUnit("2", "", DigitIncrementBehaviour.ContinualIncrement),
+                new VersionUnit("3", ".", DigitIncrementBehaviour.ContinualIncrement),
+                new VersionUnit("4", ".", DigitIncrementBehaviour.ContinualIncrement),
+                new VersionUnit("5", ".", DigitIncrementBehaviour.ContinualIncrement));
+            sut.Digits[2].GroupName = "pre-release";
+
+            sut.IncrementByGroup("*");
+
+            sut.GetVersionString().ShouldBe("3.4.5.6");
+        }
+    }
 }

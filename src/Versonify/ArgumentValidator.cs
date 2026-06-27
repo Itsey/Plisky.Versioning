@@ -26,6 +26,24 @@ public static class ArgumentValidator {
             }
         }
 
+        // Validate --digit-group and --pre-release are not both specified
+        if (!string.IsNullOrEmpty(options.DigitGroup) && options.PreRelease) {
+            Console.WriteLine("Error >> Both --digit-group and --pre-release cannot be specified together.");
+            valid = false;
+        }
+
+        // Validate --digit-group constraints for set command
+        if (options.RequestedCommand == VersioningCommand.SetDigitValue && !string.IsNullOrEmpty(options.DigitGroup)) {
+            if (options.DigitGroup.Contains(',')) {
+                Console.WriteLine("Error >> The --digit-group option for set command cannot contain commas.");
+                valid = false;
+            }
+            if (options.DigitGroup == "*") {
+                Console.WriteLine("Error >> The --digit-group option for set command cannot be '*'.");
+                valid = false;
+            }
+        }
+
         // Command-specific checks
         switch (options.RequestedCommand) {
             case VersioningCommand.BehaviourOutput:
@@ -33,11 +51,16 @@ public static class ArgumentValidator {
                 valid &= ValidateDigitsPresent(options.DigitManipulations, "Behaviour");
                 break;
             case VersioningCommand.SetDigitValue:
-                if (string.IsNullOrWhiteSpace(options.QuickValue)) {
-                    Console.WriteLine("Error >> The Set command requires a value to set. Use -Q=<value> to set digit value. Use -Release=<value> to set release name.");
+                bool hasQuickValue = !string.IsNullOrWhiteSpace(options.QuickValue);
+                bool hasDigitGroup = options.DigitGroup != null || options.PreRelease;
+                if (!hasQuickValue && !hasDigitGroup) {
+                    Console.WriteLine("Error >> The Set command requires a value to set or --digit-group assignment. Use -Q=<value> to set digit value.");
                     valid = false;
-                } else if (!options.QuickValue.Contains('.')) {
-                    // Only require digits if not setting the full version string
+                }
+                if (hasDigitGroup) {
+                    valid &= ValidateDigitsPresent(options.DigitManipulations, "Set");
+                } else if ((!hasQuickValue || !options.QuickValue!.Contains('.')) && options.Release == null) {
+                    // Require digits when assigning groups or when setting individual digit values.
                     valid &= ValidateDigitsPresent(options.DigitManipulations, "Set");
                 }
                 break;

@@ -1,15 +1,11 @@
 namespace Versonify;
 
 using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Plisky.CodeCraft;
 using Plisky.Diagnostics;
-using Plisky.Diagnostics.Listeners;
 using Plisky.Versioning;
 
 internal class Program {
@@ -18,6 +14,7 @@ internal class Program {
     private static CompleteVersion? versionerUsed;
     private static VersionStorage? storage;
     private static Bilge b = new Bilge();
+    private static string? passiveOutputValue;
 
     private static async Task<int> Main(string[] args) {
         try {
@@ -72,6 +69,7 @@ internal class Program {
                         PverFileName = options.PverFileName,
                         Digits = options.GetDigits(),
                         ReleaseRequested = options.Release != null,
+                        PassiveOutputOverride = options.RequestedCommand == VersioningCommand.PassiveOutput ? passiveOutputValue : null,
                     };
 
                     vo.DoOutput(options.OutputsActive, options.RequestedCommand);
@@ -124,18 +122,18 @@ internal class Program {
     }
 
     private static async Task<int> WriteMarkdownHelpFileAsync() {
-        const string resourceName = "Versonify.docs.md";
-        const string fileName = "docs.md";
+        const string RESOURCE_NAME = "Versonify.docs.md";
+        const string FILE_NAME = "docs.md";
 
-        using Stream? resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
+        using var resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(RESOURCE_NAME);
         if (resourceStream == null) {
-            Console.WriteLine($"Fatal: Embedded markdown resource '{resourceName}' was not found.");
+            Console.WriteLine($"Fatal: Embedded markdown resource '{RESOURCE_NAME}' was not found.");
             return 1;
         }
 
         using var reader = new StreamReader(resourceStream);
         string markdown = await reader.ReadToEndAsync();
-        string outputPath = Path.Combine(Environment.CurrentDirectory, fileName);
+        string outputPath = Path.Combine(Environment.CurrentDirectory, FILE_NAME);
 
         await File.WriteAllTextAsync(outputPath, markdown);
         Console.WriteLine($"Wrote markdown help to {outputPath}");
@@ -145,6 +143,7 @@ internal class Program {
     private static ExecutionResult PerformActionsFromCommandline() {
         var result = new ExecutionResult();
         b.Verbose.Flow();
+        passiveOutputValue = null;
 
         Console.WriteLine("Performing Versioning Actions");
 
@@ -240,12 +239,19 @@ internal class Program {
             string v = ver.GetVersion();
             b.Verbose.Log($"Performing increment {v}");
             Console.WriteLine("Version Increment Requested - Currently " + v);
-            ver.Increment(options.Release);
+
+            if ((!string.IsNullOrWhiteSpace(options.Release)) && (options.Release != ver.Version.ReleaseName)) {
+                ver.Version.ReleaseName = options.Release;
+            }
+            ver.Version.IncrementByGroup(ResolveDigitGroupsForIncrement());
 
             b.Verbose.Log("About to save version store");
             ver.SaveUpdatedVersion();
         }
-        Console.WriteLine($"Loaded [{ver.GetVersion()}]");
+
+        string outputVersion = ver.Version.GetVersionStringByGroup(ResolveDigitGroupsForDisplay());
+        passiveOutputValue = outputVersion;
+        Console.WriteLine($"Loaded [{outputVersion}]");
     }
 
 
@@ -300,7 +306,11 @@ internal class Program {
         }
         if (options.PerformIncrement) {
             Console.WriteLine("Version Increment Requested - Currently " + ver.GetVersion());
-            ver.Increment(options.Release);
+
+            if ((!string.IsNullOrWhiteSpace(options.Release)) && (options.Release != ver.Version.ReleaseName)) {
+                ver.Version.ReleaseName = options.Release;
+            }
+            ver.Version.IncrementByGroup(ResolveDigitGroupsForIncrement());
         } else {
             Console.WriteLine("No Version Increment Requested.");
         }
@@ -420,12 +430,43 @@ internal class Program {
                 Console.WriteLine("Error >> Invalid digit selection for value update.");
                 return;
             }
-            if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
-                Console.WriteLine($"Setting all digits to value: {valueToSet}");
-            } else {
-                Console.WriteLine($"Setting digit(s) [{string.Join(',', digitsToUpdate)}] to value: {valueToSet}");
+
+            string? requestedGroupName = ResolveDigitGroupForSet();
+            if (string.IsNullOrWhiteSpace(valueToSet) && requestedGroupName == null) {
+                Console.WriteLine("Error >> No value or digit-group specified for set command.");
+                return;
             }
-            ver.Version.SetIndividualDigits(digitsToUpdate, valueToSet!);
+
+            if (!string.IsNullOrWhiteSpace(valueToSet) && digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
+                Console.WriteLine($"Setting all digits to value: {valueToSet}");
+                if (requestedGroupName != null) {
+                    Console.WriteLine($"  with group assignment: {requestedGroupName}");
+                }
+            } else if (!string.IsNullOrWhiteSpace(valueToSet)) {
+                Console.WriteLine($"Setting digit(s) [{string.Join(',', digitsToUpdate)}] to value: {valueToSet}");
+                if (requestedGroupName != null) {
+                    Console.WriteLine($"  with group assignment: {requestedGroupName}");
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(valueToSet)) {
+                ver.Version.SetIndividualDigits(digitsToUpdate, valueToSet!);
+            }
+
+            if (requestedGroupName != null) {
+                if (string.IsNullOrWhiteSpace(valueToSet)) {
+                    Console.WriteLine($"Assigning digit(s) [{string.Join(',', digitsToUpdate)}] to group: {requestedGroupName}");
+                }
+                foreach (string digitStr in digitsToUpdate) {
+                    if (digitStr != ALL_DIGITS_WILDCARD && int.TryParse(digitStr, out int digitIdx)) {
+                        ver.Version.Digits[digitIdx].GroupName = requestedGroupName;
+                    } else if (digitStr == ALL_DIGITS_WILDCARD) {
+                        for (int i = 0; i < ver.Version.Digits.Length; i++) {
+                            ver.Version.Digits[i].GroupName = requestedGroupName;
+                        }
+                    }
+                }
+            }
         }
 
         if (!options.DryRunOnly) {
@@ -436,6 +477,42 @@ internal class Program {
             Console.WriteLine("DryRun - Would Save:");
             Console.WriteLine($"[{ver.Version.GetVersionString()}]");
         }
+    }
+
+    private static string ResolveDigitGroupsForDisplay() {
+        if (options.PreRelease) {
+            return "default,pre-release";
+        }
+
+        if (string.IsNullOrWhiteSpace(options.DigitGroup)) {
+            return string.Empty;
+        }
+
+        return options.DigitGroup;
+    }
+
+    private static string ResolveDigitGroupsForIncrement() {
+        if (options.PreRelease) {
+            return "pre-release";
+        }
+
+        if (string.IsNullOrWhiteSpace(options.DigitGroup)) {
+            return string.Empty;
+        }
+
+        return options.DigitGroup;
+    }
+
+    private static string? ResolveDigitGroupForSet() {
+        if (options.PreRelease) {
+            return "pre-release";
+        }
+
+        if (options.DigitGroup == null) {
+            return null;
+        }
+
+        return CompleteVersion.NormalizeDigitGroup(options.DigitGroup);
     }
 
     private static void ApplyReleaseNameUpdate() {

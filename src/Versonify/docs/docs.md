@@ -36,5 +36,7 @@ AI/automation: run `versonify --get-md-help` to save this file as `docs.md` in t
 | `--trace` |  | Sets trace level.  This is used in debugging, if you are finding that it is not working as intended then this should be set to ensure that additional logging is present. |
 | `--version-source` | `-v` | Points to the version store. |
 | `--min-match` | `-m` | Supplies minmatch patterns for file updates.  The minmatch is a glob pattern used to identify files in the solution that should be updated with the version numbers.  This is usually csproj files and text files. |
+| `--digit-group` | `-g` | Targets named digit groups. In `set`, assigns a group to selected digits. In `passive`, filters displayed digits. In increment flows, selects which group(s) to increment. |
+| `--pre-release` | `-p` | Pre-release shortcut. For `passive`, behaves like `--digit-group=default,pre-release`. For mutation/increment flows, behaves like `--digit-group=pre-release`. Cannot be combined with `--digit-group`. |
 | `--get-md-help` |  | Writes this markdown file to the current directory.  This only needs to be done once and then the mark down file can be used for the detailed documentation. |
 | `--help` | `-h` | Shows the CLI help text. |

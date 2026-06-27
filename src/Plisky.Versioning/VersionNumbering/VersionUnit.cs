@@ -19,6 +19,8 @@ public class VersionUnit {
 
     public string PreFix { get; set; }
 
+    public string GroupName { get; set; } = string.Empty;
+
     public VersionUnit() : this(string.Empty, string.Empty, DigitIncrementBehaviour.Fixed) {
     }
 

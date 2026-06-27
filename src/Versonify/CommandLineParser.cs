@@ -43,7 +43,8 @@ public static class CommandLineParser {
     public static (bool Success, VersonifyOptions Options) Parse(string[] args) {
         var options = new VersonifyOptions();
         var rootCommand = BuildRootCommand();
-        var parseResult = rootCommand.Parse(args);
+        string[] normalizedArgs = NormalizeDigitGroupArguments(args);
+        var parseResult = rootCommand.Parse(normalizedArgs);
 
         if (parseResult.Errors.Count > 0) {
             Console.WriteLine("Fatal: Invalid Arguments Passed to Versonify.");
@@ -72,6 +73,8 @@ public static class CommandLineParser {
         var traceOpt = FindOption<string>(rootCommand, "--trace");
         var versionSourceOpt = FindOption<string>(rootCommand, "--version-source");
         var minMatchOpt = FindOption<string>(rootCommand, "--min-match");
+        var digitGroupOpt = FindOption<string>(rootCommand, "--digit-group");
+        var preReleaseOpt = FindOption<bool>(rootCommand, "--pre-release");
 
         string? cmdFromPositional = parseResult.GetValue(commandArg!);
         string? cmdFromOption = parseResult.GetValue(commandOpt!);
@@ -99,10 +102,42 @@ public static class CommandLineParser {
             ? rawMinMatch.Split(';', StringSplitOptions.RemoveEmptyEntries)
             : null;
 
+        options.DigitGroup = parseResult.GetValue(digitGroupOpt!);
+        options.PreRelease = parseResult.GetValue(preReleaseOpt!);
+
         options.RawOutputOptions = parseResult.GetValue(outputOpt!);
         options.OutputOptions = options.RawOutputOptions ?? "";
 
         return (true, options);
+    }
+
+    private static string[] NormalizeDigitGroupArguments(string[] args) {
+        string[] result = new string[args.Length];
+        const string LONGDIGITGROUP = "--digit-group=";
+        const string SHORTDIGITGROUP = "-g=";
+
+        for (int i = 0; i < args.Length; i++) {
+            string argument = args[i];
+            if (argument.StartsWith(LONGDIGITGROUP, StringComparison.Ordinal)) {
+                string value = argument.Substring(LONGDIGITGROUP.Length);
+                if (string.IsNullOrEmpty(value) || value == "\"\"") {
+                    result[i] = $"{LONGDIGITGROUP}default";
+                } else {
+                    result[i] = argument;
+                }
+            } else if (argument.StartsWith(SHORTDIGITGROUP, StringComparison.Ordinal)) {
+                string value = argument.Substring(SHORTDIGITGROUP.Length);
+                if (string.IsNullOrEmpty(value) || value == "\"\"") {
+                    result[i] = $"{SHORTDIGITGROUP}default";
+                } else {
+                    result[i] = argument;
+                }
+            } else {
+                result[i] = argument;
+            }
+        }
+
+        return result;
     }
 
     private static Option<T>? FindOption<T>(RootCommand rootCommand, string alias) {
@@ -111,7 +146,7 @@ public static class CommandLineParser {
                 if (symbol.Name.Equals(alias, StringComparison.Ordinal)) {
                     return opt;
                 }
-                foreach (var a in opt.Aliases) {
+                foreach (string a in opt.Aliases) {
                     if (a.Equals(alias, StringComparison.Ordinal)) {
                         return opt;
                     }
@@ -204,6 +239,16 @@ public static class CommandLineParser {
         var minMatchOpt = new Option<string>("--min-match", minMatchAliases);
         minMatchOpt.Description = "Semicolon-separated minmatch patterns for file update";
         rc.Add(minMatchOpt);
+
+        string[] digitGroupAliases = new[] { "-g" };
+        var digitGroupOpt = new Option<string>("--digit-group", digitGroupAliases);
+        digitGroupOpt.Description = "Named digit group to target (e.g., 'prerelease') or * for all; comma-separated for passive mode";
+        rc.Add(digitGroupOpt);
+
+        string[] preReleaseAliases = new[] { "-p" };
+        var preReleaseOpt = new Option<bool>("--pre-release", preReleaseAliases);
+        preReleaseOpt.Description = "Shortcut for pre-release workflows (targets pre-release digit group)";
+        rc.Add(preReleaseOpt);
 
         return rc;
     }

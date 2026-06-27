@@ -46,7 +46,7 @@ public class ExploratoryTests {
     [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
     [InlineData("1.9.0.0", "1.9", DisplayType.Short)]
-    [InlineData("1.9.0.0", "1.9.0.0", DisplayType.Release)]  // Unexpected, altered expected behaviour to match actual output.
+    [InlineData("1.9.0.0", "", DisplayType.Release)]  // Behaviour changed now to match actual expected output.
     [InlineData("1.9.0.0", "1.9.0", DisplayType.ThreeDigit)]
     [InlineData("1.9.0.0", "1.9.0.0", DisplayType.QueuedFull)]
     [InlineData("1.9.0.0", "1.9.0.0", DisplayType.Default)]

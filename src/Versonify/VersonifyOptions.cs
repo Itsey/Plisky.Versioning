@@ -78,6 +78,10 @@ public class VersonifyOptions {
 
     public string[]? VersionTargetMinMatch { get; set; }
 
+    public string? DigitGroup { get; set; }
+
+    public bool PreRelease { get; set; }
+
     public VersioningCommand RequestedCommand {
         get {
             if (string.IsNullOrEmpty(Command)) {
