@@ -72,6 +72,18 @@ public static class Clargs {
         _ => throw new ArgumentOutOfRangeException(nameof(argName), argName, null)
     };
 
+    public static IEnumerable<string> AllArguments(bool skipUnknown = true) {
+        foreach (var arg in Enum.GetValues<ArgNames>()) {
+            if (skipUnknown && arg == ArgNames.Unknown) {
+                continue;
+            }
+            string argStr = GetArgString(arg);
+            if (!string.IsNullOrEmpty(argStr)) {
+                yield return argStr;
+            }
+        }
+    }
+
     public static string Build(params Arg[] pairings) {
         var args = new List<string>();
         foreach (var pairing in pairings) {

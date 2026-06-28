@@ -129,23 +129,9 @@ public class KebabCaseOptions : IDisposable {
         var result = await sut.ExecuteVersonifyWithStreams("--help");
 
         result.ExitCode.ShouldBe(0);
-        result.StdOut.ShouldContain("--command");
-        result.StdOut.ShouldContain("--debug");
-        result.StdOut.ShouldContain("--dry-run");
-        result.StdOut.ShouldContain("--digits");
-        result.StdOut.ShouldContain("--no-error");
-        result.StdOut.ShouldContain("--get-md-help");
-        result.StdOut.ShouldContain("--no-override");
-        result.StdOut.ShouldContain("--output");
-        result.StdOut.ShouldContain("--increment");
-        result.StdOut.ShouldContain("--quick-value");
-        result.StdOut.ShouldContain("--release");
-        result.StdOut.ShouldContain("--root");
-        result.StdOut.ShouldContain("--trace");
-        result.StdOut.ShouldContain("--version-source");
-        result.StdOut.ShouldContain("--min-match");
-        result.StdOut.ShouldContain("--digit-group");
-        result.StdOut.ShouldContain("--pre-release");
+        foreach (string canonicalArg in Clargs.AllArguments()) {
+            result.StdOut.ShouldContain(canonicalArg);
+        }
         result.StdOut.ShouldContain("-D");
         result.StdOut.ShouldContain("-d");
         result.StdOut.ShouldContain("-g");
