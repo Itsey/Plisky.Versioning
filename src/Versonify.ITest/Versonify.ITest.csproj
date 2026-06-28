@@ -35,6 +35,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Plisky.Versioning\Plisky.Versioning.csproj" />
     <ProjectReference Include="..\TestData\TestData.csproj" />
+    <ProjectReference Include="..\Versonify\Versonify.csproj" />
   </ItemGroup>
 
   <ItemGroup>

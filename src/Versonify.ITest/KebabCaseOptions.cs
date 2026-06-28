@@ -28,22 +28,7 @@ public class KebabCaseOptions : IDisposable {
     }
 
     [Theory]
-    [InlineData("--command=passive --version-source={VS}")]
-    [InlineData("passive --version-source={VS} --debug")]
-    [InlineData("set --version-source={VS} --digits=0 --quick-value=9 --dry-run")]
-    [InlineData("behaviour --version-source={VS} --digits=*")]
-    [InlineData("updatefiles --root={ROOT} --increment --version-source={VS} --min-match=*.zzz --output=con --no-error")]
-    [InlineData("updatefiles --root={ROOT} --increment --version-source={VS} --min-match={MM}|StdFile --no-override")]
-    [InlineData("passive --version-source={VS} --output=con")]
-    [InlineData("updatefiles --root={ROOT} --increment --version-source={VS} --min-match={MM}|StdFile")]
-    [InlineData("override --version-source={VS} --quick-value=9.9.9")]
-    [InlineData("set --version-source={VS} --release=Beta")]
-    [InlineData("updatefiles --root={ROOT} --version-source={VS} --min-match={MM}|StdFile")]
-    [InlineData("passive --version-source={VS} --trace=info")]
-    [InlineData("passive --version-source={VS}")]
-    [InlineData("updatefiles --root={ROOT} --version-source={VS} --increment --min-match={MM}|StdFile")]
-    [InlineData("passive --version-source={VS} --digit-group=default")]
-    [InlineData("passive --version-source={VS} --pre-release")]
+    [ClassData(typeof(CanonicalLongOptionsTestData))]
     public async Task Canonical_long_options_parse_without_warning(string argsTemplate) {
         string workingDirectory = CreateTemporaryDirectory();
         string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
@@ -54,7 +39,7 @@ public class KebabCaseOptions : IDisposable {
             .Replace("{MM}", projectFilePath);
 
         if (finalArgs.Contains("--no-override", StringComparison.Ordinal)) {
-            _ = await sut.ExecuteVersonify($"override --version-source={versionStorePath} --quick-value=9.9.9");
+            _ = await sut.ExecuteVersonify(Clargs.Build(new Arg(ArgNames.Unknown, "override"), new Arg(ArgNames.VersionSource, versionStorePath), new Arg(ArgNames.QuickValue, "9.9.9")));
             sut.LastExecutionExitCode.ShouldBe(0);
         }
 
@@ -65,21 +50,21 @@ public class KebabCaseOptions : IDisposable {
     }
 
     [Theory]
-    [InlineData("-Command", "--command")]
-    [InlineData("-Debug", "--debug")]
-    [InlineData("-DryRun", "--dry-run")]
-    [InlineData("-Digits", "--digits")]
-    [InlineData("-NoError", "--no-error")]
-    [InlineData("-NoOverride", "--no-override")]
-    [InlineData("-Output", "--output")]
-    [InlineData("-Increment", "--increment")]
-    [InlineData("-QuickValue", "--quick-value")]
-    [InlineData("-Release", "--release")]
-    [InlineData("-Root", "--root")]
-    [InlineData("-Trace", "--trace")]
-    [InlineData("-VersionSource", "--version-source")]
-    [InlineData("-MinMatch", "--min-match")]
-    [InlineData("-output", "--output")]
+    [InlineData("-Command", Clargs.COMMAND_ARG)]
+    [InlineData("-Debug", Clargs.DEBUG_ARG)]
+    [InlineData("-DryRun", Clargs.DRY_RUN_ARG)]
+    [InlineData("-Digits", Clargs.DIGITS_ARG)]
+    [InlineData("-NoError", Clargs.NO_ERROR_ARG)]
+    [InlineData("-NoOverride", Clargs.NO_OVERRIDE_ARG)]
+    [InlineData("-Output", Clargs.OUTPUT_ARG)]
+    [InlineData("-Increment", Clargs.INCREMENT_ARG)]
+    [InlineData("-QuickValue", Clargs.QUICK_VALUE_ARG)]
+    [InlineData("-Release", Clargs.RELEASE_ARG)]
+    [InlineData("-Root", Clargs.ROOT_ARG)]
+    [InlineData("-Trace", Clargs.TRACE_ARG)]
+    [InlineData("-VersionSource", Clargs.VERSION_SOURCE_ARG)]
+    [InlineData("-MinMatch", Clargs.MIN_MATCH_ARG)]
+    [InlineData("-output", Clargs.OUTPUT_ARG)]
     public async Task Deprecated_long_aliases_emit_warning_and_remain_functional(string deprecatedAlias, string canonicalAlias) {
         string workingDirectory = CreateTemporaryDirectory();
         string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
