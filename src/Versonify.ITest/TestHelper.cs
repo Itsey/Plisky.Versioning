@@ -32,20 +32,23 @@ public class TestHelper {
         return SolutionPathCache;
     }
 
-    public string GetVersonifyPath() {
-        if (VersonifyPathCache != null) {
-            return VersonifyPathCache;
+    public string GetVersonifyPath() => VersonifyPathCache ??= ResolveVersonifyPath();
+
+    private string ResolveVersonifyPath() {
+        string? solutionPath = GetSolutionPath() ?? throw new FileNotFoundException($"Versonify executable not found Loc:{Directory.GetCurrentDirectory()}.");
+
+        var testOutputDirectory = new DirectoryInfo(AppContext.BaseDirectory);
+        string currentTargetFramework = testOutputDirectory.Name;
+        string? currentConfiguration = testOutputDirectory.Parent?.Name;
+        if (string.IsNullOrWhiteSpace(currentConfiguration)) {
+            throw new FileNotFoundException("Unable to resolve build configuration from test output path.");
         }
 
-        string? solutionPath = GetSolutionPath();
-        if (solutionPath == null) {
-            throw new FileNotFoundException($"Versonify executable not found Loc:{Directory.GetCurrentDirectory()}.");
-        }
-        string locatedPathToVersonify = Path.Combine(solutionPath, @"Versonify\bin\Debug\net9.0\versonify.exe");
+        string locatedPathToVersonify = Path.Combine(solutionPath, "Versonify", "bin", currentConfiguration, currentTargetFramework, "versonify.exe");
         if (!File.Exists(locatedPathToVersonify)) {
             throw new FileNotFoundException($"Executable not found. {locatedPathToVersonify}", locatedPathToVersonify);
         }
-        VersonifyPathCache = locatedPathToVersonify;
+
         return locatedPathToVersonify;
     }
 
