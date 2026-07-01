@@ -2,6 +2,7 @@ namespace Versonify;
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Plisky.CodeCraft;
@@ -21,6 +22,11 @@ internal class Program {
             int pnfShortCircuit = CheckPnfCompatibiliyRequest(args);
             if (pnfShortCircuit >= 200) {
                 return pnfShortCircuit;
+            }
+
+            if (IsVersionRequested(args)) {
+                Console.WriteLine(GetAssemblyVersionString());
+                return 0;
             }
 
             WriteGreetingMessage();
@@ -113,6 +119,14 @@ internal class Program {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         string verString = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "";
         Console.WriteLine($"💖 Versioning By Versonify 💖 ({verString}).");
+    }
+
+    private static string GetAssemblyVersionString() {
+        return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "";
+    }
+
+    private static bool IsVersionRequested(string[] args) {
+        return args.Any(arg => arg.Equals("--version", StringComparison.OrdinalIgnoreCase));
     }
 
     private static void WriteErrorConditions() {

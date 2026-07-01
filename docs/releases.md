@@ -22,6 +22,8 @@ Also note much more heavy use of AI now, look for (ai) commits, these are entire
 
 Commit to add kebab-case double hyphen arguments threw up an inconsistency during secondary review.  The secondary review pointed out that there were -Debug=v-** statements in the test cases - which would make sense for debug levels of tracing.  However at that time the implementation had switched to a Boolean Debug flag.  Its not clear at the current time if this was an error in the test cases ( mis understanding / mismatch / bad copy paste) or if the argument refactoring had switched it from a string parameter to a Boolean.  If regression testing highlights this in command line options then this is what has happened.  It was not clear from the code that the trace identifier there was actually used.
 
+✅ Feature - Built-in `--version` flag support. Prints the app version and exits cleanly without executing versioning commands.
+
 ⚠️ Note documentation update will be required for this release.  
 
 #### 1.0.3  - Compatibility Release for PNF

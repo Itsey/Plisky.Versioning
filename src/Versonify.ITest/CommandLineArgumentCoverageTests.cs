@@ -1,4 +1,3 @@
-using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Shouldly;
@@ -134,6 +133,20 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         string output = await th.ExecuteVersonify("");
         output.ShouldContain("Parameter help for Versonify.");
         th.LastExecutionExitCode.ShouldNotBe(0);
+    }
+
+    [Fact]
+    public async Task Version_argument_prints_version_and_skips_normal_actions() {
+        b.Info.Flow();
+        var version = typeof(VersonifyOptions).Assembly.GetName().Version;
+        string expectedVersion = $"{version?.Major}.{version?.Minor}.{version?.Build}.{version?.Revision}";
+
+        string output = await th.ExecuteVersonify("--version");
+
+        output.ShouldContain(expectedVersion);
+        output.ShouldNotContain("Performing Versioning Actions");
+        output.ShouldNotContain("Versioning By Versonify");
+        th.LastExecutionExitCode.ShouldBe(0);
     }
 
     [Fact]

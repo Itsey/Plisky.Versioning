@@ -34,6 +34,7 @@ AI/automation: run `versonify --get-md-help` to save this file as `docs.md` in t
 | `--release` | `-R` | Sets the release name. |
 | `--root` |  | Sets the root directory for file updates. |
 | `--trace` |  | Sets trace level.  This is used in debugging, if you are finding that it is not working as intended then this should be set to ensure that additional logging is present. |
+| `--version` |  | Shows the application version and exits. |
 | `--version-source` | `-v` | Points to the version store. |
 | `--min-match` | `-m` | Supplies minmatch patterns for file updates.  The minmatch is a glob pattern used to identify files in the solution that should be updated with the version numbers.  This is usually csproj files and text files. |
 | `--digit-group` | `-g` | Targets named digit groups. In `set`, assigns a group to selected digits. In `passive`, filters displayed digits. In increment flows, selects which group(s) to increment. |
