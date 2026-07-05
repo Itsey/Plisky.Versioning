@@ -7,8 +7,8 @@ namespace Versonify.ITest;
 
 public class KebabCaseOptions : IDisposable {
     protected Bilge b = new Bilge("Versonify-ITest");
-    protected UnitTestHelper uth;
     protected TestHelper sut;
+    protected UnitTestHelper uth;
     private readonly List<string> tempDirectories = new();
 
     public KebabCaseOptions() {
@@ -16,15 +16,6 @@ public class KebabCaseOptions : IDisposable {
 
         uth = new UnitTestHelper();
         sut = new TestHelper(uth);
-    }
-
-    public void Dispose() {
-        foreach (string tempDirectory in tempDirectories) {
-            if (Directory.Exists(tempDirectory)) {
-                Directory.Delete(tempDirectory, true);
-            }
-        }
-        uth.ClearUpTestFiles();
     }
 
     [Theory]
@@ -83,45 +74,13 @@ public class KebabCaseOptions : IDisposable {
         GetWarningLineCount(result.StdErr, expectedWarning).ShouldBe(1);
     }
 
-    [Theory]
-    [InlineData("-D")]
-    [InlineData("-d")]
-    [InlineData("-O")]
-    [InlineData("-o")]
-    [InlineData("-I")]
-    [InlineData("-i")]
-    [InlineData("-Q")]
-    [InlineData("-R")]
-    [InlineData("-V")]
-    [InlineData("-v")]
-    [InlineData("-M")]
-    [InlineData("-m")]
-    [InlineData("-z")]
-    [InlineData("-g")]
-    [InlineData("-p")]
-    public async Task Short_aliases_are_silent_and_functional(string shortAlias) {
-        string workingDirectory = CreateTemporaryDirectory();
-        string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
-        string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
-        string finalArgs = BuildArgsForAlias(shortAlias, versionStorePath, workingDirectory, projectFilePath);
-
-        var result = await sut.ExecuteVersonifyWithStreams(finalArgs, workingDirectory);
-
-        result.ExitCode.ShouldBe(0);
-        result.StdErr.ShouldNotContain("WARNING:");
-    }
-
-    [Fact]
-    public async Task Repeated_deprecated_alias_emits_single_warning() {
-        string workingDirectory = CreateTemporaryDirectory();
-        string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
-        string finalArgs = $"passive -VersionSource={versionStorePath} -Debug -Debug";
-
-        var result = await sut.ExecuteVersonifyWithStreams(finalArgs, workingDirectory);
-        string expectedWarning = "WARNING: '-Debug' is deprecated. Use '--debug' instead.";
-
-        result.ExitCode.ShouldBe(0);
-        GetWarningLineCount(result.StdErr, expectedWarning).ShouldBe(1);
+    public void Dispose() {
+        foreach (string tempDirectory in tempDirectories) {
+            if (Directory.Exists(tempDirectory)) {
+                Directory.Delete(tempDirectory, true);
+            }
+        }
+        uth.ClearUpTestFiles();
     }
 
     [Fact]
@@ -165,6 +124,47 @@ public class KebabCaseOptions : IDisposable {
         deprecatedLongTokens.ShouldNotContain("-VersionSource");
         deprecatedLongTokens.ShouldNotContain("-MinMatch");
         deprecatedLongTokens.ShouldNotContain("-output");
+    }
+
+    [Fact]
+    public async Task Repeated_deprecated_alias_emits_single_warning() {
+        string workingDirectory = CreateTemporaryDirectory();
+        string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
+        string finalArgs = $"passive -VersionSource={versionStorePath} -Debug -Debug";
+
+        var result = await sut.ExecuteVersonifyWithStreams(finalArgs, workingDirectory);
+        string expectedWarning = "WARNING: '-Debug' is deprecated. Use '--debug' instead.";
+
+        result.ExitCode.ShouldBe(0);
+        GetWarningLineCount(result.StdErr, expectedWarning).ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData("-D")]
+    [InlineData("-d")]
+    [InlineData("-O")]
+    [InlineData("-o")]
+    [InlineData("-I")]
+    [InlineData("-i")]
+    [InlineData("-Q")]
+    [InlineData("-R")]
+    [InlineData("-V")]
+    [InlineData("-v")]
+    [InlineData("-M")]
+    [InlineData("-m")]
+    [InlineData("-z")]
+    [InlineData("-g")]
+    [InlineData("-p")]
+    public async Task Short_aliases_are_silent_and_functional(string shortAlias) {
+        string workingDirectory = CreateTemporaryDirectory();
+        string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
+        string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
+        string finalArgs = BuildArgsForAlias(shortAlias, versionStorePath, workingDirectory, projectFilePath);
+
+        var result = await sut.ExecuteVersonifyWithStreams(finalArgs, workingDirectory);
+
+        result.ExitCode.ShouldBe(0);
+        result.StdErr.ShouldNotContain("WARNING:");
     }
 
     private static HashSet<string> GetSingleDashLongTokens(string output) {
@@ -224,15 +224,6 @@ public class KebabCaseOptions : IDisposable {
         };
     }
 
-    private async Task<string> CreateVersionStore(string workingDirectory, string versionValue) {
-        string result = Path.Combine(workingDirectory, "versionstore.vstore");
-        var executionResult = await sut.ExecuteVersonifyWithStreams($"createversion --version-source={result} --quick-value={versionValue}", workingDirectory);
-
-        executionResult.ExitCode.ShouldBe(0);
-        executionResult.StdOut.ShouldContain("Creating New Version Store:");
-        return result;
-    }
-
     private string CopyResourceToDirectory(TestResourcesReferences resourceReference, string workingDirectory, string destinationFileName) {
         string resourceName = TestResources.GetIdentifiers(resourceReference)!;
         string sourcePath = uth.GetTestDataFile(resourceName);
@@ -246,6 +237,15 @@ public class KebabCaseOptions : IDisposable {
         string result = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
         Directory.CreateDirectory(result);
         tempDirectories.Add(result);
+        return result;
+    }
+
+    private async Task<string> CreateVersionStore(string workingDirectory, string versionValue) {
+        string result = Path.Combine(workingDirectory, "versionstore.vstore");
+        var executionResult = await sut.ExecuteVersonifyWithStreams($"createversion --version-source={result} --quick-value={versionValue}", workingDirectory);
+
+        executionResult.ExitCode.ShouldBe(0);
+        executionResult.StdOut.ShouldContain("Creating New Version Store:");
         return result;
     }
 }

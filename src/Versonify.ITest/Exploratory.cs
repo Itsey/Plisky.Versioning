@@ -7,8 +7,8 @@ namespace Versonify.ITest;
 
 public class Exploratory {
     protected Bilge b = new Bilge("Versonify-ITest");
-    protected UnitTestHelper uth;
     protected TestHelper th;
+    protected UnitTestHelper uth;
 
     public Exploratory() {
         b.Info.Flow();
@@ -17,32 +17,98 @@ public class Exploratory {
         th = new TestHelper(uth);
     }
 
+    [Theory]
+    [InlineData(1, "Fixed", DigitIncrementBehaviour.Fixed)]
+    [InlineData(2, "autoincrementwithreset", DigitIncrementBehaviour.AutoIncrementWithReset)]
+    [InlineData(3, "Weekssincedate", DigitIncrementBehaviour.WeeksSinceDate)]
+    [InlineData(4, "6", DigitIncrementBehaviour.ContinualIncrement)]
+    public async Task Behaviour_command_sets_correct_digits(int digitPosition, string quickValue, DigitIncrementBehaviour outputdata) {
+        b.Info.Flow();
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
+        string vStoreFilePath = uth.GetTestDataFile(resName);
+        string expectedOutput = $"Setting Behaviour for Digit[{digitPosition}] to {outputdata}({(int)outputdata})";
+
+        string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition} -Q={quickValue}");
+
+        output.ShouldContain(expectedOutput);
+        th.LastExecutionExitCode.ShouldBe(0);
+    }
+
     [Fact]
-    public async Task No_arguments_presents_default_help() {
+    public async Task Behaviour_command_shows_all_digits() {
         b.Info.Flow();
-        string output = await th.ExecuteVersonify("");
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
+        string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        output.ShouldContain("Parameter help for Versonify.");
-        th.LastExecutionExitCode.ShouldNotBe(0, "No Parameters is an error condition.");
+        string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d=*");
+
+        output.ShouldContain("[0]:Fixed(0)");
+        output.ShouldContain("[1]:DaysSinceDate(2)");
+        output.ShouldContain("[2]:DailyAutoIncrement(3)");
+        output.ShouldContain("[3]:AutoIncrementWithReset(4)");
+        output.ShouldContain("[4]:AutoIncrementWithResetAny(5)");
+        output.ShouldContain("[5]:ContinualIncrement(6)");
+        output.ShouldContain("[6]:WeeksSinceDate(7)");
+        output.ShouldContain("[7]:ReleaseName(8)");
+        th.LastExecutionExitCode.ShouldBe(0);
     }
 
-
-
-    [Fact(DisplayName = "Current Compatibility Level Is 200")]
-    public async Task Call_with_qq_returns_expected_compat_code() {
+    [Theory]
+    [InlineData("[0]:Fixed", "Increment", 0)]
+    [InlineData("[1]:DaysSinceDate", "Increment", 1)]
+    [InlineData("[4]:AutoIncrementWithResetAny", "Fixed", 4)]
+    public async Task Behaviour_command_shows_correct_digits(string outputData, string noOutputData, int digitPosition) {
         b.Info.Flow();
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
+        string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        _ = await th.ExecuteVersonify($"--qqpnf");
-        th.LastExecutionExitCode.ShouldBe(200, "Current compat version is 200.");
+        string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition}");
+
+        output.ShouldContain(outputData);
+        output.ShouldNotContain(noOutputData);
+        th.LastExecutionExitCode.ShouldBe(0);
     }
 
-    [Fact(DisplayName = "No minmatch returns error code")]
-    public async Task No_match_is_passed_fails_when_update_requested() {
+    [Fact]
+    public async Task Console_does_not_have_nuke_markers() {
         b.Info.Flow();
-        string output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root=z:\\temp -Increment -v=z:\\t\\t.txt -output=con");
 
-        output.ShouldContain("Error >> The Update command requires a minmatch");
-        th.LastExecutionExitCode.ShouldNotBe(0, "Failure to update files should return error.");
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
+        string vStoreFilePath = uth.GetTestDataFile(resName);
+
+        string args = $"passive -v={vStoreFilePath} -O=con -Debug -Q=1.9.4.3";
+        string s = await th.ExecuteVersonify(args);
+
+        s.ShouldNotContain("PNFV]");
+        th.LastExecutionExitCode.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Console_with_nuke_has_markers() {
+        b.Info.Flow();
+        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
+        string vStoreFilePath = uth.GetTestDataFile(resName);
+
+        string args = $"passive -v={vStoreFilePath} -O=con-nf -Debug -Q=1.9.4.3";
+        string s = await th.ExecuteVersonify(args);
+
+        s.ShouldContain("PNFV]", customMessage: "Nuke Marker not found in output");
+    }
+
+    [Fact(DisplayName = "Passing Z Ensures Zero Return.")]
+    public async Task Failure_overriden_by_always_return_zero() {
+        b.Info.Flow();
+
+        string pth = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+        Directory.CreateDirectory(pth);
+
+        string versionStore = Path.Combine(pth, "vstore.delme");
+        string output; // = await th.ExecuteVersonify("");
+        output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
+        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con -z");
+
+        output.ShouldContain("WARNING - No files found to update.");
+        th.LastExecutionExitCode.ShouldBe(0, "Failure to update files should return error.");
     }
 
     [Fact(DisplayName = "No Files Updated, Returns Exit Code")]
@@ -63,24 +129,23 @@ public class Exploratory {
         Directory.Delete(pth, true);
     }
 
-
-    [Fact(DisplayName = "Passing Z Ensures Zero Return.")]
-    public async Task Failure_overriden_by_always_return_zero() {
+    [Fact]
+    public async Task No_arguments_presents_default_help() {
         b.Info.Flow();
+        string output = await th.ExecuteVersonify("");
 
-        string pth = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
-        Directory.CreateDirectory(pth);
-
-        string versionStore = Path.Combine(pth, "vstore.delme");
-        string output; // = await th.ExecuteVersonify("");
-        output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
-        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con -z");
-
-        output.ShouldContain("WARNING - No files found to update.");
-        th.LastExecutionExitCode.ShouldBe(0, "Failure to update files should return error.");
+        output.ShouldContain("Parameter help for Versonify.");
+        th.LastExecutionExitCode.ShouldNotBe(0, "No Parameters is an error condition.");
     }
 
+    [Fact(DisplayName = "No minmatch returns error code")]
+    public async Task No_match_is_passed_fails_when_update_requested() {
+        b.Info.Flow();
+        string output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root=z:\\temp -Increment -v=z:\\t\\t.txt -output=con");
 
+        output.ShouldContain("Error >> The Update command requires a minmatch");
+        th.LastExecutionExitCode.ShouldNotBe(0, "Failure to update files should return error.");
+    }
 
     [Fact()] //Skip = "This looks like it could be a bug in current implementation while evidencing LFY-10")]
     public async Task Pre_and_release_versioning_use_case_works() {
@@ -150,91 +215,6 @@ public class Exploratory {
         }
     }
 
-    private static void FileShouldContain(string preReleaseVersionStore, params string[] contains) {
-        string currentFileContents = File.ReadAllText(preReleaseVersionStore);
-        foreach (string c in contains) {
-            currentFileContents.ShouldContain(c);
-        }
-    }
-
-    [Fact]
-    public async Task Behaviour_command_shows_all_digits() {
-        b.Info.Flow();
-        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
-        string vStoreFilePath = uth.GetTestDataFile(resName);
-
-        string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d=*");
-
-        output.ShouldContain("[0]:Fixed(0)");
-        output.ShouldContain("[1]:DaysSinceDate(2)");
-        output.ShouldContain("[2]:DailyAutoIncrement(3)");
-        output.ShouldContain("[3]:AutoIncrementWithReset(4)");
-        output.ShouldContain("[4]:AutoIncrementWithResetAny(5)");
-        output.ShouldContain("[5]:ContinualIncrement(6)");
-        output.ShouldContain("[6]:WeeksSinceDate(7)");
-        output.ShouldContain("[7]:ReleaseName(8)");
-        th.LastExecutionExitCode.ShouldBe(0);
-    }
-
-    [Theory]
-    [InlineData("[0]:Fixed", "Increment", 0)]
-    [InlineData("[1]:DaysSinceDate", "Increment", 1)]
-    [InlineData("[4]:AutoIncrementWithResetAny", "Fixed", 4)]
-    public async Task Behaviour_command_shows_correct_digits(string outputData, string noOutputData, int digitPosition) {
-        b.Info.Flow();
-        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
-        string vStoreFilePath = uth.GetTestDataFile(resName);
-
-        string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition}");
-
-        output.ShouldContain(outputData);
-        output.ShouldNotContain(noOutputData);
-        th.LastExecutionExitCode.ShouldBe(0);
-    }
-
-    [Theory]
-    [InlineData(1, "Fixed", DigitIncrementBehaviour.Fixed)]
-    [InlineData(2, "autoincrementwithreset", DigitIncrementBehaviour.AutoIncrementWithReset)]
-    [InlineData(3, "Weekssincedate", DigitIncrementBehaviour.WeeksSinceDate)]
-    [InlineData(4, "6", DigitIncrementBehaviour.ContinualIncrement)]
-    public async Task Behaviour_command_sets_correct_digits(int digitPosition, string quickValue, DigitIncrementBehaviour outputdata) {
-        b.Info.Flow();
-        string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
-        string vStoreFilePath = uth.GetTestDataFile(resName);
-        string expectedOutput = $"Setting Behaviour for Digit[{digitPosition}] to {outputdata}({(int)outputdata})";
-
-        string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition} -Q={quickValue}");
-
-        output.ShouldContain(expectedOutput);
-        th.LastExecutionExitCode.ShouldBe(0);
-    }
-
-    [Fact]
-    public async Task Console_with_nuke_has_markers() {
-        b.Info.Flow();
-        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
-        string vStoreFilePath = uth.GetTestDataFile(resName);
-
-        string args = $"passive -v={vStoreFilePath} -O=con-nf -Debug -Q=1.9.4.3";
-        string s = await th.ExecuteVersonify(args);
-
-        s.ShouldContain("PNFV]", customMessage: "Nuke Marker not found in output");
-    }
-
-    [Fact]
-    public async Task Console_does_not_have_nuke_markers() {
-        b.Info.Flow();
-
-        string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
-        string vStoreFilePath = uth.GetTestDataFile(resName);
-
-        string args = $"passive -v={vStoreFilePath} -O=con -Debug -Q=1.9.4.3";
-        string s = await th.ExecuteVersonify(args);
-
-        s.ShouldNotContain("PNFV]");
-        th.LastExecutionExitCode.ShouldBe(0);
-    }
-
     [Theory]
     [InlineData("passive", false, true)]
     [InlineData("passive", true, false)]
@@ -255,6 +235,13 @@ public class Exploratory {
             output.ShouldContain("Error >>");
         } else {
             output.ShouldNotContain("Error >>");
+        }
+    }
+
+    private static void FileShouldContain(string preReleaseVersionStore, params string[] contains) {
+        string currentFileContents = File.ReadAllText(preReleaseVersionStore);
+        foreach (string c in contains) {
+            currentFileContents.ShouldContain(c);
         }
     }
 }

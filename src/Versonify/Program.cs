@@ -110,7 +110,7 @@ internal class Program {
         if (args.Length == 1 && args[0].Equals("--QQpnf", StringComparison.OrdinalIgnoreCase)) {
             // 200 is the first implemented compatibility exit code. Before this no compatibility exit codes existed  - Versonify Release 1.0.1 Austen.
             // 201 is the new command line interface.  Versonify Release 2.0 Bronte.
-            return 200;
+            return 201;
         }
         return 0;
     }

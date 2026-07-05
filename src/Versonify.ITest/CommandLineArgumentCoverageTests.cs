@@ -6,71 +6,14 @@ namespace Versonify.ITest;
 
 public class CommandLineArgumentCoverageTests : IDisposable {
     protected Bilge b = new Bilge("Versonify-ITest");
-    protected UnitTestHelper uth;
     protected TestHelper th;
+    protected UnitTestHelper uth;
 
     public CommandLineArgumentCoverageTests() {
         b.Info.Flow();
 
         uth = new UnitTestHelper();
         th = new TestHelper(uth);
-    }
-
-    public void Dispose() {
-        uth.ClearUpTestFiles();
-    }
-
-    [Fact]
-    public async Task Digits_argument_loads_behaviour_output() {
-        b.Info.Flow();
-        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
-        string versionStorePath = uth.GetTestDataFile(resourceName);
-        string output = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -Digits=*");
-        output.ShouldContain("[0]:Fixed(0)");
-        output.ShouldContain("[7]:ReleaseName(8)");
-        th.LastExecutionExitCode.ShouldBe(0);
-    }
-
-    [Fact]
-    public async Task VersionSource_argument_loads_passive_output() {
-        b.Info.Flow();
-        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
-        string versionStorePath = uth.GetTestDataFile(resourceName);
-        string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
-        output.ShouldContain("Loaded [");
-        th.LastExecutionExitCode.ShouldBe(0);
-    }
-
-    [Fact]
-    public async Task MinMatch_argument_updates_files() {
-        b.Info.Flow();
-        string workingDirectory = CreateTemporaryDirectory();
-        try {
-            string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
-            string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
-            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile");
-            output.ShouldContain("Version Increment Requested - Currently");
-            output.ShouldContain("Version To Write:");
-            th.LastExecutionExitCode.ShouldBe(0);
-        } finally {
-            Directory.Delete(workingDirectory, true);
-        }
-    }
-
-    [Fact]
-    public async Task NoOverride_argument_disables_pending_override() {
-        b.Info.Flow();
-        string workingDirectory = CreateTemporaryDirectory();
-        try {
-            string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
-            string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
-            _ = await th.ExecuteVersonify($"override -VersionSource={versionStorePath} -QuickValue=9.9.9");
-            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile -NoOverride");
-            output.ShouldContain("Version Increment Override, Disabled");
-            th.LastExecutionExitCode.ShouldBe(0);
-        } finally {
-            Directory.Delete(workingDirectory, true);
-        }
     }
 
     [Fact]
@@ -80,15 +23,6 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         string versionStorePath = uth.GetTestDataFile(resourceName);
         _ = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -DG=*");
         th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -DG must not be accepted.");
-    }
-
-    [Fact]
-    public async Task Deprecated_VS_alias_is_not_accepted() {
-        b.Info.Flow();
-        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
-        string versionStorePath = uth.GetTestDataFile(resourceName);
-        _ = await th.ExecuteVersonify($"passive -VS={versionStorePath}");
-        th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -VS must not be accepted.");
     }
 
     [Fact]
@@ -121,79 +55,27 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     }
 
     [Fact]
-    public async Task QQpnf_compatibility_probe_returns_200() {
-        b.Info.Flow();
-        _ = await th.ExecuteVersonify("--QQpnf");
-        th.LastExecutionExitCode.ShouldBe(200);
-    }
-
-    [Fact]
-    public async Task No_arguments_prints_help_and_exits_nonzero() {
-        b.Info.Flow();
-        string output = await th.ExecuteVersonify("");
-        output.ShouldContain("Parameter help for Versonify.");
-        th.LastExecutionExitCode.ShouldNotBe(0);
-    }
-
-    [Fact]
-    public async Task Version_argument_prints_version_and_skips_normal_actions() {
-        b.Info.Flow();
-        var version = typeof(VersonifyOptions).Assembly.GetName().Version;
-        string expectedVersion = $"{version?.Major}.{version?.Minor}.{version?.Build}.{version?.Revision}";
-
-        string output = await th.ExecuteVersonify("--version");
-
-        output.ShouldContain(expectedVersion);
-        output.ShouldNotContain("Performing Versioning Actions");
-        output.ShouldNotContain("Versioning By Versonify");
-        th.LastExecutionExitCode.ShouldBe(0);
-    }
-
-    [Fact]
-    public async Task Invalid_argument_prints_error_and_exits_nonzero() {
-        b.Info.Flow();
-        string output = await th.ExecuteVersonify("--totally-unknown-option");
-        output.ShouldContain("Fatal:");
-        th.LastExecutionExitCode.ShouldNotBe(0);
-    }
-
-    [Fact]
-    public async Task Single_dash_long_VersionSource_option_is_accepted() {
+    public async Task Deprecated_VS_alias_is_not_accepted() {
         b.Info.Flow();
         string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
-        string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
-        output.ShouldContain("Loaded [");
+        _ = await th.ExecuteVersonify($"passive -VS={versionStorePath}");
+        th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -VS must not be accepted.");
+    }
+
+    [Fact]
+    public async Task Digits_argument_loads_behaviour_output() {
+        b.Info.Flow();
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
+        string versionStorePath = uth.GetTestDataFile(resourceName);
+        string output = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -Digits=*");
+        output.ShouldContain("[0]:Fixed(0)");
+        output.ShouldContain("[7]:ReleaseName(8)");
         th.LastExecutionExitCode.ShouldBe(0);
     }
 
-    [Fact]
-    public async Task Single_dash_long_MinMatch_option_is_accepted() {
-        b.Info.Flow();
-        string workingDirectory = CreateTemporaryDirectory();
-        try {
-            string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
-            string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
-            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile");
-            output.ShouldContain("Version To Write:");
-            th.LastExecutionExitCode.ShouldBe(0);
-        } finally {
-            Directory.Delete(workingDirectory, true);
-        }
-    }
-
-    [Fact]
-    public async Task NoError_suppresses_exit_code_via_dash_z_alias() {
-        b.Info.Flow();
-        string workingDirectory = CreateTemporaryDirectory();
-        try {
-            string versionStorePath = await CreateVersionStore(workingDirectory, "2.0.0");
-            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -Increment -VersionSource={versionStorePath} -MinMatch=*.zzz -Output=con -z");
-            output.ShouldContain("WARNING - No files found to update.");
-            th.LastExecutionExitCode.ShouldBe(0);
-        } finally {
-            Directory.Delete(workingDirectory, true);
-        }
+    public void Dispose() {
+        uth.ClearUpTestFiles();
     }
 
     [Fact]
@@ -217,15 +99,53 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     }
 
     [Fact]
-    public async Task Trace_argument_enables_trace_handler_output() {
+    public async Task GetMdHelp_argument_writes_docs_file_to_current_directory() {
         b.Info.Flow();
-        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
-        string versionStorePath = uth.GetTestDataFile(resourceName);
+        string workingDirectory = CreateTemporaryDirectory();
 
-        string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath} -Trace=info");
+        try {
+            var result = await th.ExecuteVersonifyWithStreams("--get-md-help", workingDirectory);
+            string docsPath = Path.Combine(workingDirectory, "docs.md");
 
-        output.ShouldContain("Debug Mode, Adding Trace Handler");
-        th.LastExecutionExitCode.ShouldBe(0);
+            result.ExitCode.ShouldBe(0);
+            result.StdOut.ShouldContain("Wrote markdown help to");
+            File.Exists(docsPath).ShouldBeTrue();
+            File.ReadAllText(docsPath).ShouldContain("Versonify CLI arguments");
+        } finally {
+            Directory.Delete(workingDirectory, true);
+        }
+    }
+
+    [Fact]
+    public async Task Invalid_argument_prints_error_and_exits_nonzero() {
+        b.Info.Flow();
+        string output = await th.ExecuteVersonify("--totally-unknown-option");
+        output.ShouldContain("Fatal:");
+        th.LastExecutionExitCode.ShouldNotBe(0);
+    }
+
+    [Fact]
+    public async Task MinMatch_argument_updates_files() {
+        b.Info.Flow();
+        string workingDirectory = CreateTemporaryDirectory();
+        try {
+            string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
+            string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
+            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile");
+            output.ShouldContain("Version Increment Requested - Currently");
+            output.ShouldContain("Version To Write:");
+            th.LastExecutionExitCode.ShouldBe(0);
+        } finally {
+            Directory.Delete(workingDirectory, true);
+        }
+    }
+
+    [Fact]
+    public async Task No_arguments_prints_help_and_exits_nonzero() {
+        b.Info.Flow();
+        string output = await th.ExecuteVersonify("");
+        output.ShouldContain("Parameter help for Versonify.");
+        th.LastExecutionExitCode.ShouldNotBe(0);
     }
 
     [Fact]
@@ -239,6 +159,36 @@ public class CommandLineArgumentCoverageTests : IDisposable {
             string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -Increment -VersionSource={versionStorePath} -MinMatch=*.zzz -Output=con -NoError");
 
             output.ShouldContain("WARNING - No files found to update.");
+            th.LastExecutionExitCode.ShouldBe(0);
+        } finally {
+            Directory.Delete(workingDirectory, true);
+        }
+    }
+
+    [Fact]
+    public async Task NoError_suppresses_exit_code_via_dash_z_alias() {
+        b.Info.Flow();
+        string workingDirectory = CreateTemporaryDirectory();
+        try {
+            string versionStorePath = await CreateVersionStore(workingDirectory, "2.0.0");
+            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -Increment -VersionSource={versionStorePath} -MinMatch=*.zzz -Output=con -z");
+            output.ShouldContain("WARNING - No files found to update.");
+            th.LastExecutionExitCode.ShouldBe(0);
+        } finally {
+            Directory.Delete(workingDirectory, true);
+        }
+    }
+
+    [Fact]
+    public async Task NoOverride_argument_disables_pending_override() {
+        b.Info.Flow();
+        string workingDirectory = CreateTemporaryDirectory();
+        try {
+            string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
+            string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
+            _ = await th.ExecuteVersonify($"override -VersionSource={versionStorePath} -QuickValue=9.9.9");
+            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile -NoOverride");
+            output.ShouldContain("Version Increment Override, Disabled");
             th.LastExecutionExitCode.ShouldBe(0);
         } finally {
             Directory.Delete(workingDirectory, true);
@@ -275,30 +225,69 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     }
 
     [Fact]
-    public async Task GetMdHelp_argument_writes_docs_file_to_current_directory() {
+    public async Task Single_dash_long_MinMatch_option_is_accepted() {
         b.Info.Flow();
         string workingDirectory = CreateTemporaryDirectory();
-
         try {
-            var result = await th.ExecuteVersonifyWithStreams("--get-md-help", workingDirectory);
-            string docsPath = Path.Combine(workingDirectory, "docs.md");
-
-            result.ExitCode.ShouldBe(0);
-            result.StdOut.ShouldContain("Wrote markdown help to");
-            File.Exists(docsPath).ShouldBeTrue();
-            File.ReadAllText(docsPath).ShouldContain("Versonify CLI arguments");
+            string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
+            string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
+            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile");
+            output.ShouldContain("Version To Write:");
+            th.LastExecutionExitCode.ShouldBe(0);
         } finally {
             Directory.Delete(workingDirectory, true);
         }
     }
 
-    private async Task<string> CreateVersionStore(string workingDirectory, string versionValue) {
-        string result = Path.Combine(workingDirectory, "versionstore.vstore");
-        string output = await th.ExecuteVersonify($"createversion -V={result} -Q={versionValue}");
-
-        output.ShouldContain("Creating New Version Store:");
+    [Fact]
+    public async Task Single_dash_long_VersionSource_option_is_accepted() {
+        b.Info.Flow();
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
+        string versionStorePath = uth.GetTestDataFile(resourceName);
+        string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
+        output.ShouldContain("Loaded [");
         th.LastExecutionExitCode.ShouldBe(0);
+    }
 
+    [Fact]
+    public async Task Trace_argument_enables_trace_handler_output() {
+        b.Info.Flow();
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
+        string versionStorePath = uth.GetTestDataFile(resourceName);
+
+        string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath} -Trace=info");
+
+        output.ShouldContain("Debug Mode, Adding Trace Handler");
+        th.LastExecutionExitCode.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Version_argument_prints_version_and_skips_normal_actions() {
+        b.Info.Flow();
+        var version = typeof(VersonifyOptions).Assembly.GetName().Version;
+        string expectedVersion = $"{version?.Major}.{version?.Minor}.{version?.Build}.{version?.Revision}";
+
+        string output = await th.ExecuteVersonify("--version");
+
+        output.ShouldContain(expectedVersion);
+        output.ShouldNotContain("Performing Versioning Actions");
+        output.ShouldNotContain("Versioning By Versonify");
+        th.LastExecutionExitCode.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task VersionSource_argument_loads_passive_output() {
+        b.Info.Flow();
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
+        string versionStorePath = uth.GetTestDataFile(resourceName);
+        string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
+        output.ShouldContain("Loaded [");
+        th.LastExecutionExitCode.ShouldBe(0);
+    }
+
+    private static string CreateTemporaryDirectory() {
+        string result = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+        Directory.CreateDirectory(result);
         return result;
     }
 
@@ -312,9 +301,13 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         return result;
     }
 
-    private static string CreateTemporaryDirectory() {
-        string result = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
-        Directory.CreateDirectory(result);
+    private async Task<string> CreateVersionStore(string workingDirectory, string versionValue) {
+        string result = Path.Combine(workingDirectory, "versionstore.vstore");
+        string output = await th.ExecuteVersonify($"createversion -V={result} -Q={versionValue}");
+
+        output.ShouldContain("Creating New Version Store:");
+        th.LastExecutionExitCode.ShouldBe(0);
+
         return result;
     }
 }

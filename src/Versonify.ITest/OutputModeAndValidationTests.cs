@@ -6,8 +6,8 @@ namespace Versonify.ITest;
 
 public class OutputModeAndValidationTests {
     protected Bilge b = new Bilge("Versonify-ITest");
-    protected UnitTestHelper uth;
     protected TestHelper th;
+    protected UnitTestHelper uth;
 
     public OutputModeAndValidationTests() {
         b.Info.Flow();
@@ -20,25 +20,61 @@ public class OutputModeAndValidationTests {
         uth.ClearUpTestFiles();
     }
 
-    private async Task<string> CreateVersionStore(string workingDirectory, string versionValue) {
-        string result = Path.Combine(workingDirectory, "versionstore.vstore");
-        string output = await th.ExecuteVersonify($"createversion -V={result} -Q={versionValue}");
-        output.ShouldContain("Creating New Version Store:");
+    [Fact]
+    public async Task Behaviour_command_missing_digit_argument_returns_error() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+        string output = await th.ExecuteVersonify($"behaviour -V={store}");
+        output.ShouldContain("Error >>");
+        th.LastExecutionExitCode.ShouldNotBe(0);
+    }
+
+    [Fact]
+    public async Task Behaviour_semicolon_separated_digits_processes_multiple_digits() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!);
+        string output = await th.ExecuteVersonify($"behaviour -V={store} -D=0;1");
+        output.ShouldContain("[0]:");
+        output.ShouldContain("[1]:");
         th.LastExecutionExitCode.ShouldBe(0);
-        return result;
     }
 
-    private static string CreateTemporaryDirectory() {
-        string result = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
-        Directory.CreateDirectory(result);
-        return result;
+    [Fact]
+    public async Task Command_with_invalid_root_directory_returns_error() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+        string nonExistentPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        string output = await th.ExecuteVersonify($"passive -V={store} -Root={nonExistentPath}");
+        output.ShouldContain("Error >> Invalid Directory");
+        th.LastExecutionExitCode.ShouldNotBe(0);
     }
 
-    // Group A — Output mode ITests
+    [Fact]
+    public async Task Debug_flag_echoes_command_line_arguments_to_stdout() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+        string output = await th.ExecuteVersonify($"passive -V={store} -Debug");
+        output.ShouldContain("Command Line:");
+        th.LastExecutionExitCode.ShouldBe(0);
+    }
 
+    [Fact]
+    public async Task Output_azdo_custom_variable_writes_named_pipeline_variable() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+        string output = await th.ExecuteVersonify($"passive -V={store} -Output=azdo:MyVar");
+        output.ShouldContain("##vso[task.setvariable variable=MyVar");
+        th.LastExecutionExitCode.ShouldBe(0);
+    }
 
-    // Note output type env has been deleted, this creates an environment variable and therefore leaves
-    // state on the machine where it runs.
+    [Fact]
+    public async Task Output_azdo_default_writes_default_vso_pipeline_variable() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+        string output = await th.ExecuteVersonify($"passive -V={store} -Output=azdo");
+        output.ShouldContain("##vso[task.setvariable variable=CodeVersionNumber");
+        th.LastExecutionExitCode.ShouldBe(0);
+    }
 
     [Fact]
     public async Task Output_file_mode_creates_output_file_in_working_directory() {
@@ -55,6 +91,8 @@ public class OutputModeAndValidationTests {
         }
     }
 
+    // Note output type env has been deleted, this creates an environment variable and therefore leaves
+    // state on the machine where it runs.
     [Fact]
     public async Task Output_file_with_custom_name_creates_named_file() {
         b.Info.Flow();
@@ -77,24 +115,7 @@ public class OutputModeAndValidationTests {
         }
     }
 
-    [Fact]
-    public async Task Output_azdo_default_writes_default_vso_pipeline_variable() {
-        b.Info.Flow();
-        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"passive -V={store} -Output=azdo");
-        output.ShouldContain("##vso[task.setvariable variable=CodeVersionNumber");
-        th.LastExecutionExitCode.ShouldBe(0);
-    }
-
-    [Fact]
-    public async Task Output_azdo_custom_variable_writes_named_pipeline_variable() {
-        b.Info.Flow();
-        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"passive -V={store} -Output=azdo:MyVar");
-        output.ShouldContain("##vso[task.setvariable variable=MyVar");
-        th.LastExecutionExitCode.ShouldBe(0);
-    }
-
+    // Group A — Output mode ITests
     [Fact]
     public async Task Output_vsts_alias_writes_default_vso_pipeline_variable() {
         b.Info.Flow();
@@ -104,30 +125,33 @@ public class OutputModeAndValidationTests {
         th.LastExecutionExitCode.ShouldBe(0);
     }
 
-    // Group B — Debug flag
-
+    // Group E — Validation errors
     [Fact]
-    public async Task Debug_flag_echoes_command_line_arguments_to_stdout() {
+    public async Task Override_command_missing_value_argument_returns_error() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"passive -V={store} -Debug");
-        output.ShouldContain("Command Line:");
-        th.LastExecutionExitCode.ShouldBe(0);
+        string output = await th.ExecuteVersonify($"override -V={store}");
+        output.ShouldContain("Error >>");
+        th.LastExecutionExitCode.ShouldNotBe(0);
     }
-
-    // Group C — Semicolon array
 
     [Fact]
-    public async Task Behaviour_semicolon_separated_digits_processes_multiple_digits() {
+    public async Task Prefix_command_missing_digit_argument_returns_error() {
         b.Info.Flow();
-        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!);
-        string output = await th.ExecuteVersonify($"behaviour -V={store} -D=0;1");
-        output.ShouldContain("[0]:");
-        output.ShouldContain("[1]:");
-        th.LastExecutionExitCode.ShouldBe(0);
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+        string output = await th.ExecuteVersonify($"prefix -V={store} -Q=-");
+        output.ShouldContain("Error >>");
+        th.LastExecutionExitCode.ShouldNotBe(0);
     }
 
-    // Group D — Prefix command
+    [Fact]
+    public async Task Prefix_command_missing_value_argument_returns_error() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+        string output = await th.ExecuteVersonify($"prefix -V={store} -D=0");
+        output.ShouldContain("Error >>");
+        th.LastExecutionExitCode.ShouldNotBe(0);
+    }
 
     [Fact]
     public async Task Prefix_command_stores_and_applies_prefix_to_version_output() {
@@ -146,49 +170,14 @@ public class OutputModeAndValidationTests {
         }
     }
 
-    // Group E — Validation errors
-
-    [Fact]
-    public async Task Behaviour_command_missing_digit_argument_returns_error() {
-        b.Info.Flow();
-        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"behaviour -V={store}");
-        output.ShouldContain("Error >>");
-        th.LastExecutionExitCode.ShouldNotBe(0);
-    }
-
-    [Fact]
-    public async Task Override_command_missing_value_argument_returns_error() {
-        b.Info.Flow();
-        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"override -V={store}");
-        output.ShouldContain("Error >>");
-        th.LastExecutionExitCode.ShouldNotBe(0);
-    }
-
+    // Group B — Debug flag
+    // Group C — Semicolon array
+    // Group D — Prefix command
     [Fact]
     public async Task Set_command_missing_value_argument_returns_error() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         string output = await th.ExecuteVersonify($"set -V={store}");
-        output.ShouldContain("Error >>");
-        th.LastExecutionExitCode.ShouldNotBe(0);
-    }
-
-    [Fact]
-    public async Task Prefix_command_missing_value_argument_returns_error() {
-        b.Info.Flow();
-        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"prefix -V={store} -D=0");
-        output.ShouldContain("Error >>");
-        th.LastExecutionExitCode.ShouldNotBe(0);
-    }
-
-    [Fact]
-    public async Task Prefix_command_missing_digit_argument_returns_error() {
-        b.Info.Flow();
-        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"prefix -V={store} -Q=-");
         output.ShouldContain("Error >>");
         th.LastExecutionExitCode.ShouldNotBe(0);
     }
@@ -202,13 +191,17 @@ public class OutputModeAndValidationTests {
         th.LastExecutionExitCode.ShouldNotBe(0);
     }
 
-    [Fact]
-    public async Task Command_with_invalid_root_directory_returns_error() {
-        b.Info.Flow();
-        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string nonExistentPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
-        string output = await th.ExecuteVersonify($"passive -V={store} -Root={nonExistentPath}");
-        output.ShouldContain("Error >> Invalid Directory");
-        th.LastExecutionExitCode.ShouldNotBe(0);
+    private static string CreateTemporaryDirectory() {
+        string result = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+        Directory.CreateDirectory(result);
+        return result;
+    }
+
+    private async Task<string> CreateVersionStore(string workingDirectory, string versionValue) {
+        string result = Path.Combine(workingDirectory, "versionstore.vstore");
+        string output = await th.ExecuteVersonify($"createversion -V={result} -Q={versionValue}");
+        output.ShouldContain("Creating New Version Store:");
+        th.LastExecutionExitCode.ShouldBe(0);
+        return result;
     }
 }
