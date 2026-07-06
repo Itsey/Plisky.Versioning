@@ -46,12 +46,15 @@ public class ExploratoryTests {
     [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
     [InlineData("1.9.0.0", "1.9", DisplayType.Short)]
+    [InlineData("1.9.0.0", "1.9.0.0", DisplayType.Full)]
     [InlineData("1.9.0.0", "", DisplayType.Release)]  // Behaviour changed now to match actual expected output.
     [InlineData("1.9.0.0", "1.9.0", DisplayType.ThreeDigit)]
+    [InlineData("1.9.0.0", "1.9.0", DisplayType.ThreeDigitNumeric)]
     [InlineData("1.9.0.0", "1.9.0.0", DisplayType.QueuedFull)]
     [InlineData("1.9.0.0", "1.9.0.0", DisplayType.Default)]
     [InlineData("1.9.0.0", "1.9.0.0", DisplayType.FourDigit)]
     [InlineData("1.9.0.0", "1.9.0.0", DisplayType.FourDigitNumeric)]
+    [InlineData("1.9.0.0", "1.9.0.0", DisplayType.NoDisplay)] // unexpected but this is the current behaviour.
     public void Output_formats_are_well_specified(string input, string output, DisplayType dt) {
         b.Info.Flow();
         // Duplicate of other tests but grouped here to define requirements for output.
