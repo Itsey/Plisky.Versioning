@@ -117,6 +117,57 @@ public class DigitGroupFeatureTests : IDisposable {
     }
 
     [Fact]
+    public async Task Pre_release_flag_changes_passive_output_to_include_pre_release_groups() {
+        string tempDir = CreateTemporaryDirectory();
+        string store = await CreateVersionStore(tempDir, "2.3.0.0");
+
+        _ = await sut.ExecuteVersonify($"set -V={store} -D=2 -Q=Alpha --pre-release");
+        sut.LastExecutionExitCode.ShouldBe(0);
+        _ = await sut.ExecuteVersonify($"set -V={store} -D=3 -Q=1 --pre-release");
+        sut.LastExecutionExitCode.ShouldBe(0);
+        _ = await sut.ExecuteVersonify($"prefix -V={store} -D=2 -Q=-");
+        sut.LastExecutionExitCode.ShouldBe(0);
+        _ = await sut.ExecuteVersonify($"prefix -V={store} -D=3 -Q=.");
+        sut.LastExecutionExitCode.ShouldBe(0);
+
+        string defaultPassiveOutput = await sut.ExecuteVersonify($"passive -V={store}");
+        defaultPassiveOutput.ShouldContain("Loaded [2.3]");
+
+        string preReleasePassiveOutput = await sut.ExecuteVersonify($"passive -V={store} --pre-release");
+        preReleasePassiveOutput.ShouldContain("Loaded [2.3-Alpha.1]");
+    }
+
+    [Theory(Skip = "Skipping until LFY-50: --pre-release literal replacement mappings are pending implementation.")]
+    [InlineData("XXX-VERSION-XXX", "2.3-Alpha.1")]
+    [InlineData("XXX-VERSIONT-XXX", "2.3-Alpha")]
+    [InlineData("XXX-VERSION3-XXX", "2.3.0")]
+    [InlineData("XXX-VERSION2-XXX", "2.3-Alpha.1")] // Suspect this is unexpected behavior, suggest expected should be 2.3
+    [InlineData("XXX-VERSION4-XXX", "2.3.0.0")]
+    [InlineData("XXX-VERSIONF-XXX", "2.3-Alpha.1")]
+    public async Task Updatefiles_textfile_with_pre_release_replaces_expected_literal_tokens(string marker, string expected) {
+        string tempDir = CreateTemporaryDirectory();
+        string store = await CreateVersionStore(tempDir, "2.3.0.0");
+
+        _ = await sut.ExecuteVersonify($"set --version-source={store} -D=2 -Q=Alpha --pre-release");
+        sut.LastExecutionExitCode.ShouldBe(0);
+        _ = await sut.ExecuteVersonify($"set --version-source={store} -D=3 -Q=1 --pre-release");
+        sut.LastExecutionExitCode.ShouldBe(0);
+        _ = await sut.ExecuteVersonify($"prefix --version-source={store} -D=2 -Q=-");
+        sut.LastExecutionExitCode.ShouldBe(0);
+        _ = await sut.ExecuteVersonify($"prefix --version-source={store} -D=3 -Q=.");
+        sut.LastExecutionExitCode.ShouldBe(0);
+
+        string targetTextFile = Path.Combine(tempDir, "token-target.txt");
+        File.WriteAllText(targetTextFile, $"Value: {marker}");
+
+        _ = await sut.ExecuteVersonify($"updatefiles --version-source={store} --root={tempDir} --pre-release --min-match={targetTextFile}|TextFile");
+        sut.LastExecutionExitCode.ShouldBe(0);
+
+        string updatedText = File.ReadAllText(targetTextFile);
+        updatedText.ShouldBe($"Value: {expected}");
+    }
+
+    [Fact]
     public async Task Set_digit_group_default_resets_to_unnamed_group() {
         string tempDir = CreateTemporaryDirectory();
         string store = await CreateVersionStore(tempDir, "1.2.3.4");

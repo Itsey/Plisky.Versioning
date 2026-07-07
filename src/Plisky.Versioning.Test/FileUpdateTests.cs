@@ -116,6 +116,31 @@ public class FileUpdateTests {
         result.ShouldNotContain("1.1.1.1");
     }
 
+    [Theory(DisplayName = nameof(LiteralReplace_Exploratory_MapsVersionMarkerForPreReleaseInput), Skip = "Skipping until LFY-50: text-file token mapping updates are pending implementation.")]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("XXX-VERSION-XXX", "2.3")]
+    [InlineData("XXX-VERSIONT-XXX", "2.3.0")]
+    [InlineData("XXX-VERSION3-XXX", "2.3.0")]
+    [InlineData("XXX-VERSION2-XXX", "2.3")]
+    [InlineData("XXX-VERSION4-XXX", "2.3.0.0")]
+    [InlineData("XXX-VERSIONF-XXX", "2.3")]
+    public void LiteralReplace_Exploratory_MapsVersionMarkerForPreReleaseInput(string marker, string expected) {
+        b.Info.Flow();
+
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.ReleaseNameAndVerTxt)!;
+        string srcFile = uth.GetTestDataFile(reid);
+        File.WriteAllText(srcFile, $"Value: {marker}");
+
+        var cv = new CompleteVersion("2.3-Alpha.1", '.', '-');
+        var sut = new VersionFileUpdater(cv);
+
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Default);
+        string result = File.ReadAllText(srcFile);
+
+        result.ShouldBe($"Value: {expected}");
+    }
+
     [Fact(DisplayName = nameof(VersionFileUpdaterFindsFiles))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
