@@ -116,15 +116,15 @@ public class FileUpdateTests {
         result.ShouldNotContain("1.1.1.1");
     }
 
-    [Theory(DisplayName = nameof(LiteralReplace_Exploratory_MapsVersionMarkerForPreReleaseInput), Skip = "Skipping until LFY-50: text-file token mapping updates are pending implementation.")]
+    [Theory(DisplayName = nameof(LiteralReplace_Exploratory_MapsVersionMarkerForPreReleaseInput))]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
-    [InlineData("XXX-VERSION-XXX", "2.3")]
-    [InlineData("XXX-VERSIONT-XXX", "2.3.0")]
+    [InlineData("XXX-VERSION-XXX", "2.3-Alpha.1")]
+    [InlineData("XXX-VERSIONT-XXX", "2.3-Alpha")]
     [InlineData("XXX-VERSION3-XXX", "2.3.0")]
     [InlineData("XXX-VERSION2-XXX", "2.3")]
     [InlineData("XXX-VERSION4-XXX", "2.3.0.0")]
-    [InlineData("XXX-VERSIONF-XXX", "2.3")]
+    [InlineData("XXX-VERSIONF-XXX", "2.3-Alpha.1")]
     public void LiteralReplace_Exploratory_MapsVersionMarkerForPreReleaseInput(string marker, string expected) {
         b.Info.Flow();
 
@@ -133,12 +133,86 @@ public class FileUpdateTests {
         File.WriteAllText(srcFile, $"Value: {marker}");
 
         var cv = new CompleteVersion("2.3-Alpha.1", '.', '-');
+        cv.Digits[2].GroupName = "pre-release";
+        cv.Digits[3].GroupName = "pre-release";
+        var sut = new VersionFileUpdater(cv);
+
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Default, groupNamesForDisplay: "default,pre-release");
+        string result = File.ReadAllText(srcFile);
+
+        result.ShouldBe($"Value: {expected}");
+    }
+
+    [Theory(DisplayName = nameof(LiteralReplace_Exploratory_MapsVersionMarkerWithoutPreReleaseInput))]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("XXX-VERSION-XXX", "2.3")]
+    [InlineData("XXX-VERSIONT-XXX", "2.3")]
+    [InlineData("XXX-VERSION3-XXX", "2.3.0")]
+    [InlineData("XXX-VERSION2-XXX", "2.3")]
+    [InlineData("XXX-VERSION4-XXX", "2.3.0.0")]
+    [InlineData("XXX-VERSIONF-XXX", "2.3")]
+    public void LiteralReplace_Exploratory_MapsVersionMarkerWithoutPreReleaseInput(string marker, string expected) {
+        b.Info.Flow();
+
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.ReleaseNameAndVerTxt)!;
+        string srcFile = uth.GetTestDataFile(reid);
+        File.WriteAllText(srcFile, $"Value: {marker}");
+
+        var cv = new CompleteVersion("2.3-Alpha.1", '.', '-');
+        cv.Digits[2].GroupName = "pre-release";
+        cv.Digits[3].GroupName = "pre-release";
         var sut = new VersionFileUpdater(cv);
 
         _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Default);
         string result = File.ReadAllText(srcFile);
 
         result.ShouldBe($"Value: {expected}");
+    }
+
+
+    [Theory(DisplayName = nameof(LiteralReplace_Exploratory_UsesCustomPreReleaseGroupName))]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("XXX-VERSION-XXX", "2.3-Alpha.1")]
+    [InlineData("XXX-VERSIONT-XXX", "2.3-Alpha")]
+    [InlineData("XXX-VERSIONF-XXX", "2.3-Alpha.1")]
+    public void LiteralReplace_Exploratory_UsesCustomPreReleaseGroupName(string marker, string expected) {
+        b.Info.Flow();
+
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.ReleaseNameAndVerTxt)!;
+        string srcFile = uth.GetTestDataFile(reid);
+        File.WriteAllText(srcFile, $"Value: {marker}");
+
+        var cv = new CompleteVersion("2.3-Alpha.1", '.', '-');
+        cv.Digits[2].GroupName = "my-custom-pr";
+        cv.Digits[3].GroupName = "my-custom-pr";
+        var sut = new VersionFileUpdater(cv);
+
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Default, groupNamesForDisplay: "default,my-custom-pr");
+        string result = File.ReadAllText(srcFile);
+
+        result.ShouldBe($"Value: {expected}");
+    }
+    [Fact(DisplayName = nameof(LiteralReplace_ExplicitDisplayStyle_OverridesVersionToken))]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void LiteralReplace_ExplicitDisplayStyle_OverridesVersionToken() {
+        b.Info.Flow();
+
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.ReleaseNameAndVerTxt)!;
+        string srcFile = uth.GetTestDataFile(reid);
+        File.WriteAllText(srcFile, "Value: XXX-VERSION-XXX");
+
+        var cv = new CompleteVersion("2.3-Alpha.1", '.', '-');
+        cv.Digits[2].GroupName = "pre-release";
+        cv.Digits[3].GroupName = "pre-release";
+        var sut = new VersionFileUpdater(cv);
+
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Short, groupNamesForDisplay: "default,pre-release");
+        string result = File.ReadAllText(srcFile);
+
+        result.ShouldBe("Value: 2.3");
     }
 
     [Fact(DisplayName = nameof(VersionFileUpdaterFindsFiles))]
@@ -483,3 +557,7 @@ public class FileUpdateTests {
         ex.Message.ShouldContain("Filename must be present");
     }
 }
+
+
+
+

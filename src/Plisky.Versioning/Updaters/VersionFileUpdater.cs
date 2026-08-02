@@ -1,4 +1,4 @@
-namespace Plisky.CodeCraft;
+﻿namespace Plisky.CodeCraft;
 
 using System;
 using System.IO;
@@ -32,7 +32,7 @@ public class VersionFileUpdater {
         return new Regex("\\s*\\[\\s*assembly\\s*:\\s*" + targetAttribute + "\\s*\\(\\s*\\\"\\s*[0-9A-z\\-.*]*\\s*\\\"\\s*\\)\\s*\\]", RegexOptions.IgnoreCase);
     }
 
-    public string PerformUpdate(string fl, FileUpdateType fut, DisplayType dt = DisplayType.Default) {
+    public string PerformUpdate(string fl, FileUpdateType fut, DisplayType dt = DisplayType.Default, string groupNamesForDisplay = "") {
         b.Verbose.Log("Perform update requested " + fut.ToString(), fl);
 
         if (!File.Exists(fl)) {
@@ -42,7 +42,7 @@ public class VersionFileUpdater {
         string responseLog;
 
         var dtx = cv.GetDisplayType(fut, dt);
-        string versonToWrite = cv.GetVersionString(dtx);
+        string versonToWrite = GetVersionStringForLiteral(cv, dtx, groupNamesForDisplay);
         switch (fut) {
             case FileUpdateType.NetAssembly:
                 UpdateCSFileWithAttribute(fl, ASMFILE_VER_TAG, versonToWrite);
@@ -85,7 +85,7 @@ public class VersionFileUpdater {
                 break;
 
             case FileUpdateType.TextFile:
-                responseLog = UpdateLiteralReplacer(fl, cv, dtx);
+                responseLog = UpdateLiteralReplacer(fl, cv, dtx, dt, groupNamesForDisplay);
                 break;
 
             default:
@@ -94,7 +94,7 @@ public class VersionFileUpdater {
         return responseLog;
     }
 
-    protected virtual string UpdateLiteralReplacer(string fileToCheck, CompleteVersion versonToWrite, DisplayType displayStyle) {
+    protected virtual string UpdateLiteralReplacer(string fileToCheck, CompleteVersion versonToWrite, DisplayType displayStyle, DisplayType originalDisplayStyle = DisplayType.Default, string groupNamesForDisplay = "") {
 #if DEBUG
         if (!File.Exists(fileToCheck)) { throw new InvalidOperationException("Must not be possible, check this before you reach this code"); }
 #endif
@@ -118,12 +118,14 @@ public class VersionFileUpdater {
                     response = "WARNING - No Versioning or Release Name Identifier Found, no updates possible.";
                     return inney;
                 }
-                response = "Replacing XXX-VERSION* with " + versonToWrite.GetVersionString(displayStyle);
+                response = "Replacing XXX-VERSION* with " + GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay);
 
                 return inney.Replace(RELEASE_NAME_FILE_IDENTIFIER, versonToWrite.ReleaseName)
-                .Replace("XXX-VERSION-XXX", versonToWrite.GetVersionString(displayStyle))
+                .Replace("XXX-VERSION-XXX", GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay))
+                .Replace("XXX-VERSIONT-XXX", GetVersionStringForLiteral(versonToWrite, DisplayType.ThreeDigit, groupNamesForDisplay))
+                .Replace("XXX-VERSIONF-XXX", GetVersionStringForLiteral(versonToWrite, DisplayType.FourDigit, groupNamesForDisplay))
                 .Replace("XXX-VERSION3-XXX", versonToWrite.GetVersionString(DisplayType.ThreeDigitNumeric))
-                .Replace("XXX-VERSION2-XXX", versonToWrite.GetVersionString(DisplayType.Short))
+                .Replace("XXX-VERSION2-XXX", GetVersionStringForLiteral(versonToWrite, DisplayType.Short, groupNamesForDisplay))
                 .Replace("XXX-VERSION4-XXX", versonToWrite.GetVersionString(DisplayType.FourDigitNumeric));
             });
         }
@@ -133,6 +135,24 @@ public class VersionFileUpdater {
         return response;
     }
 
+
+    protected string GetVersionStringForLiteral(CompleteVersion version, DisplayType displayType, string groupNamesForDisplay) {
+        return displayType switch {
+            DisplayType.Default => version.GetVersionStringByGroupSelection(groupNamesForDisplay, int.MaxValue),
+            DisplayType.Full => version.GetVersionStringByGroupSelection(groupNamesForDisplay, int.MaxValue),
+            DisplayType.Short => version.GetVersionStringByGroupSelection(string.Empty, 2),
+            DisplayType.ThreeDigit => version.GetVersionStringByGroupSelection(groupNamesForDisplay, 3),
+            DisplayType.FourDigit => version.GetVersionStringByGroupSelection(groupNamesForDisplay, 4),
+            _ => version.GetVersionString(displayType)
+        };
+    }
+
+    // Special handling for the VERSIONT literal: when pre-release group is requested trim a trailing numeric pre-release part (e.g. ".1").
+    //protected string GetVersionTString(CompleteVersion version, string groupNamesForDisplay) {
+    //    // Reuse existing API and use a single stdlib Regex to drop a trailing numeric pre-release segment.
+    //    string s = version.GetVersionStringByGroupSelection(groupNamesForDisplay, 3) ?? string.Empty;
+    //    return System.Text.RegularExpressions.Regex.Replace(s, @"\.\d+$", "");
+    //}
     protected virtual void UpdateStdCSPRoj(string fl, string versonToWrite, string propName) {
         const string PROPERTYGROUP_ELNAME = "PropertyGroup";
         const string PROJECT_ELNAME = "Project";
@@ -300,3 +320,4 @@ public class VersionFileUpdater {
         b.Info.Log("The attribute " + targetAttribute + " was applied to the file " + fileName + " Successfully.");
     }
 }
+

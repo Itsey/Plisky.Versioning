@@ -42,6 +42,8 @@ public class Versioning {
 
     public Action<string>? Logger { get; set; }
 
+    public string FileUpdateDisplayGroups { get; set; } = string.Empty;
+
     public override string ToString() {
         return cv.ToString();
     }
@@ -75,7 +77,7 @@ public class Versioning {
 
         foreach (var f in filenamesRegistered) {
             Log("Updating : " + f);
-            string s = vfu.PerformUpdate(f.Item1, f.Item2);
+            string s = vfu.PerformUpdate(f.Item1, f.Item2, groupNamesForDisplay: FileUpdateDisplayGroups);
             if (!testMode) {
                 Log($"Updated : {s}");
                 b.Verbose.Log($"Update Completed {f.Item1} : {f.Item2}");

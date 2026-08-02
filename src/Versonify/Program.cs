@@ -1,4 +1,4 @@
-namespace Versonify;
+﻿namespace Versonify;
 
 using System;
 using System.IO;
@@ -311,6 +311,7 @@ internal class Program {
         versionerUsed = ver.Version;
 
         ver.Logger = Console.WriteLine;
+        ver.FileUpdateDisplayGroups = ResolveDigitGroupsForDisplay();
 
         if (options.NoOverride) {
             Console.WriteLine("Version Increment Override, Disabled");
@@ -571,3 +572,5 @@ internal class Program {
         }
     }
 }
+
+

@@ -163,18 +163,55 @@ public class CompleteVersion {
             case DisplayType.Short when Digits.Length > 2:
                 stopPoint = 2;
                 break;
-            case DisplayType.ThreeDigit when Digits.Length > 3:
-                stopPoint = 3;
-                break;
-            case DisplayType.FourDigit when Digits.Length > 4:
-                stopPoint = 4;
-                break;
+            case DisplayType.ThreeDigit:
+                return GetVersionStringWithSelectedGroups(3);
+            case DisplayType.FourDigit:
+                return GetVersionStringWithSelectedGroups(4);
         }
 
         for (int i = 0; i < stopPoint; i++) {
             result += Digits[i].ToString();
         }
         b.Verbose.Log($"DisplayType - Stop {stopPoint} |{result}|");
+        return result;
+    }
+
+    private List<int> GetMainDigitIndices(int limit) {
+        var indices = new List<int>();
+        for (int i = 0; i < Digits.Length && indices.Count < limit; i++) {
+            if (string.IsNullOrEmpty(NormalizeDigitGroup(Digits[i].GroupName))) {
+                indices.Add(i);
+            }
+        }
+        return indices;
+    }
+
+    private List<int> GetGroupedDigitIndices() {
+        var indices = new List<int>();
+        for (int i = 0; i < Digits.Length; i++) {
+            if (!string.IsNullOrEmpty(NormalizeDigitGroup(Digits[i].GroupName))) {
+                indices.Add(i);
+            }
+        }
+        return indices;
+    }
+
+    private string BuildVersionStringFromIndices(List<int> indices) {
+        string result = string.Empty;
+        for (int i = 0; i < indices.Count; i++) {
+            result += Digits[indices[i]].ToString();
+        }
+        return result;
+    }
+
+    // Returns up to `limit` default-group digits followed by all explicitly grouped digits.
+    // Index-based (group membership), not suffix-based, so sparse/interleaved groups work correctly.
+    private string GetVersionStringWithSelectedGroups(int mainDigitLimit) {
+        var mainDigits = GetMainDigitIndices(mainDigitLimit);
+        var groupedDigits = GetGroupedDigitIndices();
+
+        string result = BuildVersionStringFromIndices(mainDigits) + BuildVersionStringFromIndices(groupedDigits);
+        b.Verbose.Log($"DisplayType - MainCount {mainDigits.Count} GroupedCount {groupedDigits.Count} |{result}|");
         return result;
     }
 
@@ -200,13 +237,13 @@ public class CompleteVersion {
         string result = string.Empty;
         int digitsFound = 0;
         string mtcPrefix = string.Empty;
-        int stopPoint = Digits.Length;
-        if (stopPoint > digitLimit) {
-            stopPoint = digitLimit;
-        }
 
         // Start with no prefix then use . prefixes and pick up .s only.
-        for (int i = 0; i < stopPoint; i++) {
+        // Grouped (non-default) digits are excluded: numeric display types are for release versions only.
+        for (int i = 0; i < Digits.Length && digitsFound < digitLimit; i++) {
+            if (!string.IsNullOrEmpty(NormalizeDigitGroup(Digits[i].GroupName))) {
+                continue;
+            }
             if (Digits[i].PreFix == mtcPrefix) {
                 mtcPrefix = ".";
                 if (ushort.TryParse(Digits[i].Value, out ushort _)) {
@@ -224,7 +261,7 @@ public class CompleteVersion {
             digitsFound++;
             result += ".0";
         }
-        b.Verbose.Log($"DisplayType - Stop {stopPoint} |{result}|");
+        b.Verbose.Log($"DisplayType - Numeric Limit {digitLimit} |{result}|");
         return result;
     }
 
@@ -426,15 +463,67 @@ public class CompleteVersion {
     /// <param name="groupNames">Comma-separated group names</param>
     /// <returns>Version string with only specified group digits</returns>
     public string GetVersionStringByGroup(string groupNames) {
+        return GetVersionStringByGroup(groupNames, int.MaxValue);
+    }
+
+    /// <summary>
+    /// Gets a version string containing only digits from the specified groups, preserving original order,
+    /// and limiting the number of emitted digits.
+    /// </summary>
+    /// <param name="groupNames">Comma-separated group names</param>
+    /// <param name="maxDigits">Maximum number of digits to emit</param>
+    /// <returns>Version string with only specified group digits</returns>
+    public string GetVersionStringByGroup(string groupNames, int maxDigits) {
         int[] indices = GetDigitsByGroup(groupNames);
-        if (indices.Length == 0) {
+        if (indices.Length == 0 || maxDigits <= 0) {
             return string.Empty;
         }
 
         string result = string.Empty;
-        for (int i = 0; i < indices.Length; i++) {
+        int emittedDigits = 0;
+        for (int i = 0; i < indices.Length && emittedDigits < maxDigits; i++) {
             int digitIndex = indices[i];
             result += Digits[digitIndex].ToString();
+            emittedDigits++;
+        }
+
+        return result;
+    }
+    /// <summary>
+    /// Gets a version string for selected groups with a limit applied only to default-group digits.
+    /// Named-group digits in the selected set are always appended in original order.
+    /// </summary>
+    /// <param name="groupNames">Comma-separated group names</param>
+    /// <param name="maxDefaultDigits">Maximum number of default-group digits to emit</param>
+    /// <returns>Version string for the selected groups</returns>
+    public string GetVersionStringByGroupSelection(string groupNames, int maxDefaultDigits) {
+        if (maxDefaultDigits <= 0) { return string.Empty; }
+
+        var requestedGroups = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string group in groupNames.Split(',', StringSplitOptions.RemoveEmptyEntries)) {
+            requestedGroups.Add(NormalizeDigitGroup(group));
+        }
+        if (requestedGroups.Count == 0) {
+            requestedGroups.Add(string.Empty);
+        }
+
+        bool includeDefaultGroup = requestedGroups.Contains(string.Empty);
+        int emittedDigits = 0;
+        string result = string.Empty;
+
+        for (int i = 0; i < Digits.Length; i++) {
+            if (emittedDigits >= maxDefaultDigits) { break; }
+
+            string digitGroup = NormalizeDigitGroup(Digits[i].GroupName);
+            if (string.IsNullOrEmpty(digitGroup)) {
+                if (includeDefaultGroup) {
+                    result += Digits[i].ToString();
+                    emittedDigits++;
+                }
+            } else if (requestedGroups.Contains(digitGroup)) {
+                result += Digits[i].ToString();
+                emittedDigits++;
+            }
         }
 
         return result;

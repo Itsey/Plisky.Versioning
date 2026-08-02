@@ -123,7 +123,7 @@ public class DryRunVersionFileUpdater(CompleteVersion cv, IHookVersioningChanges
         }
     }
 
-    protected override string UpdateLiteralReplacer(string fileToCheck, CompleteVersion versonToWrite, DisplayType displayStyle) {
+    protected override string UpdateLiteralReplacer(string fileToCheck, CompleteVersion versonToWrite, DisplayType displayStyle, DisplayType originalDisplayStyle = DisplayType.Default, string groupNamesForDisplay = "") {
         string inney = File.ReadAllText(fileToCheck);
 
         string response;
@@ -136,8 +136,8 @@ public class DryRunVersionFileUpdater(CompleteVersion cv, IHookVersioningChanges
         } else if (!inney.Contains("XXX-VERSION") && !inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
             response = "WARNING - No Versioning or Release Name Identifier Found, no updates possible";
         } else {
-            response = "Replacing XXX-VERSION* with " + versonToWrite.GetVersionString(displayStyle);
-            b.Info.Log($"DRYRUN - Would have updated XXX-VERSION* with {versonToWrite.GetVersionString(displayStyle)}");
+            response = "Replacing XXX-VERSION* with " + GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay);
+            b.Info.Log($"DRYRUN - Would have updated XXX-VERSION* with {GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay)}");
         }
         return response;
     }

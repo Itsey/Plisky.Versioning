@@ -149,6 +149,24 @@ public class CompleteVersionTests {
     }
 
     [Theory]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData(DisplayType.FourDigitNumeric, "2.3.0.0")]
+    [InlineData(DisplayType.ThreeDigitNumeric, "2.3.0")]
+    public void NumericDisplay_grouped_digits_are_excluded_even_when_numeric_and_dot_prefixed(DisplayType dtype, string expected) {
+        b.Info.Flow();
+
+        var cv = new CompleteVersion("2.3.5.7", '.');
+        cv.Digits[2].GroupName = "pre-release";
+        cv.Digits[3].GroupName = "pre-release";
+
+        string output = cv.GetVersionString(dtype);
+
+        output.ShouldBe(expected);
+    }
+
+
+    [Theory]
     [InlineData("1.2.3.4", "+.+.+.+", "2.3.4.5")]
     [InlineData("1.2..4", "+.+..+", "2.3..5")]
     [InlineData(null, "....", "")]
@@ -656,6 +674,38 @@ public class CompleteVersionTests {
         [InlineData("  pre-release  ", "pre-release")]
         public void NormalizeDigitGroup_when_called_returns_expected_value(string? input, string expected) {
             string result = CompleteVersion.NormalizeDigitGroup(input);
+
+            result.ShouldBe(expected);
+        }
+
+        [Theory]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        [InlineData(DisplayType.ThreeDigit, "2.3.1-Alpha.9")]
+        [InlineData(DisplayType.FourDigit, "2.3.1.8-Alpha.9")]
+        public void VersionString_grouped_digits_are_selected_by_membership_not_suffix(DisplayType displayType, string expected) {
+            var sut = new CompleteVersion("2.3-Alpha.1.9.8", '.', '-');
+            sut.Digits[2].GroupName = "my-custom-pr";
+            sut.Digits[4].GroupName = "my-custom-pr";
+
+            string result = sut.GetVersionString(displayType);
+
+            result.ShouldBe(expected);
+        }
+
+        [Theory]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        [InlineData(DisplayType.ThreeDigit, "2.3-Alpha.1")]
+        [InlineData(DisplayType.FourDigit, "2.3-Alpha.1")]
+        public void VersionString_all_grouped_digits_produces_empty_main_and_all_grouped(DisplayType displayType, string expected) {
+            var sut = new CompleteVersion("2.3-Alpha.1", '.', '-');
+            sut.Digits[0].GroupName = "pre-release";
+            sut.Digits[1].GroupName = "pre-release";
+            sut.Digits[2].GroupName = "pre-release";
+            sut.Digits[3].GroupName = "pre-release";
+
+            string result = sut.GetVersionString(displayType);
 
             result.ShouldBe(expected);
         }
