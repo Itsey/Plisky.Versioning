@@ -17,6 +17,45 @@ public class Exploratory {
         th = new TestHelper(uth);
     }
 
+
+    [Fact]
+    [Trait("Regression", "LFY-66")]
+    public async Task Create_file_using_old_commandline_still_creates_file() {
+        b.Info.Flow();
+        try {
+
+            string tpth = Path.Combine(Path.GetTempPath(), "dummy1.vstore");
+            uth.RegisterTemporaryFilename(tpth);
+
+            b.Verbose.Log($"Test case - old -VS create file, expecting file at {tpth}");
+            string output = await th.ExecuteVersonify($"-Command=CreateVersion -VS={tpth} -Q=\"2.3.0.0\" -Release=Austen");
+            b.Verbose.Log("StdOut", output);
+
+            File.Exists(tpth).ShouldBeTrue();
+        } finally {
+            uth.ClearUpTestFiles();
+        }
+    }
+
+    [Fact]
+    [Trait("Regression", "LFY-66")]
+    public async Task Create_file_using_new_commandline_creates_file() {
+        b.Info.Flow();
+        try {
+
+            string tpth = Path.Combine(Path.GetTempPath(), "dummy1.vstore");
+            uth.RegisterTemporaryFilename(tpth);
+
+            b.Verbose.Log($"Test case - new -v create file, expecting file at {tpth}");
+            string output = await th.ExecuteVersonify($"-Command=CreateVersion -v={tpth} -Q=\"2.3.0.0\" -Release=Austen");
+            b.Verbose.Log("StdOut", output);
+
+            File.Exists(tpth).ShouldBeTrue();
+        } finally {
+            uth.ClearUpTestFiles();
+        }
+    }
+
     [Theory]
     [InlineData(1, "Fixed", DigitIncrementBehaviour.Fixed)]
     [InlineData(2, "autoincrementwithreset", DigitIncrementBehaviour.AutoIncrementWithReset)]
