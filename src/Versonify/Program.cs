@@ -241,7 +241,9 @@ internal class Program {
     /// initialisation data that is passed in to determine which version store to load.
     /// </summary>
     private static void GetVersionStorageFromCommandLine() {
+        b.Info.Flow();
         string vpv = Environment.ExpandEnvironmentVariables(options.VersionPersistanceValue ?? "");
+        b.Verbose.Log($"Expanded versionstore :{vpv}");
         storage = VersionStorage.CreateFromInitialisation(vpv);
     }
 

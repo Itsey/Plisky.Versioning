@@ -10,7 +10,9 @@ public static class DiagnosticsConfig {
         Console.WriteLine("Debug Mode, Adding Trace Handler");
 
         _ = Bilge.AddHandler(new ConsoleHandler(), HandlerAddOptions.SingleType);
-
+#if DEBUG
+        _ = Bilge.AddHandler(new TCPHandler(new TCPHandlerOptions("127.0.0.1", 9060)), HandlerAddOptions.SingleType);
+#endif
         Bilge.SetConfigurationResolver((name, inLevel) => {
             var returnLvl = SourceLevels.Verbose;
 

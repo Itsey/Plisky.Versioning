@@ -28,10 +28,12 @@ public class Exploratory {
             uth.RegisterTemporaryFilename(tpth);
 
             b.Verbose.Log($"Test case - old -VS create file, expecting file at {tpth}");
-            string output = await th.ExecuteVersonify($"-Command=CreateVersion -VS={tpth} -Q=\"2.3.0.0\" -Release=Austen");
+            string output = await th.ExecuteVersonify($"-Command=CreateVersion -VS={tpth} -Q=\"2.3.0.0\" -Release=Austen --trace=Verbose");
             b.Verbose.Log("StdOut", output);
 
+            output.ShouldContain("deprecated");
             File.Exists(tpth).ShouldBeTrue();
+
         } finally {
             uth.ClearUpTestFiles();
         }
@@ -47,9 +49,10 @@ public class Exploratory {
             uth.RegisterTemporaryFilename(tpth);
 
             b.Verbose.Log($"Test case - new -v create file, expecting file at {tpth}");
-            string output = await th.ExecuteVersonify($"-Command=CreateVersion -v={tpth} -Q=\"2.3.0.0\" -Release=Austen");
+            string output = await th.ExecuteVersonify($"-Command=CreateVersion -Debug --trace=Verbose -v={tpth} -Q=2.3.0.0 -Release=Austen ");
             b.Verbose.Log("StdOut", output);
 
+            output.ShouldNotContain("deprecated");
             File.Exists(tpth).ShouldBeTrue();
         } finally {
             uth.ClearUpTestFiles();

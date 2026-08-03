@@ -231,7 +231,12 @@ public static class CommandLineParser {
         traceOpt.Description = "Trace level: info|verbose|off";
         rc.Add(traceOpt);
 
+#if false
+        // Holding pattern for LFY-66 more work required to get to the bottom of this.
+        string[] versionSourceAliases = includeDeprecatedAliases ? new[] { "-V", "-v", "-VS", "-vs", "-VersionSource" } : new[] { "-V", "-v" };
+#else
         string[] versionSourceAliases = includeDeprecatedAliases ? new[] { "-V", "-v", "-VersionSource" } : new[] { "-V", "-v" };
+#endif
         var versionSourceOpt = new Option<string>(VERSION_SOURCE_ARG, versionSourceAliases);
         versionSourceOpt.Description = "Version store initialisation string";
         rc.Add(versionSourceOpt);

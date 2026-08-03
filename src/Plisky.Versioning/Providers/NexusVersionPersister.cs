@@ -10,6 +10,8 @@ public class NexusVersionPersister : VersionStorage {
     protected NexusConfig? config;
 
     public NexusVersionPersister(string initialisationValue) {
+        b.Info.Flow();
+
         InitValue = new VersionStorageOptions() {
             InitialisationString = initialisationValue
         };
@@ -36,7 +38,7 @@ public class NexusVersionPersister : VersionStorage {
             }, InitValue.InitialisationString, config.Username, config.Password);
 
             tsk.Wait();
-            
+
             if (downloadedResult != null) {
                 result = downloadedResult;
             }
