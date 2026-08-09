@@ -9,7 +9,7 @@ using Plisky.Diagnostics;
 
 public class VersionFileUpdater {
     protected const string RELEASE_NAME_FILE_IDENTIFIER = "XXX-RELEASENAME-XXX";
-    protected Bilge b = new Bilge("Plisky-Versioning");
+    protected Bilge b;
     private const string ASM_STD_ASMVTAG = "AssemblyVersion";
     private const string ASM_STD_FILETAG = "FileVersion";
     private const string ASM_STD_VERSTAG = "Version";
@@ -17,14 +17,14 @@ public class VersionFileUpdater {
     private const string ASMFILE_INFVER_TAG = "AssemblyInformationalVersion";
     private const string ASMFILE_VER_TAG = "AssemblyVersion";
 
-    //private readonly IHookVersioningChanges? hook; //is this needed?
     private readonly CompleteVersion cv;
 
     public VersionFileUpdater() {
+        b = new Bilge("Plisky-Versioning");
         cv = new CompleteVersion();
     }
 
-    public VersionFileUpdater(CompleteVersion completeVersion, IHookVersioningChanges? actions = null) {
+    public VersionFileUpdater(CompleteVersion completeVersion) : this() {
         cv = completeVersion;
     }
 
@@ -42,7 +42,7 @@ public class VersionFileUpdater {
         string responseLog;
 
         var dtx = cv.GetDisplayType(fut, dt);
-        string versonToWrite = GetVersionStringForLiteral(cv, dtx, groupNamesForDisplay);
+        string versonToWrite = VersionFileUpdater.GetVersionStringForLiteral(cv, dtx, groupNamesForDisplay);
         switch (fut) {
             case FileUpdateType.NetAssembly:
                 UpdateCSFileWithAttribute(fl, ASMFILE_VER_TAG, versonToWrite);
@@ -94,7 +94,7 @@ public class VersionFileUpdater {
         return responseLog;
     }
 
-    protected string GetVersionStringForLiteral(CompleteVersion version, DisplayType displayType, string groupNamesForDisplay) {
+    protected static string GetVersionStringForLiteral(CompleteVersion version, DisplayType displayType, string groupNamesForDisplay) {
         return displayType switch {
             DisplayType.Default => version.GetVersionStringByGroupSelection(groupNamesForDisplay, int.MaxValue),
             DisplayType.Full => version.GetVersionStringByGroupSelection(groupNamesForDisplay, int.MaxValue),
@@ -197,14 +197,14 @@ public class VersionFileUpdater {
                     response = "WARNING - No Versioning or Release Name Identifier Found, no updates possible.";
                     return inney;
                 }
-                response = "Replacing XXX-VERSION* with " + GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay);
+                response = "Replacing XXX-VERSION* with " + VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay);
 
                 return inney.Replace(RELEASE_NAME_FILE_IDENTIFIER, versonToWrite.ReleaseName)
-                .Replace("XXX-VERSION-XXX", GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay))
-                .Replace("XXX-VERSIONT-XXX", GetVersionStringForLiteral(versonToWrite, DisplayType.ThreeDigit, groupNamesForDisplay))
-                .Replace("XXX-VERSIONF-XXX", GetVersionStringForLiteral(versonToWrite, DisplayType.FourDigit, groupNamesForDisplay))
+                .Replace("XXX-VERSION-XXX", VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay))
+                .Replace("XXX-VERSIONT-XXX", VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, DisplayType.ThreeDigit, groupNamesForDisplay))
+                .Replace("XXX-VERSIONF-XXX", VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, DisplayType.FourDigit, groupNamesForDisplay))
                 .Replace("XXX-VERSION3-XXX", versonToWrite.GetVersionString(DisplayType.ThreeDigitNumeric))
-                .Replace("XXX-VERSION2-XXX", GetVersionStringForLiteral(versonToWrite, DisplayType.Short, groupNamesForDisplay))
+                .Replace("XXX-VERSION2-XXX", VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, DisplayType.Short, groupNamesForDisplay))
                 .Replace("XXX-VERSION4-XXX", versonToWrite.GetVersionString(DisplayType.FourDigitNumeric));
             });
         }

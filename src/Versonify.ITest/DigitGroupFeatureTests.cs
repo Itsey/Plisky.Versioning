@@ -6,10 +6,10 @@ using Shouldly;
 namespace Versonify.ITest;
 
 public class DigitGroupFeatureTests : IDisposable {
-    protected Bilge b = new Bilge("Versonify-ITest");
+    protected Bilge b = new("Versonify-ITest");
     protected TestHelper sut;
     protected UnitTestHelper uth;
-    private readonly List<string> tempDirectories = new();
+    private readonly List<string> tempDirectories = [];
 
     public DigitGroupFeatureTests() {
         b.Info.Flow();

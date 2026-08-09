@@ -22,7 +22,7 @@ internal sealed class VersonifyExecutionResult {
 
 public class TestHelper {
     protected Bilge b;
-    private UnitTestHelper uth;
+    private readonly UnitTestHelper uth;
 
     public TestHelper(UnitTestHelper unitTestHelper) {
         b = new Bilge("Versonify.TestHelper");
@@ -33,12 +33,12 @@ public class TestHelper {
     protected static string? SolutionPathCache { get; set; } = null;
     protected static string? VersonifyPathCache { get; set; } = null;
 
-    public string? GetSolutionPath() {
+    public static string? GetSolutionPath() {
         if (SolutionPathCache != null) {
             return SolutionPathCache;
         }
         var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
-        while (dir != null && !dir.GetFiles("PliskyVersioning.sln").Any()) {
+        while (dir != null && dir.GetFiles("PliskyVersioning.sln").Length == 0) {
             dir = dir.Parent;
         }
         SolutionPathCache = dir?.FullName ?? null;
@@ -59,11 +59,12 @@ public class TestHelper {
 
     internal async Task<VersonifyExecutionResult> ExecuteVersonifyWithStreams(string v, string? workingDirectory = null, bool appendDebug = true) {
         b.Info.Flow();
-        var psi = new ProcessStartInfo();
-        psi.FileName = GetVersonifyPath();
-        psi.Arguments = appendDebug ? $"{v} --debug --trace=Verbose" : v;
-        psi.RedirectStandardOutput = true;
-        psi.RedirectStandardError = true;
+        var psi = new ProcessStartInfo {
+            FileName = GetVersonifyPath(),
+            Arguments = appendDebug ? $"{v} --debug --trace=Verbose" : v,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
         if (!string.IsNullOrEmpty(workingDirectory)) {
             psi.WorkingDirectory = workingDirectory;
         }

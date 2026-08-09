@@ -12,7 +12,7 @@ using Plisky.Versioning;
 internal class Program {
     public static VersonifyOptions options = new();
     private const string ALL_DIGITS_WILDCARD = "*";
-    private static Bilge b = new Bilge();
+    private static Bilge b = new();
     private static string? passiveOutputValue;
     private static VersionStorage? storage;
     private static CompleteVersion? versionerUsed;
@@ -219,7 +219,7 @@ internal class Program {
 
         string? verPendPattern = options.QuickValue;
 
-        Console.WriteLine($"Apply Delayed Increment. [{ver.ToString()}] using [{verPendPattern}]");
+        Console.WriteLine($"Apply Delayed Increment. [{ver}] using [{verPendPattern}]");
         ver.Version.ApplyPendingVersion(verPendPattern!);
 
         if (!options.DryRunOnly) {
@@ -351,9 +351,9 @@ internal class Program {
                 return 0;
             }
 
-            var parseResult = CommandLineParser.Parse(args);
+            var (success, options) = CommandLineParser.Parse(args);
 
-            if (parseResult.Options.Debug) {
+            if (options.Debug) {
                 Console.WriteLine("Debug Mode, Command Line Arguments:");
 
                 for (int n = 0; n < args.Length; n++) {
@@ -361,11 +361,10 @@ internal class Program {
                 }
             }
 
-            if (!parseResult.Success) {
+            if (!success) {
                 WriteErrorConditions();
                 return 1;
             }
-            options = parseResult.Options;
 
             if (options.GetMdHelp) {
                 return await WriteMarkdownHelpFileAsync();

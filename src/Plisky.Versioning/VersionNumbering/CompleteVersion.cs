@@ -7,7 +7,7 @@ using System.Text;
 using Plisky.Diagnostics;
 
 public class CompleteVersion {
-    protected Bilge b = new Bilge("Plisky-Versioning");
+    protected Bilge b = new("Plisky-Versioning");
 
     private const string ALLDIGITSWILDCARD = "*";
     private const string DEFAULTDIGITGROUP = "default";
@@ -37,7 +37,7 @@ public class CompleteVersion {
         if (separators.Length == 0) {
             b.Verbose.Log("No separator provided, using default '.'");
             // This is kept as just . for backward compatibility.  It used to only understand . character as a separator.
-            separators = new char[] { '.' };
+            separators = ['.'];
         }
 
         var digits = new List<VersionUnit>();
@@ -49,28 +49,28 @@ public class CompleteVersion {
             string prefix = string.Empty;
 
             while (nextIndex >= 0) {
-                string nextValue = remainingString.Slice(currentOffset, nextIndex - currentOffset).ToString();
+                string nextValue = remainingString[currentOffset..nextIndex].ToString();
                 digits.Add(new VersionUnit(nextValue, prefix, DigitIncrementBehaviour.Fixed));
 
                 prefix = remainingString[nextIndex].ToString();
-                remainingString = remainingString.Slice(nextIndex + 1);
+                remainingString = remainingString[(nextIndex + 1)..];
                 nextIndex = remainingString.IndexOfAny(separators);
             }
 
             if (remainingString.Length > 0) {
-                digits.Add(new VersionUnit(remainingString.Slice(currentOffset).ToString(), prefix, DigitIncrementBehaviour.Fixed));
+                digits.Add(new VersionUnit(remainingString[currentOffset..].ToString(), prefix, DigitIncrementBehaviour.Fixed));
             }
 
-            Digits = digits.ToArray();
+            Digits = [.. digits];
         } else {
             Digits = new VersionUnit[1];
             Digits[0] = new VersionUnit(initialValue);
         }
     }
 
-    public VersionUnit[] Digits { get; set; } = Array.Empty<VersionUnit>();
+    public VersionUnit[] Digits { get; set; } = [];
 
-    public Dictionary<FileUpdateType, DisplayType> DisplayTypes { get; set; } = new Dictionary<FileUpdateType, DisplayType>();
+    public Dictionary<FileUpdateType, DisplayType> DisplayTypes { get; set; } = [];
 
     public bool IsDefault { get; set; }
 
@@ -202,7 +202,7 @@ public class CompleteVersion {
             }
         }
 
-        return matchingIndices.ToArray();
+        return [.. matchingIndices];
     }
 
     public DisplayType GetDisplayType(FileUpdateType fut, DisplayType dt = DisplayType.Default) {

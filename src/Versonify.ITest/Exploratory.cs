@@ -6,7 +6,7 @@ using Shouldly;
 namespace Versonify.ITest;
 
 public class Exploratory {
-    protected Bilge b = new Bilge("Versonify-ITest");
+    protected Bilge b = new("Versonify-ITest");
     protected TestHelper th;
     protected UnitTestHelper uth;
 
@@ -144,8 +144,8 @@ public class Exploratory {
         Directory.CreateDirectory(pth);
 
         string versionStore = Path.Combine(pth, "vstore.delme");
-        var output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
-        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con -z");
+        _ = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
+        var output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con -z");
 
         output.Item1.ShouldContain("WARNING - No files found to update.");
         output.Item2.ShouldBe(0, "Failure to update files should return error.");
@@ -159,8 +159,8 @@ public class Exploratory {
         Directory.CreateDirectory(pth);
 
         string versionStore = Path.Combine(pth, "vstore.delme");
-        var output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
-        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con");
+        _ = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
+        var output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con");
 
         output.Item1.ShouldContain("WARNING - No files found to update.");
         output.Item2.ShouldNotBe(0, "Failure to update files should return error.");
@@ -238,8 +238,8 @@ public class Exploratory {
                 output = await th.ExecuteVersonify($"-Command=Passive -v={releaseVersionStore}");
 
                 const string LOADED_MARKER = "Loaded [";
-                string versionNumber = output.Substring(output.IndexOf(LOADED_MARKER) + LOADED_MARKER.Length);
-                versionNumber = versionNumber.Substring(0, versionNumber.IndexOf("]"));
+                string versionNumber = output[(output.IndexOf(LOADED_MARKER) + LOADED_MARKER.Length)..];
+                versionNumber = versionNumber[..versionNumber.IndexOf(']')];
                 versionNumber.ShouldBe("2.0.1");
 
                 // Take the first three digits of the release version and use them in the pre-release version.
@@ -266,7 +266,7 @@ public class Exploratory {
         string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string vStoreFilePath = uth.GetTestDataFile(resName);
         if (!isVstoreValid) {
-            vStoreFilePath = vStoreFilePath + ".invalid";
+            vStoreFilePath += ".invalid";
         }
 
         string output = await th.ExecuteVersonify($"{command} -v={vStoreFilePath}", appendDebug: false);

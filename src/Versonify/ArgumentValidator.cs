@@ -6,9 +6,7 @@ using Plisky.CodeCraft;
 using Plisky.Versioning;
 
 public static class ArgumentValidator {
-#if DEBUG
     public const string TEST_VALID_ARGUMENT = "###VALID###";
-#endif
 
     public static bool ShouldSetCompleteVersionFromString(string[] digitsToUpdate, string? valueToSet) {
         if (string.IsNullOrWhiteSpace(valueToSet)) {

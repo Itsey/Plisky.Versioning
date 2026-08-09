@@ -3,7 +3,7 @@
 using Plisky.Diagnostics;
 
 public abstract class VersionStorage {
-    protected Bilge b = new Bilge("Plisky-Versioning");
+    protected Bilge b = new("Plisky-Versioning");
 
     /// <summary>
     /// Manages the storage of version numbers, allowing them to be saved and loaded.
@@ -29,7 +29,7 @@ public abstract class VersionStorage {
     public static VersionStorage CreateFromInitialisation(string vpv) {
         VersionStorage result;
 
-        if (vpv.Length > 7 && vpv.Substring(0, 7).ToUpperInvariant().StartsWith("[NEXUS]")) {
+        if (vpv.Length > 7 && vpv.StartsWith("[NEXUS]", System.StringComparison.InvariantCultureIgnoreCase)) {
             result = new NexusVersionPersister(vpv);
         } else {
             result = new JsonVersionPersister(vpv);
@@ -59,9 +59,7 @@ public abstract class VersionStorage {
         if (!IsValid) { return result; }
 
         result = ActualLoad();
-        if (result == null) {
-            result = CompleteVersion.GetDefault();
-        }
+        result ??= CompleteVersion.GetDefault();
         return result;
     }
 

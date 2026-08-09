@@ -6,10 +6,10 @@ using Shouldly;
 namespace Versonify.ITest;
 
 public class KebabCaseOptions : IDisposable {
-    protected Bilge b = new Bilge("Versonify-ITest");
+    protected Bilge b = new("Versonify-ITest");
     protected TestHelper sut;
     protected UnitTestHelper uth;
-    private readonly List<string> tempDirectories = new();
+    private readonly List<string> tempDirectories = [];
 
     public KebabCaseOptions() {
         b.Info.Flow();
@@ -181,7 +181,7 @@ public class KebabCaseOptions : IDisposable {
 
     private static int GetWarningLineCount(string stderr, string expectedWarning) {
         int result = 0;
-        string[] lines = stderr.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        string[] lines = stderr.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
         foreach (string line in lines) {
             if (line.Equals(expectedWarning, StringComparison.OrdinalIgnoreCase)) {
                 result++;

@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Xml.Linq;
 
-public class DryRunVersionFileUpdater(CompleteVersion cv, IHookVersioningChanges? actions = null) : VersionFileUpdater(cv, actions) {
+public class DryRunVersionFileUpdater(CompleteVersion cv) : VersionFileUpdater(cv) {
 
     protected override void UpdateCSFileWithAttribute(string fileName, string targetAttribute, string versionValue) {
 
@@ -63,8 +63,8 @@ public class DryRunVersionFileUpdater(CompleteVersion cv, IHookVersioningChanges
         } else if (!inney.Contains("XXX-VERSION") && !inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
             response = "WARNING - No Versioning or Release Name Identifier Found, no updates possible";
         } else {
-            response = "Replacing XXX-VERSION* with " + GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay);
-            b.Info.Log($"DRYRUN - Would have updated XXX-VERSION* with {GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay)}");
+            response = "Replacing XXX-VERSION* with " + VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay);
+            b.Info.Log($"DRYRUN - Would have updated XXX-VERSION* with {VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay)}");
         }
         return response;
     }

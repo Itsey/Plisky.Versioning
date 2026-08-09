@@ -5,7 +5,7 @@ using Shouldly;
 namespace Versonify.ITest;
 
 public class RegressionTests {
-    protected Bilge b = new Bilge("Versonify-ITest");
+    protected Bilge b = new("Versonify-ITest");
     protected TestHelper th;
     protected UnitTestHelper uth;
 
