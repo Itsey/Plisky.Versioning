@@ -137,113 +137,6 @@ public class DigitGroupFeatureTests : IDisposable {
         output.Item1.ShouldContain("Loaded [2.3-Alpha.1]");
     }
 
-    [Theory]
-    [InlineData("XXX-VERSION-XXX", "2.3-Alpha.1")]
-    [InlineData("XXX-VERSIONT-XXX", "2.3-Alpha")]
-    [InlineData("XXX-VERSION3-XXX", "2.3.0")]
-    [InlineData("XXX-VERSION2-XXX", "2.3")]
-    [InlineData("XXX-VERSION4-XXX", "2.3.0.0")]
-    [InlineData("XXX-VERSIONF-XXX", "2.3-Alpha.1")]
-    public async Task Updatefiles_textfile_with_pre_release_replaces_expected_literal_tokens(string marker, string expected) {
-        string tempDir = CreateTemporaryDirectory();
-        string store = await CreateVersionStore(tempDir, "2.3.0.0");
-
-        var output = await sut.ExecuteVersonify($"set --version-source={store} -D=2 -Q=Alpha --pre-release");
-        output.Item2.ShouldBe(0);
-        output = await sut.ExecuteVersonify($"set --version-source={store} -D=3 -Q=1 --pre-release");
-        output.Item2.ShouldBe(0);
-        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=2 -Q=-");
-        output.Item2.ShouldBe(0);
-        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=3 -Q=.");
-        output.Item2.ShouldBe(0);
-
-        string targetTextFile = Path.Combine(tempDir, "token-target.txt");
-        File.WriteAllText(targetTextFile, $"Value: {marker}");
-
-        output = await sut.ExecuteVersonify($"updatefiles --version-source={store} --root={tempDir} --pre-release --min-match={targetTextFile}|TextFile");
-        output.Item2.ShouldBe(0);
-
-        string updatedText = File.ReadAllText(targetTextFile);
-        updatedText.ShouldBe($"Value: {expected}");
-    }
-
-    [Theory]
-    [InlineData("XXX-VERSION-XXX", "2.3")]
-    [InlineData("XXX-VERSIONT-XXX", "2.3")]
-    [InlineData("XXX-VERSION3-XXX", "2.3.0")]
-    [InlineData("XXX-VERSION2-XXX", "2.3")]
-    [InlineData("XXX-VERSION4-XXX", "2.3.0.0")]
-    [InlineData("XXX-VERSIONF-XXX", "2.3")]
-    public async Task Updatefiles_textfile_without_pre_release_replaces_expected_literal_tokens(string marker, string expected) {
-        string tempDir = CreateTemporaryDirectory();
-        string store = await CreateVersionStore(tempDir, "2.3.0.0");
-
-        var output = await sut.ExecuteVersonify($"set --version-source={store} -D=2 -Q=Alpha --pre-release");
-        output.Item2.ShouldBe(0);
-        output = await sut.ExecuteVersonify($"set --version-source={store} -D=3 -Q=1 --pre-release");
-        output.Item2.ShouldBe(0);
-        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=2 -Q=-");
-        output.Item2.ShouldBe(0);
-        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=3 -Q=.");
-        output.Item2.ShouldBe(0);
-
-        string targetTextFile = Path.Combine(tempDir, "token-target.txt");
-        File.WriteAllText(targetTextFile, $"Value: {marker}");
-
-        output = await sut.ExecuteVersonify($"updatefiles --version-source={store} --root={tempDir} --min-match={targetTextFile}|TextFile");
-        output.Item2.ShouldBe(0);
-
-        string updatedText = File.ReadAllText(targetTextFile);
-        updatedText.ShouldBe($"Value: {expected}");
-    }
-
-    [Fact]
-    public async Task Updatefiles_textfile_without_group_flags_uses_default_group_only() {
-        string tempDir = CreateTemporaryDirectory();
-        string store = await CreateVersionStore(tempDir, "2.3.0.0");
-
-        var output = await sut.ExecuteVersonify($"set --version-source={store} -D=2 -Q=Alpha --pre-release");
-        output.Item2.ShouldBe(0);
-        output = await sut.ExecuteVersonify($"set --version-source={store} -D=3 -Q=1 --pre-release");
-        output.Item2.ShouldBe(0);
-        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=2 -Q=-");
-        output.Item2.ShouldBe(0);
-        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=3 -Q=.");
-        output.Item2.ShouldBe(0);
-
-        string targetTextFile = Path.Combine(tempDir, "token-target-default-only.txt");
-        File.WriteAllText(targetTextFile, "Value: XXX-VERSIONF-XXX");
-
-        output = await sut.ExecuteVersonify($"updatefiles --version-source={store} --root={tempDir} --min-match={targetTextFile}|TextFile");
-        output.Item2.ShouldBe(0);
-
-        string updatedText = File.ReadAllText(targetTextFile);
-        updatedText.ShouldBe("Value: 2.3");
-    }
-
-    [Fact]
-    public async Task Updatefiles_textfile_with_digit_group_uses_only_requested_group() {
-        string tempDir = CreateTemporaryDirectory();
-        string store = await CreateVersionStore(tempDir, "2.3.0.0");
-
-        var output = await sut.ExecuteVersonify($"set --version-source={store} -D=2 -Q=Alpha --digit-group=prA");
-        output.Item2.ShouldBe(0);
-        output = await sut.ExecuteVersonify($"set --version-source={store} -D=3 -Q=1 --digit-group=prB");
-        output.Item2.ShouldBe(0);
-        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=2 -Q=-");
-        output.Item2.ShouldBe(0);
-        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=3 -Q=.");
-        output.Item2.ShouldBe(0);
-
-        string targetTextFile = Path.Combine(tempDir, "token-target-group-filter.txt");
-        File.WriteAllText(targetTextFile, "Value: XXX-VERSION-XXX");
-
-        output = await sut.ExecuteVersonify($"updatefiles --version-source={store} --root={tempDir} --digit-group=prA --min-match={targetTextFile}|TextFile");
-        output.Item2.ShouldBe(0);
-
-        string updatedText = File.ReadAllText(targetTextFile);
-        updatedText.ShouldBe("Value: -Alpha");
-    }
     [Fact]
     public async Task Set_digit_group_default_resets_to_unnamed_group() {
         string tempDir = CreateTemporaryDirectory();
@@ -318,6 +211,114 @@ public class DigitGroupFeatureTests : IDisposable {
         output = await sut.ExecuteVersonify($"set -V={store} -Q=9.8.7.6 --pre-release");
         output.Item1.ShouldContain("Error >> The Set command requires at least one digit to update. Use -D=<digit> or -D=*.");
         output.Item2.ShouldNotBe(0);
+    }
+
+    [Fact]
+    public async Task Updatefiles_textfile_with_digit_group_uses_only_requested_group() {
+        string tempDir = CreateTemporaryDirectory();
+        string store = await CreateVersionStore(tempDir, "2.3.0.0");
+
+        var output = await sut.ExecuteVersonify($"set --version-source={store} -D=2 -Q=Alpha --digit-group=prA");
+        output.Item2.ShouldBe(0);
+        output = await sut.ExecuteVersonify($"set --version-source={store} -D=3 -Q=1 --digit-group=prB");
+        output.Item2.ShouldBe(0);
+        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=2 -Q=-");
+        output.Item2.ShouldBe(0);
+        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=3 -Q=.");
+        output.Item2.ShouldBe(0);
+
+        string targetTextFile = Path.Combine(tempDir, "token-target-group-filter.txt");
+        File.WriteAllText(targetTextFile, "Value: XXX-VERSION-XXX");
+
+        output = await sut.ExecuteVersonify($"updatefiles --version-source={store} --root={tempDir} --digit-group=prA --min-match={targetTextFile}|TextFile");
+        output.Item2.ShouldBe(0);
+
+        string updatedText = File.ReadAllText(targetTextFile);
+        updatedText.ShouldBe("Value: -Alpha");
+    }
+
+    [Theory]
+    [InlineData("XXX-VERSION-XXX", "2.3-Alpha.1")]
+    [InlineData("XXX-VERSIONT-XXX", "2.3-Alpha")]
+    [InlineData("XXX-VERSION3-XXX", "2.3.0")]
+    [InlineData("XXX-VERSION2-XXX", "2.3")]
+    [InlineData("XXX-VERSION4-XXX", "2.3.0.0")]
+    [InlineData("XXX-VERSIONF-XXX", "2.3-Alpha.1")]
+    public async Task Updatefiles_textfile_with_pre_release_replaces_expected_literal_tokens(string marker, string expected) {
+        string tempDir = CreateTemporaryDirectory();
+        string store = await CreateVersionStore(tempDir, "2.3.0.0");
+
+        var output = await sut.ExecuteVersonify($"set --version-source={store} -D=2 -Q=Alpha --pre-release");
+        output.Item2.ShouldBe(0);
+        output = await sut.ExecuteVersonify($"set --version-source={store} -D=3 -Q=1 --pre-release");
+        output.Item2.ShouldBe(0);
+        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=2 -Q=-");
+        output.Item2.ShouldBe(0);
+        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=3 -Q=.");
+        output.Item2.ShouldBe(0);
+
+        string targetTextFile = Path.Combine(tempDir, "token-target.txt");
+        File.WriteAllText(targetTextFile, $"Value: {marker}");
+
+        output = await sut.ExecuteVersonify($"updatefiles --version-source={store} --root={tempDir} --pre-release --min-match={targetTextFile}|TextFile");
+        output.Item2.ShouldBe(0);
+
+        string updatedText = File.ReadAllText(targetTextFile);
+        updatedText.ShouldBe($"Value: {expected}");
+    }
+
+    [Fact]
+    public async Task Updatefiles_textfile_without_group_flags_uses_default_group_only() {
+        string tempDir = CreateTemporaryDirectory();
+        string store = await CreateVersionStore(tempDir, "2.3.0.0");
+
+        var output = await sut.ExecuteVersonify($"set --version-source={store} -D=2 -Q=Alpha --pre-release");
+        output.Item2.ShouldBe(0);
+        output = await sut.ExecuteVersonify($"set --version-source={store} -D=3 -Q=1 --pre-release");
+        output.Item2.ShouldBe(0);
+        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=2 -Q=-");
+        output.Item2.ShouldBe(0);
+        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=3 -Q=.");
+        output.Item2.ShouldBe(0);
+
+        string targetTextFile = Path.Combine(tempDir, "token-target-default-only.txt");
+        File.WriteAllText(targetTextFile, "Value: XXX-VERSIONF-XXX");
+
+        output = await sut.ExecuteVersonify($"updatefiles --version-source={store} --root={tempDir} --min-match={targetTextFile}|TextFile");
+        output.Item2.ShouldBe(0);
+
+        string updatedText = File.ReadAllText(targetTextFile);
+        updatedText.ShouldBe("Value: 2.3");
+    }
+
+    [Theory]
+    [InlineData("XXX-VERSION-XXX", "2.3")]
+    [InlineData("XXX-VERSIONT-XXX", "2.3")]
+    [InlineData("XXX-VERSION3-XXX", "2.3.0")]
+    [InlineData("XXX-VERSION2-XXX", "2.3")]
+    [InlineData("XXX-VERSION4-XXX", "2.3.0.0")]
+    [InlineData("XXX-VERSIONF-XXX", "2.3")]
+    public async Task Updatefiles_textfile_without_pre_release_replaces_expected_literal_tokens(string marker, string expected) {
+        string tempDir = CreateTemporaryDirectory();
+        string store = await CreateVersionStore(tempDir, "2.3.0.0");
+
+        var output = await sut.ExecuteVersonify($"set --version-source={store} -D=2 -Q=Alpha --pre-release");
+        output.Item2.ShouldBe(0);
+        output = await sut.ExecuteVersonify($"set --version-source={store} -D=3 -Q=1 --pre-release");
+        output.Item2.ShouldBe(0);
+        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=2 -Q=-");
+        output.Item2.ShouldBe(0);
+        output = await sut.ExecuteVersonify($"prefix --version-source={store} -D=3 -Q=.");
+        output.Item2.ShouldBe(0);
+
+        string targetTextFile = Path.Combine(tempDir, "token-target.txt");
+        File.WriteAllText(targetTextFile, $"Value: {marker}");
+
+        output = await sut.ExecuteVersonify($"updatefiles --version-source={store} --root={tempDir} --min-match={targetTextFile}|TextFile");
+        output.Item2.ShouldBe(0);
+
+        string updatedText = File.ReadAllText(targetTextFile);
+        updatedText.ShouldBe($"Value: {expected}");
     }
 
     private static string? ReadDigitGroupName(string versionStorePath, int digitIndex) {

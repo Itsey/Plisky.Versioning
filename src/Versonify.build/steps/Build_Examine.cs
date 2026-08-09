@@ -9,9 +9,6 @@ using Serilog;
 
 public partial class Build : NukeBuild {
 
-    [NuGetPackage(packageId: "dotnet-stryker", packageExecutable: "Stryker.CLI.dll", Framework = "net8.0")]
-    protected Tool? StrykerNet { get; set; }
-
     // Examine is the well known step for post compilation, pre package and deploy. Arrange Construct [Examine] Package Release Test
     public Target ExamineStep => _ => _
         .After(ConstructStep)
@@ -21,6 +18,10 @@ public partial class Build : NukeBuild {
         .Executes(() => {
             Log.Information("--> Examine Step <-- ");
         });
+
+    [NuGetPackage(packageId: "dotnet-stryker", packageExecutable: "Stryker.CLI.dll", Framework = "net8.0")]
+    protected Tool? StrykerNet { get; set; }
+
     private Target ConfigureAnalysisMode => _ => _
     .After(Initialise)
     .Before(UnitTest, MutationAnalysis)

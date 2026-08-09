@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Linq;
-using Nuke.Common;
-using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Tooling;
-using Serilog;
 using System.IO;
+using System.Linq;
 
 public partial class Build : NukeBuild {
-
-    [NuGetPackage(packageId: "dotnet-stryker", packageExecutable: "Stryker.CLI.dll", Framework = "net8.0")]
-    protected Tool? StrykerNet { get; set; }
 
     // Examine is the well known step for post compilation, pre package and deploy. Arrange Construct [Examine] Package Release Test
     public Target ExamineStep => _ => _
@@ -20,6 +13,9 @@ public partial class Build : NukeBuild {
         .Executes(() => {
             Log.Information("--> Examine Step <-- ");
         });
+
+    [NuGetPackage(packageId: "dotnet-stryker", packageExecutable: "Stryker.CLI.dll", Framework = "net8.0")]
+    protected Tool? StrykerNet { get; set; }
 
     private Target MutationAnalysis => _ => _
         .After(UnitTest)

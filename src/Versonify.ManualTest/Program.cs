@@ -2,7 +2,30 @@ using Plisky.Diagnostics;
 using Plisky.Diagnostics.Listeners;
 
 namespace Versonify.ManualTest {
+
     internal class Program {
+
+        private static void Fail(bool doFail, string why) {
+            if (doFail) {
+                Console.WriteLine(why);
+                throw new Exception(why);
+            }
+        }
+
+        private static bool GetAndExecutePrompt(string filenameToken, VerifyablePrompt bp) {
+            bp.VersionStore = filenameToken;
+            string prompt = bp.Prompt;
+
+            Clipboard.SetText(prompt);
+            if (DialogResult.Cancel == MessageBox.Show($"Execute AI Prompt {bp.Name}", "Versonify Skill", MessageBoxButtons.OKCancel)) {
+                throw new OperationCanceledException("Aborted by user");
+            }
+
+            bool result = File.Exists(filenameToken);
+            Console.WriteLine($"Expected - Vstore File Exists {result}");
+
+            return result;
+        }
 
         [STAThread]
         static void Main(string[] args) {
@@ -31,29 +54,6 @@ namespace Versonify.ManualTest {
                 }
             } finally {
                 File.Delete(temporaryVstore);
-            }
-
-        }
-
-        private static bool GetAndExecutePrompt(string filenameToken, VerifyablePrompt bp) {
-            bp.VersionStore = filenameToken;
-            string prompt = bp.Prompt;
-
-            Clipboard.SetText(prompt);
-            if (DialogResult.Cancel == MessageBox.Show($"Execute AI Prompt {bp.Name}", "Versonify Skill", MessageBoxButtons.OKCancel)) {
-                throw new OperationCanceledException("Aborted by user");
-            }
-
-            bool result = File.Exists(filenameToken);
-            Console.WriteLine($"Expected - Vstore File Exists {result}");
-
-            return result;
-        }
-
-        private static void Fail(bool doFail, string why) {
-            if (doFail) {
-                Console.WriteLine(why);
-                throw new Exception(why);
             }
         }
     }

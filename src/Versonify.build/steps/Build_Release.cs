@@ -6,6 +6,37 @@ using Nuke.Common.Tools.NuGet;
 using Serilog;
 
 public partial class Build : NukeBuild {
+
+    public Target ApplyGitTag => _ => _
+            .After(ReleaseStep)
+            .DependsOn(Initialise)
+            .Before(Wrapup)
+            .Executes(() => {
+                if (!IsSucceeding) {
+                    return;
+                }
+                if (string.IsNullOrEmpty(FullVersionNumber)) {
+                    Log.Information("No version number, skipping Tag");
+                    return;
+                }
+                if (GitRepository == null) {
+                    Log.Information("No Git repository found, skipping Tag");
+                    return;
+                }
+                Log.Information("Applying Git Tag");
+
+                try {
+                    var (authorName, authorEmail) = GetLastCommitAuthor();
+                    ConfigureGitIdentity(authorName, authorEmail);
+                    CreateAndPushTag(FullVersionNumber);
+
+                    Log.Information($"Successfully created and pushed tag '{FullVersionNumber}'");
+                } catch (Exception ex) {
+                    Log.Error($"Failed to apply git tag: {ex.Message}");
+                    throw;
+                }
+            });
+
     // Well known step for releasing into the selected environment.  Arrange Construct Examine Package [Release] Test
     public Target ReleaseStep => _ => _
       .DependsOn(Initialise, PackageStep)
@@ -13,52 +44,11 @@ public partial class Build : NukeBuild {
       .Triggers(ApplyGitTag)
       .After(PackageStep)
       .Executes(() => {
-
           NuGetTasks.NuGetPush(s => s
            .SetTargetPath(settings!.ArtifactsDirectory + "\\nuget\\Plisky.Versonify*.nupkg")
            .SetSource("https://api.nuget.org/v3/index.json")
            .SetApiKey(Environment.GetEnvironmentVariable("PLISKY_PUBLISH_KEY")));
       });
-
-    public Target ApplyGitTag => _ => _
-        .After(ReleaseStep)
-        .DependsOn(Initialise)
-        .Before(Wrapup)
-        .Executes(() => {
-            if (!IsSucceeding) {
-                return;
-            }
-            if (string.IsNullOrEmpty(FullVersionNumber)) {
-                Log.Information("No version number, skipping Tag");
-                return;
-            }
-            if (GitRepository == null) {
-                Log.Information("No Git repository found, skipping Tag");
-                return;
-            }
-            Log.Information("Applying Git Tag");
-
-            try {
-                var (authorName, authorEmail) = GetLastCommitAuthor();
-                ConfigureGitIdentity(authorName, authorEmail);
-                CreateAndPushTag(FullVersionNumber);
-
-                Log.Information($"Successfully created and pushed tag '{FullVersionNumber}'");
-            } catch (Exception ex) {
-                Log.Error($"Failed to apply git tag: {ex.Message}");
-                throw;
-            }
-        });
-
-    private (string Name, string Email) GetLastCommitAuthor() {
-        string name = GitTasks.Git("log -1 --pretty=format:%an").First().Text;
-        string email = GitTasks.Git("log -1 --pretty=format:%ae").First().Text;
-
-        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email)) {
-            throw new InvalidOperationException("Unable to retrieve commit author information");
-        }
-        return (name, email);
-    }
 
     private void ConfigureGitIdentity(string name, string email) {
         GitTasks.Git($"config user.name \"{name}\"");
@@ -69,5 +59,14 @@ public partial class Build : NukeBuild {
         GitTasks.Git($"tag -a {version} -m \"Release v{version}\"");
         GitTasks.Git($"push origin {version}");
     }
-}
 
+    private (string Name, string Email) GetLastCommitAuthor() {
+        string name = GitTasks.Git("log -1 --pretty=format:%an").First().Text;
+        string email = GitTasks.Git("log -1 --pretty=format:%ae").First().Text;
+
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(email)) {
+            throw new InvalidOperationException("Unable to retrieve commit author information");
+        }
+        return (name, email);
+    }
+}

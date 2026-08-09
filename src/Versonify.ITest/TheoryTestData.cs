@@ -3,6 +3,7 @@ using System.Collections;
 namespace Versonify.ITest;
 
 public class CanonicalLongOptionsTestData : IEnumerable<object[]> {
+
     private readonly List<object[]> data = new() {
         new object[] { Clargs.Build(new(ArgNames.Command, "passive"), new(ArgNames.VersionSource, "{VS}")) },
         new object[] { Clargs.Build(new(ArgNames.Unknown, "passive"), new(ArgNames.VersionSource, "{VS}"), new(ArgNames.Debug, string.Empty)) },
@@ -23,5 +24,6 @@ public class CanonicalLongOptionsTestData : IEnumerable<object[]> {
     };
 
     public IEnumerator<object[]> GetEnumerator() => data.GetEnumerator();
+
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

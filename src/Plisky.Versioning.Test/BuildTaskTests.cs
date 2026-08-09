@@ -7,8 +7,8 @@ namespace Plisky.CodeCraft.Test;
 
 public class BuildTaskTests {
     private readonly Bilge b = new("BuildTaskTests");
-    private readonly UnitTestHelper uth;
     private readonly TestSupport ts;
+    private readonly UnitTestHelper uth;
 
     public BuildTaskTests() {
         uth = new UnitTestHelper();
@@ -29,19 +29,6 @@ public class BuildTaskTests {
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void Set_valid_ruletype_works() {
-        var v = ts.GetDefaultVersion();
-        var sut = new TestableVersioningTask();
-        sut.SetVersionNumber(v);
-        string verItemsSimple = "**/assemblyinfo.cs!ASSEMBLY";
-        sut.SetAllVersioningItems(verItemsSimple);
-
-        Assert.True(sut.IsThisMinimatchIncluded("**/assemblyinfo.cs"), "The minimatch was not included");
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
     public void Set_multiple_valid_ruletypes_works() {
         var v = ts.GetDefaultVersion();
         var sut = new TestableVersioningTask();
@@ -55,4 +42,16 @@ public class BuildTaskTests {
         Assert.True(sut.IsThisMinimatchIncluded("yyzzxxbannana"), "The third minimatch was not included");
     }
 
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Set_valid_ruletype_works() {
+        var v = ts.GetDefaultVersion();
+        var sut = new TestableVersioningTask();
+        sut.SetVersionNumber(v);
+        string verItemsSimple = "**/assemblyinfo.cs!ASSEMBLY";
+        sut.SetAllVersioningItems(verItemsSimple);
+
+        Assert.True(sut.IsThisMinimatchIncluded("**/assemblyinfo.cs"), "The minimatch was not included");
+    }
 }

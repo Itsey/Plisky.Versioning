@@ -1,6 +1,5 @@
-﻿
+﻿namespace Plisky.CodeCraft;
 
-namespace Plisky.CodeCraft;
 using System;
 
 // If you add here also check the methods called:  CompleteVersion

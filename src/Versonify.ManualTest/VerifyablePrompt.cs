@@ -1,10 +1,13 @@
 using Plisky.Diagnostics;
 
 namespace Versonify.ManualTest {
+
     public class VerifyablePrompt {
         protected Bilge b = new Bilge("VerifyablePrompt");
-        public string Name { get; set; } = string.Empty;
         private string promptText = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public bool PrefixWithVersonify { get; set; }
+
         public string Prompt {
             get {
                 string baseText = promptText;
@@ -20,11 +23,10 @@ namespace Versonify.ManualTest {
                 promptText = value;
             }
         }
-        public Func<string, bool> Verify { get; set; } = (_) => false;
-        public string VersionStore { get; set; } = string.Empty;
-        public bool PrefixWithVersonify { get; set; }
 
         public List<VerifyablePrompt> Prompts { get; } = new List<VerifyablePrompt>();
+        public Func<string, bool> Verify { get; set; } = (_) => false;
+        public string VersionStore { get; set; } = string.Empty;
 
         public void AddPrompt(VerifyablePrompt prompt) {
             Prompts.Add(prompt);
@@ -52,7 +54,6 @@ namespace Versonify.ManualTest {
 
                     return true;
                 }
-
             });
             AddPrompt(new VerifyablePrompt {
                 Name = "3-QueueVersion",

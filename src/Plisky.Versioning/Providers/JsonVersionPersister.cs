@@ -5,6 +5,17 @@ using System.Text.Json;
 
 public class JsonVersionPersister : VersionStorage {
 
+    public JsonVersionPersister(string initialisationValue) {
+        b.Info.Flow();
+        InitValue = new VersionStorageOptions() {
+            InitialisationString = initialisationValue
+        };
+
+        if (!IsValidFileName(InitValue.InitialisationString)) {
+            StorageFailureMessage = $"Error >> The storage value passed as -v could not be resolved as a valid network or disk path.";
+        }
+    }
+
     public bool IsValidFileName(string fileName) {
         b.Info.Flow(fileName);
 
@@ -17,15 +28,11 @@ public class JsonVersionPersister : VersionStorage {
         return true;
     }
 
-    public JsonVersionPersister(string initialisationValue) {
-        b.Info.Flow();
-        InitValue = new VersionStorageOptions() {
-            InitialisationString = initialisationValue
-        };
-
-        if (!IsValidFileName(InitValue.InitialisationString)) {
-            StorageFailureMessage = $"Error >> The storage value passed as -v could not be resolved as a valid network or disk path.";
+    protected override bool ActualDoesVstoreExist(VersionStorageOptions? opts) {
+        if (opts == null || string.IsNullOrWhiteSpace(opts.InitialisationString)) {
+            return false;
         }
+        return File.Exists(opts.InitialisationString);
     }
 
     protected override CompleteVersion ActualLoad() {
@@ -48,12 +55,5 @@ public class JsonVersionPersister : VersionStorage {
         if (InitValue != null) {
             File.WriteAllText(InitValue.InitialisationString, val);
         }
-    }
-
-    protected override bool ActualDoesVstoreExist(VersionStorageOptions? opts) {
-        if (opts == null || string.IsNullOrWhiteSpace(opts.InitialisationString)) {
-            return false;
-        }
-        return File.Exists(opts.InitialisationString);
     }
 }

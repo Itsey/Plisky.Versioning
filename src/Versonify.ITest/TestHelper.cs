@@ -5,12 +5,6 @@ using Shouldly;
 
 namespace Versonify.ITest;
 
-internal sealed class VersonifyExecutionResult {
-    public int ExitCode { get; init; }
-    public string StdErr { get; init; } = string.Empty;
-    public string StdOut { get; init; } = string.Empty;
-}
-
 internal sealed class VersonifyExecutionOutput {
     public string Item1 { get; init; } = string.Empty;
     public int Item2 { get; init; }
@@ -18,6 +12,12 @@ internal sealed class VersonifyExecutionOutput {
     public static implicit operator string(VersonifyExecutionOutput output) {
         return output.Item1;
     }
+}
+
+internal sealed class VersonifyExecutionResult {
+    public int ExitCode { get; init; }
+    public string StdErr { get; init; } = string.Empty;
+    public string StdOut { get; init; } = string.Empty;
 }
 
 public class TestHelper {

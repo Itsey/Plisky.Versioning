@@ -1,4 +1,5 @@
 ﻿namespace Plisky.Versioning {
+
     public enum VersioningCommand {
         Invalid,
         CreateNewVersion,

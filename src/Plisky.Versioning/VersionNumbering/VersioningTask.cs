@@ -8,21 +8,23 @@ using GlobExpressions;
 using Plisky.Diagnostics;
 
 public class VersioningTask {
+    protected List<string> messageLog = new();
+    protected Dictionary<string, List<FileUpdateType>> pendingUpdates = new();
+    protected VersionStorage? storage;
+    protected CompleteVersion? ver;
     private readonly Bilge b = new();
     private string? persistanceValue;
 
-    protected Dictionary<string, List<FileUpdateType>> pendingUpdates = new();
-    protected CompleteVersion? ver;
-    protected List<string> messageLog = new();
+    public VersioningTask() {
+    }
 
     public delegate void LogEventHandler(object sender, LogEventArgs e);
 
 #pragma warning disable CS0067 // Event is never used
-    public event LogEventHandler? Logger;
-#pragma warning restore CS0067
 
-    protected VersionStorage? storage;
-    public string? VersionString { get; set; }
+    public event LogEventHandler? Logger;
+
+#pragma warning restore CS0067
     public string? BaseSearchDir { get; set; }
 
     public string[] LogMessages {
@@ -31,13 +33,7 @@ public class VersioningTask {
         }
     }
 
-    public VersioningTask() {
-    }
-
-    public void SetPersistanceValue(string pv) {
-        persistanceValue = pv;
-        storage = VersionStorage.CreateFromInitialisation(pv);
-    }
+    public string? VersionString { get; set; }
 
     public void AddUpdateType(string minmatchPattern, FileUpdateType updateToPerform) {
         b.Verbose.Log("Adding Update Type " + minmatchPattern);
@@ -45,34 +41,6 @@ public class VersioningTask {
             pendingUpdates.Add(minmatchPattern, new List<FileUpdateType>());
         }
         pendingUpdates[minmatchPattern].Add(updateToPerform);
-    }
-
-    public void SetAllVersioningItems(string verItemsSimple) {
-        b.Info.Log("SetAllVersioningItems");
-        if (verItemsSimple.Contains(Environment.NewLine)) {
-            // The TFS build agent uses \n not Environment.Newline for its line separator, however unit tests use Environment.Newline
-            // so replacing them with \n to make the two consistent.
-            verItemsSimple = verItemsSimple.Replace(Environment.NewLine, "\n");
-        }
-        string[] allLines = verItemsSimple.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
-        foreach (string ln in allLines) {
-            string[] parts = ln.Split('!');
-            if (parts.Length != 2) {
-                throw new InvalidOperationException($"The versioning item string was in the wrong format [{ln}] ");
-            }
-            var ft = GetFileTypeFromString(parts[1]);
-            AddUpdateType(parts[0], ft);
-        }
-    }
-
-    private FileUpdateType GetFileTypeFromString(string v) {
-        return v switch {
-            "ASSEMBLY" => FileUpdateType.NetAssembly,
-            "INFO" => FileUpdateType.NetInformational,
-            "FILE" => FileUpdateType.NetFile,
-            "WIX" => FileUpdateType.Wix,
-            _ => throw new InvalidOperationException($"The versioning string {v} is not valid."),
-        };
     }
 
     public void IncrementAndUpdateAll() {
@@ -118,17 +86,48 @@ public class VersioningTask {
         VersionString = ver.GetVersionString();
     }
 
+    public void SetAllVersioningItems(string verItemsSimple) {
+        b.Info.Log("SetAllVersioningItems");
+        if (verItemsSimple.Contains(Environment.NewLine)) {
+            // The TFS build agent uses \n not Environment.Newline for its line separator, however unit tests use Environment.Newline
+            // so replacing them with \n to make the two consistent.
+            verItemsSimple = verItemsSimple.Replace(Environment.NewLine, "\n");
+        }
+        string[] allLines = verItemsSimple.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (string ln in allLines) {
+            string[] parts = ln.Split('!');
+            if (parts.Length != 2) {
+                throw new InvalidOperationException($"The versioning item string was in the wrong format [{ln}] ");
+            }
+            var ft = GetFileTypeFromString(parts[1]);
+            AddUpdateType(parts[0], ft);
+        }
+    }
+
+    public void SetPersistanceValue(string pv) {
+        persistanceValue = pv;
+        storage = VersionStorage.CreateFromInitialisation(pv);
+    }
+
+    private FileUpdateType GetFileTypeFromString(string v) {
+        return v switch {
+            "ASSEMBLY" => FileUpdateType.NetAssembly,
+            "INFO" => FileUpdateType.NetInformational,
+            "FILE" => FileUpdateType.NetFile,
+            "WIX" => FileUpdateType.Wix,
+            _ => throw new InvalidOperationException($"The versioning string {v} is not valid."),
+        };
+    }
+
+    private void LoadVersioningComponent() {
+        ValidateStorageSet();
+        ver = storage.GetVersion();
+    }
+
     private void SaveVersioningComponent() {
         ValidateForUpdate();
         ValidateStorageSet();
         storage.Persist(ver);
-    }
-
-    [MemberNotNull(nameof(storage))]
-    private void ValidateStorageSet() {
-        if (storage == null) {
-            throw new InvalidOperationException("The storage component has not been set, please call SetPersistanceValue first.");
-        }
     }
 
     [MemberNotNull(nameof(ver))]
@@ -142,8 +141,10 @@ public class VersioningTask {
         }
     }
 
-    private void LoadVersioningComponent() {
-        ValidateStorageSet();
-        ver = storage.GetVersion();
+    [MemberNotNull(nameof(storage))]
+    private void ValidateStorageSet() {
+        if (storage == null) {
+            throw new InvalidOperationException("The storage component has not been set, please call SetPersistanceValue first.");
+        }
     }
 }

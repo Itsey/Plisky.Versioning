@@ -10,8 +10,8 @@ using Xunit;
 
 public class VersonifyCommandLineTests {
     private readonly Bilge b = new();
-    private readonly UnitTestHelper uth;
     private readonly TestSupport ts;
+    private readonly UnitTestHelper uth;
 
     public VersonifyCommandLineTests() {
         uth = new UnitTestHelper();
@@ -54,6 +54,16 @@ public class VersonifyCommandLineTests {
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
+    public void Output_defaults_to_none() {
+        b.Info.Flow();
+
+        var sut = new VersonifyOptions();
+        Assert.Equal(OutputPossibilities.None, sut.OutputsActive);
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
     public void Output_environment_selected_works() {
         b.Info.Flow();
 
@@ -88,16 +98,6 @@ public class VersonifyCommandLineTests {
                 OutputOptions = "MyIncrediblyWrongArgument"
             };
         });
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Output_defaults_to_none() {
-        b.Info.Flow();
-
-        var sut = new VersonifyOptions();
-        Assert.Equal(OutputPossibilities.None, sut.OutputsActive);
     }
 
     [Fact]

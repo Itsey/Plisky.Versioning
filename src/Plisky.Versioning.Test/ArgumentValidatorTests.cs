@@ -6,6 +6,7 @@ using Versonify;
 using Xunit;
 
 public class ArgumentValidatorTests {
+
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -51,6 +52,18 @@ public class ArgumentValidatorTests {
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
+    public void Validate_when_set_has_full_version_and_no_group_assignment_works() {
+        var sut = CreateSetOptions();
+        sut.QuickValue = "9.8.7.6";
+
+        bool result = ArgumentValidator.ValidateArgumentSettings(sut);
+
+        result.ShouldBeTrue();
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
     public void Validate_when_set_has_pre_release_and_no_digits_fails() {
         var sut = CreateSetOptions();
         sut.QuickValue = "9.8.7.6";
@@ -59,18 +72,6 @@ public class ArgumentValidatorTests {
         bool result = ArgumentValidator.ValidateArgumentSettings(sut);
 
         result.ShouldBeFalse();
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Validate_when_set_has_full_version_and_no_group_assignment_works() {
-        var sut = CreateSetOptions();
-        sut.QuickValue = "9.8.7.6";
-
-        bool result = ArgumentValidator.ValidateArgumentSettings(sut);
-
-        result.ShouldBeTrue();
     }
 
     private static VersonifyOptions CreateSetOptions() {

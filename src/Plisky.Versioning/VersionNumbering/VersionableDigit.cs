@@ -6,11 +6,33 @@ using Plisky.Diagnostics;
 
 internal class VersionableDigit {
     private Bilge b = new Bilge();
-    private int? overrideValue;
-    private int currentValue;
-
     private DigitIncrementBehaviour behaviour = DigitIncrementBehaviour.Fixed;
+    private int currentValue;
+    private int? overrideValue;
     private DigitName position;
+
+    internal VersionableDigit() {
+    }
+
+    internal VersionableDigit(DigitName currentPosition, DigitIncrementBehaviour beh) {
+        Initialise(currentPosition, beh);
+        overrideValue = null;
+    }
+
+    internal VersionableDigit(DigitName currentPosition, DigitIncrementBehaviour beh, int startValue)
+        : this(currentPosition, beh) {
+        DigitValue = startValue;
+    }
+
+    internal DigitIncrementBehaviour Behaviour {
+        get { return behaviour; }
+        set { behaviour = value; }
+    }
+
+    internal DigitName DigitPosition {
+        get { return position; }
+        set { position = value; }
+    }
 
     internal int DigitValue {
         get { return currentValue; }
@@ -21,16 +43,6 @@ internal class VersionableDigit {
                 currentValue = 0;
             }
         }
-    }
-
-    internal DigitName DigitPosition {
-        get { return position; }
-        set { position = value; }
-    }
-
-    internal DigitIncrementBehaviour Behaviour {
-        get { return behaviour; }
-        set { behaviour = value; }
     }
 
     /// <summary>
@@ -73,27 +85,9 @@ internal class VersionableDigit {
         return currentValue.ToString(CultureInfo.CurrentUICulture);
     }
 
-    internal void SetFromString(string value) {
-        // Let the cast explode if wrong values are tried.
-        DigitValue = int.Parse(value, CultureInfo.CurrentUICulture);
-    }
-
     internal void Initialise(DigitName currentPosition, DigitIncrementBehaviour beh) {
         position = currentPosition;
         behaviour = beh;
-    }
-
-    internal VersionableDigit() {
-    }
-
-    internal VersionableDigit(DigitName currentPosition, DigitIncrementBehaviour beh) {
-        Initialise(currentPosition, beh);
-        overrideValue = null;
-    }
-
-    internal VersionableDigit(DigitName currentPosition, DigitIncrementBehaviour beh, int startValue)
-        : this(currentPosition, beh) {
-        DigitValue = startValue;
     }
 
     /// <summary>
@@ -177,5 +171,10 @@ internal class VersionableDigit {
         // to zero.  As the code is unchecked we end up with -ve not a thrown exception.
         if (currentValue < 0) { currentValue = 0; }
         return (currentValue != verStash);  // Returns true if the value has changed.
+    }
+
+    internal void SetFromString(string value) {
+        // Let the cast explode if wrong values are tried.
+        DigitValue = int.Parse(value, CultureInfo.CurrentUICulture);
     }
 }

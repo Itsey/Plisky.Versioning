@@ -41,6 +41,11 @@ namespace Plisky.CodeCraft.Test {
         public bool PersistWasCalled { get; private set; }
         public string VersionStringPersisted { get; private set; } = string.Empty;
 
+        protected override bool ActualDoesVstoreExist(VersionStorageOptions? opts) {
+            // For the mock, assume existence if the initialisation string is not null or empty and not 'invalid'.
+            return opts != null && !string.IsNullOrWhiteSpace(opts.InitialisationString) && opts.InitialisationString != "invalid";
+        }
+
         protected override CompleteVersion ActualLoad() {
             loadedVersion = initialisationValue == "default" ? null! : new CompleteVersion(initialisationValue);
 
@@ -50,10 +55,6 @@ namespace Plisky.CodeCraft.Test {
         protected override void ActualPersist(CompleteVersion cv) {
             PersistWasCalled = true;
             VersionStringPersisted = cv.GetVersionString();
-        }
-        protected override bool ActualDoesVstoreExist(VersionStorageOptions? opts) {
-            // For the mock, assume existence if the initialisation string is not null or empty and not 'invalid'.
-            return opts != null && !string.IsNullOrWhiteSpace(opts.InitialisationString) && opts.InitialisationString != "invalid";
         }
     }
 }

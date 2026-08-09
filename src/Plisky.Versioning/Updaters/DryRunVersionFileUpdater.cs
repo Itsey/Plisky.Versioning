@@ -5,7 +5,9 @@ using System.IO;
 using System.Xml.Linq;
 
 public class DryRunVersionFileUpdater(CompleteVersion cv, IHookVersioningChanges? actions = null) : VersionFileUpdater(cv, actions) {
+
     protected override void UpdateCSFileWithAttribute(string fileName, string targetAttribute, string versionValue) {
+
         #region entry code
 
         b.Assert.True(!string.IsNullOrEmpty(fileName), "fileName is null, internal consistancy error.");
@@ -48,27 +50,23 @@ public class DryRunVersionFileUpdater(CompleteVersion cv, IHookVersioningChanges
         b.Info.Log($"DRYRUN - Would have applied the attribute {targetAttribute} to the file {fileName}. Instead Taking No Action.");
     }
 
-    protected override void UpdateWixFile(string fileName, string versionToWrite) {
-        const string WIXNAMESPACE = "http://schemas.microsoft.com/wix/2006/wi";
-        var xd = XDocument.Load(fileName);
-        XNamespace ns = WIXNAMESPACE;
-        var el = xd.Element(ns + "Wix")?.Element(ns + "Product");
-        if (el == null) {
-            b.Verbose.Log("No Wix/Product element found, nothing to do");
-            return;
-        }
+    protected override string UpdateLiteralReplacer(string fileToCheck, CompleteVersion versonToWrite, DisplayType displayStyle, DisplayType originalDisplayStyle = DisplayType.Default, string groupNamesForDisplay = "") {
+        string inney = File.ReadAllText(fileToCheck);
 
-        var at1 = el?.Attribute("Version");
-        if (at1 != null) {
-            at1.Value = versionToWrite;
-            var at2 = el?.Attribute("Name");
-            if (at2 != null) {
-                b.Verbose.Log("Secondary name element found.");
+        string response;
+        if (displayStyle == DisplayType.NoDisplay) {
+            if (!inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
+                response = "WARNING - No Release Name Identifier Found";
+            } else {
+                response = $"Replacing {RELEASE_NAME_FILE_IDENTIFIER} with {versonToWrite.ReleaseName}";
             }
-            b.Info.Log($"DRYRUN - Would have updated Wix file {fileName} to {versionToWrite}.  Instead Taking No Action.");
+        } else if (!inney.Contains("XXX-VERSION") && !inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
+            response = "WARNING - No Versioning or Release Name Identifier Found, no updates possible";
         } else {
-            b.Verbose.Log("Invalid attribute, could not find Wix/Product [version]");
+            response = "Replacing XXX-VERSION* with " + GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay);
+            b.Info.Log($"DRYRUN - Would have updated XXX-VERSION* with {GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay)}");
         }
+        return response;
     }
 
     protected override string UpdateNuspecFile(string fileName, string versionText) {
@@ -123,22 +121,26 @@ public class DryRunVersionFileUpdater(CompleteVersion cv, IHookVersioningChanges
         }
     }
 
-    protected override string UpdateLiteralReplacer(string fileToCheck, CompleteVersion versonToWrite, DisplayType displayStyle, DisplayType originalDisplayStyle = DisplayType.Default, string groupNamesForDisplay = "") {
-        string inney = File.ReadAllText(fileToCheck);
-
-        string response;
-        if (displayStyle == DisplayType.NoDisplay) {
-            if (!inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
-                response = "WARNING - No Release Name Identifier Found";
-            } else {
-                response = $"Replacing {RELEASE_NAME_FILE_IDENTIFIER} with {versonToWrite.ReleaseName}";
-            }
-        } else if (!inney.Contains("XXX-VERSION") && !inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
-            response = "WARNING - No Versioning or Release Name Identifier Found, no updates possible";
-        } else {
-            response = "Replacing XXX-VERSION* with " + GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay);
-            b.Info.Log($"DRYRUN - Would have updated XXX-VERSION* with {GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay)}");
+    protected override void UpdateWixFile(string fileName, string versionToWrite) {
+        const string WIXNAMESPACE = "http://schemas.microsoft.com/wix/2006/wi";
+        var xd = XDocument.Load(fileName);
+        XNamespace ns = WIXNAMESPACE;
+        var el = xd.Element(ns + "Wix")?.Element(ns + "Product");
+        if (el == null) {
+            b.Verbose.Log("No Wix/Product element found, nothing to do");
+            return;
         }
-        return response;
+
+        var at1 = el?.Attribute("Version");
+        if (at1 != null) {
+            at1.Value = versionToWrite;
+            var at2 = el?.Attribute("Name");
+            if (at2 != null) {
+                b.Verbose.Log("Secondary name element found.");
+            }
+            b.Info.Log($"DRYRUN - Would have updated Wix file {fileName} to {versionToWrite}.  Instead Taking No Action.");
+        } else {
+            b.Verbose.Log("Invalid attribute, could not find Wix/Product [version]");
+        }
     }
 }

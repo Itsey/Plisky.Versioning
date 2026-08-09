@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Linq;
 using Nuke.Common;
 using Nuke.Common.Tools.DotNet;

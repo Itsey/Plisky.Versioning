@@ -55,5 +55,4 @@ public enum DigitIncrementBehaviour {
     /// incremented or decremented as such.  They are set to literal strings.
     /// </summary>
     ReleaseName = 8 // Versonify no longer supports this behaviour. ReleaseName now functions the same as Fixed(0).
-
 };

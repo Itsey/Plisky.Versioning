@@ -8,51 +8,12 @@ using Xunit;
 
 public class CompleteVersionTests {
     private Bilge b = new Bilge();
-    private UnitTestHelper uth;
     private TestSupport ts;
+    private UnitTestHelper uth;
 
     public CompleteVersionTests() {
         uth = new UnitTestHelper();
         ts = new TestSupport(uth);
-    }
-
-    [Theory]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [InlineData("1.2-3.4", "1", "2", "3", "4")]
-    [InlineData("1.2.3.4", "1", "2", "3", "4")]
-    [InlineData("1-2-3-4", "1", "2", "3", "4")]
-    [InlineData("1-2+3.4", "1", "2", "3", "4")]
-    [InlineData("1234", "1234", null, null, null)]
-    [InlineData("12.34", "12", "34", null, null)]
-    [InlineData("12.3-4", "12", "3", "4", null)]
-    public void Completeversion_constructor_sets_digit_values(string initialValue, string dg1, string? dg2, string? dg3, string? dg4) {
-        b.Info.Flow();
-        var sut = new CompleteVersion(initialValue, '.', '-', '+');
-
-        string? d0 = sut.Digits.Length > 0 ? sut.Digits[0].Value : null;
-        string? d1 = sut.Digits.Length > 1 ? sut.Digits[1].Value : null;
-        string? d2 = sut.Digits.Length > 2 ? sut.Digits[2].Value : null;
-        string? d3 = sut.Digits.Length > 3 ? sut.Digits[3].Value : null;
-
-        d0.ShouldBe(dg1);
-
-        if (dg2 != null) {
-            d1.ShouldBe(dg2);
-        } else {
-            sut.Digits.Length.ShouldBeLessThan(2);
-        }
-
-        if (dg3 != null) {
-            d2.ShouldBe(dg3);
-        } else {
-            sut.Digits.Length.ShouldBeLessThan(3);
-        }
-
-        if (dg4 != null) {
-            d3.ShouldBe(dg4);
-        } else {
-            sut.Digits.Length.ShouldBeLessThan(4);
-        }
     }
 
     [Theory]
@@ -112,6 +73,77 @@ public class CompleteVersionTests {
         cv.DisplayTypes.ShouldContainKeyAndValue(fut, dt);
     }
 
+    [Theory]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [InlineData("1.2-3.4", "1", "2", "3", "4")]
+    [InlineData("1.2.3.4", "1", "2", "3", "4")]
+    [InlineData("1-2-3-4", "1", "2", "3", "4")]
+    [InlineData("1-2+3.4", "1", "2", "3", "4")]
+    [InlineData("1234", "1234", null, null, null)]
+    [InlineData("12.34", "12", "34", null, null)]
+    [InlineData("12.3-4", "12", "3", "4", null)]
+    public void Completeversion_constructor_sets_digit_values(string initialValue, string dg1, string? dg2, string? dg3, string? dg4) {
+        b.Info.Flow();
+        var sut = new CompleteVersion(initialValue, '.', '-', '+');
+
+        string? d0 = sut.Digits.Length > 0 ? sut.Digits[0].Value : null;
+        string? d1 = sut.Digits.Length > 1 ? sut.Digits[1].Value : null;
+        string? d2 = sut.Digits.Length > 2 ? sut.Digits[2].Value : null;
+        string? d3 = sut.Digits.Length > 3 ? sut.Digits[3].Value : null;
+
+        d0.ShouldBe(dg1);
+
+        if (dg2 != null) {
+            d1.ShouldBe(dg2);
+        } else {
+            sut.Digits.Length.ShouldBeLessThan(2);
+        }
+
+        if (dg3 != null) {
+            d2.ShouldBe(dg3);
+        } else {
+            sut.Digits.Length.ShouldBeLessThan(3);
+        }
+
+        if (dg4 != null) {
+            d3.ShouldBe(dg4);
+        } else {
+            sut.Digits.Length.ShouldBeLessThan(4);
+        }
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void DisplayType_DefaultsToFull() {
+        var sut = new CompleteVersion(
+           new VersionUnit("1", ""),
+           new VersionUnit("0", "."),
+           new VersionUnit("1", "."),
+           new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny));
+
+        string full = sut.GetVersionString(DisplayType.Full);
+        string def = sut.GetVersionString();
+
+        def.ShouldBe(full);
+    }
+
+    [Theory]
+    [InlineData("1.2.3.4", "+.+.+.+", "2.3.4.5")]
+    [InlineData("1.2..4", "+.+..+", "2.3..5")]
+    [InlineData(null, "....", "")]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void DisplayType_QueuedFull_WorksCorrectly(string? startVer, string pattern, string endVer) {
+        b.Info.Flow();
+        var cv = new CompleteVersion(startVer ?? string.Empty, '.');
+
+        cv.ApplyPendingVersion(pattern);
+        string output = cv.GetVersionString(DisplayType.QueuedFull);
+
+        output.ShouldBe(endVer);
+    }
+
     [Theory(DisplayName = (nameof(DisplayTypes_WorkCorrectly)))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -148,6 +180,190 @@ public class CompleteVersionTests {
         output.ShouldBe(expectedDisplay);
     }
 
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void FixedBehaviour_DoesNotIncrement() {
+        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."));
+
+        string before = sut.GetVersionString(DisplayType.Full);
+
+        sut.Increment();
+
+        string after = sut.GetVersionString(DisplayType.Full);
+
+        after.ShouldBe(before);
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void GetBehaviourString_ReturnsCorrectBehaviourForSingleDigit() {
+        var behaviour = DigitIncrementBehaviour.ContinualIncrement;
+        int behaviourValue = (int)behaviour;
+        string expectedResult = $"[0]:{behaviour}({behaviourValue})";
+
+        var vu = new VersionUnit("1", "", behaviour);
+        var sut = new CompleteVersion(vu);
+
+        string result = sut.GetBehaviourString("0");
+
+        result.ShouldBe(expectedResult);
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void GetBehaviourString_ReturnsCorrectBehaviourForStar() {
+        var behaviourFixed = DigitIncrementBehaviour.Fixed;
+        int behaviourFixedValue = (int)behaviourFixed;
+        var behaviourInc = DigitIncrementBehaviour.ContinualIncrement;
+        int behaviourIncValue = (int)behaviourInc;
+        string expectedResult =
+            $"[0]:{behaviourFixed}({behaviourFixedValue})\r\n" +
+            $"[1]:{behaviourInc}({behaviourIncValue})\r\n" +
+            $"[2]:{behaviourInc}({behaviourIncValue})";
+
+        var vu1 = new VersionUnit("1", "");
+        var vu2 = new VersionUnit("0", ".", behaviourInc);
+        var vu3 = new VersionUnit("1", ".", behaviourInc);
+        var sut = new CompleteVersion(vu1, vu2, vu3);
+
+        string result = sut.GetBehaviourString("*");
+
+        result.ShouldBe(expectedResult);
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Increment_OverrideReplacesIncrement() {
+        var vu = new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement);
+        vu.IncrementOverride = "9";
+        var sut = new CompleteVersion(vu);
+
+        sut.Increment();
+
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("9");
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Increment_OverrideWorksForNames() {
+        var vu = new VersionUnit("Monkey");
+        vu.IncrementOverride = "Fish";
+
+        var sut = new CompleteVersion(vu);
+
+        sut.Increment();
+
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("Fish");
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Increment_OverrideWorksForNumbers() {
+        var vu = new VersionUnit("1");
+        vu.IncrementOverride = "5";
+
+        var sut = new CompleteVersion(vu);
+
+        sut.Increment();
+
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("5");
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Increment_OverrideWorksOnFixed() {
+        var vu = new VersionUnit("1", "", DigitIncrementBehaviour.Fixed);
+        vu.IncrementOverride = "Fish";
+
+        var sut = new CompleteVersion(vu);
+
+        sut.Increment();
+
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("Fish");
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Increment_ResentAnyWorks() {
+        var vu2 = new VersionUnit("0", ".");
+        var sut = new CompleteVersion(
+           new VersionUnit("1", ""),
+           vu2,
+           new VersionUnit("1", "."),
+           new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny));
+
+        string before = sut.GetVersionString();
+
+        before.ShouldBe("1.0.1.0");
+
+        sut.Increment();
+
+        string after = sut.GetVersionString();
+
+        after.ShouldBe("1.0.1.1");
+
+        vu2.IncrementOverride = "5";
+        sut.Increment();
+
+        string afterOverride = sut.GetVersionString();
+
+        afterOverride.ShouldBe("1.5.1.0");
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Increment_ResetAnyWorks() {
+        var sut = new CompleteVersion(
+            new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement),
+            new VersionUnit("0", "."),
+            new VersionUnit("1", "."),
+            new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny));
+
+        sut.Increment();
+
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("2.0.1.0");
+    }
+
+    [Theory(DisplayName = "ManipulateVersionTests")]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("1", "+", "2")]
+    [InlineData("1", "-", "0")]
+    [InlineData("1", "1", "1")]
+    [InlineData("1", "2", "2")]
+    [InlineData("1", "alpha", "alpha")]
+    [InlineData("1", "brav+o", "brav+o")]
+    [InlineData("3", "+", "4")]
+    [InlineData("9", "", null)]
+    [InlineData("9", "6", "6")]
+    [InlineData("bannana", "pEEl", "pEEl")]
+    public void ManipulateVersionTests(string value, string pattern, string? result) {
+        var sut = new CompleteVersionMock();
+
+        string? res = sut.Mock.ManipulateVersionBasedOnPattern(pattern, value);
+
+        res.ShouldBe(result);
+    }
+
     [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -165,48 +381,31 @@ public class CompleteVersionTests {
         output.ShouldBe(expected);
     }
 
-
-    [Theory]
-    [InlineData("1.2.3.4", "+.+.+.+", "2.3.4.5")]
-    [InlineData("1.2..4", "+.+..+", "2.3..5")]
-    [InlineData(null, "....", "")]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void DisplayType_QueuedFull_WorksCorrectly(string? startVer, string pattern, string endVer) {
-        b.Info.Flow();
-        var cv = new CompleteVersion(startVer ?? string.Empty, '.');
-
-        cv.ApplyPendingVersion(pattern);
-        string output = cv.GetVersionString(DisplayType.QueuedFull);
-
-        output.ShouldBe(endVer);
-    }
-
-    [Theory(DisplayName = nameof(PendingIncrementPatterns_Work))]
+    [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    [InlineData("1.0.0.0", "+.0.0.0", "2.0.0.0")]
-    [InlineData("1.0.0.0", "1.0.0.0", "1.0.0.0")]
-    [InlineData("1.0.0.0", "0.0.0.0", "0.0.0.0")]
-    [InlineData("1.0.0.0", "+.+.+.+", "2.1.1.1")]
-    [InlineData("2.2.2.2", "-.-.-.-", "1.1.1.1")]
-    [InlineData("2.2.2.2", "-..-.-", "1.2.1.1")]
-    [InlineData("2.2.2.2", "...", "2.2.2.2")]
-    [InlineData("2.2.2.2", "..Bealzebub.-", "2.2.Bealzebub.1")]
-    [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear", "Unicorn.Peach.Applie.Pear")]
-    [InlineData("2.Pear.Apple", ".0.0", "2.0.0")]
-    [InlineData(null, ".0.0", "")]
-    public void PendingIncrementPatterns_Work(string? startVer, string pattern, string endVer) {
-        b.Info.Flow();
+    public void Override_NoIncrement_DoesNotChangeValue() {
+        var vu = new VersionUnit("1");
+        vu.Value = "Monkey";
+        vu.IncrementOverride = "Fish";
+        var sut = new CompleteVersion(vu);
 
-        var cv = new CompleteVersion(startVer ?? string.Empty);
+        string result = sut.GetVersionString(DisplayType.Full);
 
-        cv.ApplyPendingVersion(pattern);
-        cv.Increment();
+        result.ShouldBe("Monkey");
+    }
 
-        string result = cv.ToString();
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void PartiallyFixed_DoesIncrement() {
+        var sut = new CompleteVersion(new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement), new VersionUnit("Monkey", "."));
 
-        result.ShouldBe(endVer);
+        sut.Increment();
+
+        string result = sut.GetVersionString(DisplayType.Full);
+
+        result.ShouldBe("2.Monkey");
     }
 
     [Theory(DisplayName = nameof(PendingIncrement_IsAppliedCorrectly))]
@@ -268,6 +467,33 @@ public class CompleteVersionTests {
         d4.ShouldBeNull();
     }
 
+    [Theory(DisplayName = nameof(PendingIncrementPatterns_Work))]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("1.0.0.0", "+.0.0.0", "2.0.0.0")]
+    [InlineData("1.0.0.0", "1.0.0.0", "1.0.0.0")]
+    [InlineData("1.0.0.0", "0.0.0.0", "0.0.0.0")]
+    [InlineData("1.0.0.0", "+.+.+.+", "2.1.1.1")]
+    [InlineData("2.2.2.2", "-.-.-.-", "1.1.1.1")]
+    [InlineData("2.2.2.2", "-..-.-", "1.2.1.1")]
+    [InlineData("2.2.2.2", "...", "2.2.2.2")]
+    [InlineData("2.2.2.2", "..Bealzebub.-", "2.2.Bealzebub.1")]
+    [InlineData("2.2.2.2", "Unicorn.Peach.Applie.Pear", "Unicorn.Peach.Applie.Pear")]
+    [InlineData("2.Pear.Apple", ".0.0", "2.0.0")]
+    [InlineData(null, ".0.0", "")]
+    public void PendingIncrementPatterns_Work(string? startVer, string pattern, string endVer) {
+        b.Info.Flow();
+
+        var cv = new CompleteVersion(startVer ?? string.Empty);
+
+        cv.ApplyPendingVersion(pattern);
+        cv.Increment();
+
+        string result = cv.ToString();
+
+        result.ShouldBe(endVer);
+    }
+
     [Theory(DisplayName = nameof(PendingIncrements_StackCorrectly))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -292,27 +518,6 @@ public class CompleteVersionTests {
         result.ShouldBe(endVer);
     }
 
-    [Theory(DisplayName = "ManipulateVersionTests")]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    [InlineData("1", "+", "2")]
-    [InlineData("1", "-", "0")]
-    [InlineData("1", "1", "1")]
-    [InlineData("1", "2", "2")]
-    [InlineData("1", "alpha", "alpha")]
-    [InlineData("1", "brav+o", "brav+o")]
-    [InlineData("3", "+", "4")]
-    [InlineData("9", "", null)]
-    [InlineData("9", "6", "6")]
-    [InlineData("bannana", "pEEl", "pEEl")]
-    public void ManipulateVersionTests(string value, string pattern, string? result) {
-        var sut = new CompleteVersionMock();
-
-        string? res = sut.Mock.ManipulateVersionBasedOnPattern(pattern, value);
-
-        res.ShouldBe(result);
-    }
-
     [Fact(DisplayName = nameof(ReleaseVersion_StartsEmpty))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -324,111 +529,6 @@ public class CompleteVersionTests {
         string? releaseName = sut.ReleaseName;
 
         releaseName.ShouldBeNull();
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void FixedBehaviour_DoesNotIncrement() {
-        var sut = new CompleteVersion(new VersionUnit("2"), new VersionUnit("0", "."));
-
-        string before = sut.GetVersionString(DisplayType.Full);
-
-        sut.Increment();
-
-        string after = sut.GetVersionString(DisplayType.Full);
-
-        after.ShouldBe(before);
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void PartiallyFixed_DoesIncrement() {
-        var sut = new CompleteVersion(new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement), new VersionUnit("Monkey", "."));
-
-        sut.Increment();
-
-        string result = sut.GetVersionString(DisplayType.Full);
-
-        result.ShouldBe("2.Monkey");
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Increment_ResetAnyWorks() {
-        var sut = new CompleteVersion(
-            new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement),
-            new VersionUnit("0", "."),
-            new VersionUnit("1", "."),
-            new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny));
-
-        sut.Increment();
-
-        string result = sut.GetVersionString(DisplayType.Full);
-
-        result.ShouldBe("2.0.1.0");
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void DisplayType_DefaultsToFull() {
-        var sut = new CompleteVersion(
-           new VersionUnit("1", ""),
-           new VersionUnit("0", "."),
-           new VersionUnit("1", "."),
-           new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny));
-
-        string full = sut.GetVersionString(DisplayType.Full);
-        string def = sut.GetVersionString();
-
-        def.ShouldBe(full);
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Increment_ResentAnyWorks() {
-        var vu2 = new VersionUnit("0", ".");
-        var sut = new CompleteVersion(
-           new VersionUnit("1", ""),
-           vu2,
-           new VersionUnit("1", "."),
-           new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny));
-
-        string before = sut.GetVersionString();
-
-        before.ShouldBe("1.0.1.0");
-
-        sut.Increment();
-
-        string after = sut.GetVersionString();
-
-        after.ShouldBe("1.0.1.1");
-
-        vu2.IncrementOverride = "5";
-        sut.Increment();
-
-        string afterOverride = sut.GetVersionString();
-
-        afterOverride.ShouldBe("1.5.1.0");
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Increment_OverrideReplacesIncrement() {
-        var vu = new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement);
-        vu.IncrementOverride = "9";
-        var sut = new CompleteVersion(vu);
-
-        sut.Increment();
-
-        string result = sut.GetVersionString(DisplayType.Full);
-
-        result.ShouldBe("9");
     }
 
     [Fact]
@@ -459,107 +559,6 @@ public class CompleteVersionTests {
         result.ShouldBe("1.3");
     }
 
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Override_NoIncrement_DoesNotChangeValue() {
-        var vu = new VersionUnit("1");
-        vu.Value = "Monkey";
-        vu.IncrementOverride = "Fish";
-        var sut = new CompleteVersion(vu);
-
-        string result = sut.GetVersionString(DisplayType.Full);
-
-        result.ShouldBe("Monkey");
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Increment_OverrideWorksForNumbers() {
-        var vu = new VersionUnit("1");
-        vu.IncrementOverride = "5";
-
-        var sut = new CompleteVersion(vu);
-
-        sut.Increment();
-
-        string result = sut.GetVersionString(DisplayType.Full);
-
-        result.ShouldBe("5");
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Increment_OverrideWorksForNames() {
-        var vu = new VersionUnit("Monkey");
-        vu.IncrementOverride = "Fish";
-
-        var sut = new CompleteVersion(vu);
-
-        sut.Increment();
-
-        string result = sut.GetVersionString(DisplayType.Full);
-
-        result.ShouldBe("Fish");
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Increment_OverrideWorksOnFixed() {
-        var vu = new VersionUnit("1", "", DigitIncrementBehaviour.Fixed);
-        vu.IncrementOverride = "Fish";
-
-        var sut = new CompleteVersion(vu);
-
-        sut.Increment();
-
-        string result = sut.GetVersionString(DisplayType.Full);
-
-        result.ShouldBe("Fish");
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void GetBehaviourString_ReturnsCorrectBehaviourForSingleDigit() {
-        var behaviour = DigitIncrementBehaviour.ContinualIncrement;
-        int behaviourValue = (int)behaviour;
-        string expectedResult = $"[0]:{behaviour}({behaviourValue})";
-
-        var vu = new VersionUnit("1", "", behaviour);
-        var sut = new CompleteVersion(vu);
-
-        string result = sut.GetBehaviourString("0");
-
-        result.ShouldBe(expectedResult);
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void GetBehaviourString_ReturnsCorrectBehaviourForStar() {
-        var behaviourFixed = DigitIncrementBehaviour.Fixed;
-        int behaviourFixedValue = (int)behaviourFixed;
-        var behaviourInc = DigitIncrementBehaviour.ContinualIncrement;
-        int behaviourIncValue = (int)behaviourInc;
-        string expectedResult =
-            $"[0]:{behaviourFixed}({behaviourFixedValue})\r\n" +
-            $"[1]:{behaviourInc}({behaviourIncValue})\r\n" +
-            $"[2]:{behaviourInc}({behaviourIncValue})";
-
-        var vu1 = new VersionUnit("1", "");
-        var vu2 = new VersionUnit("0", ".", behaviourInc);
-        var vu3 = new VersionUnit("1", ".", behaviourInc);
-        var sut = new CompleteVersion(vu1, vu2, vu3);
-
-        string result = sut.GetBehaviourString("*");
-
-        result.ShouldBe(expectedResult);
-    }
-
     [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -575,176 +574,7 @@ public class CompleteVersionTests {
         actualResult.ShouldBe(expectedResult);
     }
 
-    public class DisplayTypes {
-
-        [Fact]
-        [Trait(Traits.Age, Traits.Regression)]
-        [Trait(Traits.Style, Traits.Unit)]
-        public void ToString_equals_getversionstring() {
-            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-
-            string toString = sut.ToString();
-            string getVersionString = sut.GetVersionString(DisplayType.Full);
-
-            toString.ShouldBe(getVersionString);
-        }
-
-        [Fact]
-        [Trait(Traits.Age, Traits.Regression)]
-        [Trait(Traits.Style, Traits.Unit)]
-        public void Short_returns_two_digits() {
-            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-            var dt = DisplayType.Short;
-
-            string result = sut.GetVersionString(dt);
-
-            result.ShouldBe("1.0");
-        }
-
-        [Fact]
-        [Trait(Traits.Age, Traits.Regression)]
-        [Trait(Traits.Style, Traits.Unit)]
-        public void Short_returns_two_digits_when_more_present() {
-            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."), new VersionUnit("1", "."));
-            var dt = DisplayType.Short;
-
-            string result = sut.GetVersionString(dt);
-
-            result.ShouldBe("1.0");
-        }
-
-        [Fact]
-        [Trait(Traits.Age, Traits.Regression)]
-        [Trait(Traits.Style, Traits.Unit)]
-        public void ToString_respects_alternative_separator_characters() {
-            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "-"), new VersionUnit("1", "-"));
-
-            string result = sut.ToString();
-
-            result.ShouldBe("1-0-1");
-        }
-
-        [Fact]
-        [Trait(Traits.Age, Traits.Regression)]
-        [Trait(Traits.Style, Traits.Unit)]
-        public void Default_display_is_correct_for_two_digits() {
-            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-
-            string result = sut.ToString();
-
-            result.ShouldBe("1.0");
-        }
-    }
-
-    public class UseCases {
-
-        [Fact]
-        [Trait(Traits.Age, Traits.Regression)]
-        [Trait(Traits.Style, Traits.Unit)]
-        public void Plisky_semantic_versioning_is_supported() {
-            var sut = new CompleteVersion(
-                new VersionUnit("2"),
-                new VersionUnit("0", "."),
-                new VersionUnit("Unicorn", "-"),
-                new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement));
-
-            string verString = sut.GetVersionString();
-            verString.ShouldBe("2.0-Unicorn.0");
-
-            sut.Increment();
-            verString = sut.GetVersionString();
-            verString.ShouldBe("2.0-Unicorn.1");
-
-            sut.Increment();
-            verString = sut.GetVersionString(DisplayType.Full);
-            verString.ShouldBe("2.0-Unicorn.2");
-        }
-    }
-
     public class DigitGroups {
-        [Theory]
-        [Trait(Traits.Age, Traits.Fresh)]
-        [Trait(Traits.Style, Traits.Unit)]
-        [InlineData(null, "")]
-        [InlineData("", "")]
-        [InlineData("   ", "")]
-        [InlineData("default", "")]
-        [InlineData(" DEFAULT ", "")]
-        [InlineData("pre-release", "pre-release")]
-        [InlineData("  pre-release  ", "pre-release")]
-        public void NormalizeDigitGroup_when_called_returns_expected_value(string? input, string expected) {
-            string result = CompleteVersion.NormalizeDigitGroup(input);
-
-            result.ShouldBe(expected);
-        }
-
-        [Theory]
-        [Trait(Traits.Age, Traits.Fresh)]
-        [Trait(Traits.Style, Traits.Unit)]
-        [InlineData(DisplayType.ThreeDigit, "2.3.1-Alpha.9")]
-        [InlineData(DisplayType.FourDigit, "2.3.1.8-Alpha.9")]
-        public void VersionString_grouped_digits_are_selected_by_membership_not_suffix(DisplayType displayType, string expected) {
-            var sut = new CompleteVersion("2.3-Alpha.1.9.8", '.', '-');
-            sut.Digits[2].GroupName = "my-custom-pr";
-            sut.Digits[4].GroupName = "my-custom-pr";
-
-            string result = sut.GetVersionString(displayType);
-
-            result.ShouldBe(expected);
-        }
-
-        [Theory]
-        [Trait(Traits.Age, Traits.Fresh)]
-        [Trait(Traits.Style, Traits.Unit)]
-        [InlineData(DisplayType.ThreeDigit, "2.3-Alpha.1")]
-        [InlineData(DisplayType.FourDigit, "2.3-Alpha.1")]
-        public void VersionString_all_grouped_digits_produces_empty_main_and_all_grouped(DisplayType displayType, string expected) {
-            var sut = new CompleteVersion("2.3-Alpha.1", '.', '-');
-            sut.Digits[0].GroupName = "pre-release";
-            sut.Digits[1].GroupName = "pre-release";
-            sut.Digits[2].GroupName = "pre-release";
-            sut.Digits[3].GroupName = "pre-release";
-
-            string result = sut.GetVersionString(displayType);
-
-            result.ShouldBe(expected);
-        }
-
-        [Fact]
-        [Trait(Traits.Age, Traits.Fresh)]
-        [Trait(Traits.Style, Traits.Unit)]
-        public void Passive_defaults_to_unnamed_group_only() {
-            var sut = new CompleteVersion("1.2.3.4");
-            sut.Digits[2].GroupName = "pre-release";
-
-            string result = sut.GetVersionStringByGroup(string.Empty);
-
-            result.ShouldBe("1.2.4");
-        }
-
-        [Fact]
-        [Trait(Traits.Age, Traits.Fresh)]
-        [Trait(Traits.Style, Traits.Unit)]
-        public void Passive_can_select_named_group_only() {
-            var sut = new CompleteVersion("1.2.3.4");
-            sut.Digits[2].GroupName = "pre-release";
-
-            string result = sut.GetVersionStringByGroup("pre-release");
-
-            result.ShouldBe(".3");
-        }
-
-        [Fact]
-        [Trait(Traits.Age, Traits.Fresh)]
-        [Trait(Traits.Style, Traits.Unit)]
-        public void Passive_can_select_multiple_groups_in_original_order() {
-            var sut = new CompleteVersion("1.2.3.4");
-            sut.Digits[2].GroupName = "pre-release";
-
-            string result = sut.GetVersionStringByGroup("default,pre-release");
-
-            result.ShouldBe("1.2.3.4");
-        }
 
         [Fact]
         [Trait(Traits.Age, Traits.Fresh)]
@@ -792,6 +622,176 @@ public class CompleteVersionTests {
             sut.IncrementByGroup("*");
 
             sut.GetVersionString().ShouldBe("3.4.5.6");
+        }
+
+        [Theory]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        [InlineData(null, "")]
+        [InlineData("", "")]
+        [InlineData("   ", "")]
+        [InlineData("default", "")]
+        [InlineData(" DEFAULT ", "")]
+        [InlineData("pre-release", "pre-release")]
+        [InlineData("  pre-release  ", "pre-release")]
+        public void NormalizeDigitGroup_when_called_returns_expected_value(string? input, string expected) {
+            string result = CompleteVersion.NormalizeDigitGroup(input);
+
+            result.ShouldBe(expected);
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Passive_can_select_multiple_groups_in_original_order() {
+            var sut = new CompleteVersion("1.2.3.4");
+            sut.Digits[2].GroupName = "pre-release";
+
+            string result = sut.GetVersionStringByGroup("default,pre-release");
+
+            result.ShouldBe("1.2.3.4");
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Passive_can_select_named_group_only() {
+            var sut = new CompleteVersion("1.2.3.4");
+            sut.Digits[2].GroupName = "pre-release";
+
+            string result = sut.GetVersionStringByGroup("pre-release");
+
+            result.ShouldBe(".3");
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Passive_defaults_to_unnamed_group_only() {
+            var sut = new CompleteVersion("1.2.3.4");
+            sut.Digits[2].GroupName = "pre-release";
+
+            string result = sut.GetVersionStringByGroup(string.Empty);
+
+            result.ShouldBe("1.2.4");
+        }
+
+        [Theory]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        [InlineData(DisplayType.ThreeDigit, "2.3-Alpha.1")]
+        [InlineData(DisplayType.FourDigit, "2.3-Alpha.1")]
+        public void VersionString_all_grouped_digits_produces_empty_main_and_all_grouped(DisplayType displayType, string expected) {
+            var sut = new CompleteVersion("2.3-Alpha.1", '.', '-');
+            sut.Digits[0].GroupName = "pre-release";
+            sut.Digits[1].GroupName = "pre-release";
+            sut.Digits[2].GroupName = "pre-release";
+            sut.Digits[3].GroupName = "pre-release";
+
+            string result = sut.GetVersionString(displayType);
+
+            result.ShouldBe(expected);
+        }
+
+        [Theory]
+        [Trait(Traits.Age, Traits.Fresh)]
+        [Trait(Traits.Style, Traits.Unit)]
+        [InlineData(DisplayType.ThreeDigit, "2.3.1-Alpha.9")]
+        [InlineData(DisplayType.FourDigit, "2.3.1.8-Alpha.9")]
+        public void VersionString_grouped_digits_are_selected_by_membership_not_suffix(DisplayType displayType, string expected) {
+            var sut = new CompleteVersion("2.3-Alpha.1.9.8", '.', '-');
+            sut.Digits[2].GroupName = "my-custom-pr";
+            sut.Digits[4].GroupName = "my-custom-pr";
+
+            string result = sut.GetVersionString(displayType);
+
+            result.ShouldBe(expected);
+        }
+    }
+
+    public class DisplayTypes {
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Default_display_is_correct_for_two_digits() {
+            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
+
+            string result = sut.ToString();
+
+            result.ShouldBe("1.0");
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Short_returns_two_digits() {
+            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
+            var dt = DisplayType.Short;
+
+            string result = sut.GetVersionString(dt);
+
+            result.ShouldBe("1.0");
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Short_returns_two_digits_when_more_present() {
+            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."), new VersionUnit("1", "."));
+            var dt = DisplayType.Short;
+
+            string result = sut.GetVersionString(dt);
+
+            result.ShouldBe("1.0");
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void ToString_equals_getversionstring() {
+            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
+
+            string toString = sut.ToString();
+            string getVersionString = sut.GetVersionString(DisplayType.Full);
+
+            toString.ShouldBe(getVersionString);
+        }
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void ToString_respects_alternative_separator_characters() {
+            var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "-"), new VersionUnit("1", "-"));
+
+            string result = sut.ToString();
+
+            result.ShouldBe("1-0-1");
+        }
+    }
+
+    public class UseCases {
+
+        [Fact]
+        [Trait(Traits.Age, Traits.Regression)]
+        [Trait(Traits.Style, Traits.Unit)]
+        public void Plisky_semantic_versioning_is_supported() {
+            var sut = new CompleteVersion(
+                new VersionUnit("2"),
+                new VersionUnit("0", "."),
+                new VersionUnit("Unicorn", "-"),
+                new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement));
+
+            string verString = sut.GetVersionString();
+            verString.ShouldBe("2.0-Unicorn.0");
+
+            sut.Increment();
+            verString = sut.GetVersionString();
+            verString.ShouldBe("2.0-Unicorn.1");
+
+            sut.Increment();
+            verString = sut.GetVersionString(DisplayType.Full);
+            verString.ShouldBe("2.0-Unicorn.2");
         }
     }
 }

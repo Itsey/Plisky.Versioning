@@ -5,25 +5,6 @@ using Plisky.Diagnostics;
 public abstract class VersionStorage {
     protected Bilge b = new Bilge("Plisky-Versioning");
 
-    protected VersionStorageOptions? InitValue { get; set; } = null;
-
-    protected abstract void ActualPersist(CompleteVersion cv);
-
-    protected abstract CompleteVersion ActualLoad();
-
-    protected abstract bool ActualDoesVstoreExist(VersionStorageOptions? opts);
-
-    public bool IsValid {
-        get {
-            return string.IsNullOrEmpty(StorageFailureMessage);
-        }
-    }
-
-    public string? StorageFailureMessage { get; set; }
-    protected VersionStorage() {
-        InitValue = null;
-    }
-
     /// <summary>
     /// Manages the storage of version numbers, allowing them to be saved and loaded.
     /// </summary>
@@ -32,24 +13,40 @@ public abstract class VersionStorage {
         InitValue = opts;
     }
 
+    protected VersionStorage() {
+        InitValue = null;
+    }
 
-    /// <summary>
-    /// Called after the initialisation is set this can be used to validate whether the initialisation data was correct for the given version store, default
-    /// implementation simply returns true.
-    /// </summary>
-    /// <returns></returns>
-    public virtual bool ValidateInitialisation() {
-        return true;
+    public bool IsValid {
+        get {
+            return string.IsNullOrEmpty(StorageFailureMessage);
+        }
+    }
+
+    public string? StorageFailureMessage { get; set; }
+    protected VersionStorageOptions? InitValue { get; set; } = null;
+
+    public static VersionStorage CreateFromInitialisation(string vpv) {
+        VersionStorage result;
+
+        if (vpv.Length > 7 && vpv.Substring(0, 7).ToUpperInvariant().StartsWith("[NEXUS]")) {
+            result = new NexusVersionPersister(vpv);
+        } else {
+            result = new JsonVersionPersister(vpv);
+        }
+
+        return result;
     }
 
     /// <summary>
-    /// Saves the complete version to the underlying storage system.  Where the underlying storage system faults then this error will be passed
-    /// up and it should be assumed that the save has not succeeded.
+    /// Checks if the InitValue is a file path that already exists on disk.
     /// </summary>
-    /// <param name="cv">The CompleteVerison to save to the storage system.</param>
-    public void Persist(CompleteVersion cv) {
-        if (!IsValid) { return; }
-        ActualPersist(cv);
+    /// <returns>True if InitValue is a valid, existing file path; otherwise, false.</returns>
+    public bool DoesVstoreExist() {
+        if (InitValue == null || string.IsNullOrWhiteSpace(InitValue.InitialisationString)) {
+            return false;
+        }
+        return ActualDoesVstoreExist(InitValue);
     }
 
     /// <summary>
@@ -69,27 +66,27 @@ public abstract class VersionStorage {
     }
 
     /// <summary>
-    /// Checks if the InitValue is a file path that already exists on disk.
+    /// Saves the complete version to the underlying storage system.  Where the underlying storage system faults then this error will be passed
+    /// up and it should be assumed that the save has not succeeded.
     /// </summary>
-    /// <returns>True if InitValue is a valid, existing file path; otherwise, false.</returns>
-    public bool DoesVstoreExist() {
-        if (InitValue == null || string.IsNullOrWhiteSpace(InitValue.InitialisationString)) {
-            return false;
-        }
-        return ActualDoesVstoreExist(InitValue);
+    /// <param name="cv">The CompleteVerison to save to the storage system.</param>
+    public void Persist(CompleteVersion cv) {
+        if (!IsValid) { return; }
+        ActualPersist(cv);
     }
 
-
-
-    public static VersionStorage CreateFromInitialisation(string vpv) {
-        VersionStorage result;
-
-        if (vpv.Length > 7 && vpv.Substring(0, 7).ToUpperInvariant().StartsWith("[NEXUS]")) {
-            result = new NexusVersionPersister(vpv);
-        } else {
-            result = new JsonVersionPersister(vpv);
-        }
-
-        return result;
+    /// <summary>
+    /// Called after the initialisation is set this can be used to validate whether the initialisation data was correct for the given version store, default
+    /// implementation simply returns true.
+    /// </summary>
+    /// <returns></returns>
+    public virtual bool ValidateInitialisation() {
+        return true;
     }
+
+    protected abstract bool ActualDoesVstoreExist(VersionStorageOptions? opts);
+
+    protected abstract CompleteVersion ActualLoad();
+
+    protected abstract void ActualPersist(CompleteVersion cv);
 }

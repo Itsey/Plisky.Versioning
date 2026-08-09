@@ -1,14 +1,25 @@
 ﻿using System.Collections.Generic;
 
 namespace Plisky.CodeCraft.Test {
+
     public class MockVersioningOutputter : VersioningOutputter {
         protected List<string> outputReceived = new List<string>();
+
+        public MockVersioningOutputter(CompleteVersion v) : base(v) {
+            EnvWasSet = false;
+            FileWasWritten = false;
+            WrittenToConsole = null;
+        }
 
         public bool EnvWasSet { get; set; }
         public bool FileWasWritten { get; set; }
 
-        public string? WrittenToConsole { get; set; }
         public string[] OutputLines { get { return outputReceived.ToArray(); } }
+        public string? WrittenToConsole { get; set; }
+
+        public string GetTheValueRequestedToWrite() {
+            return ValToWrite;
+        }
 
         protected override void SetEnvironmentWithValue() {
             EnvWasSet = true;
@@ -22,15 +33,6 @@ namespace Plisky.CodeCraft.Test {
         protected override void WriteToConsole(string outputString) {
             WrittenToConsole = outputString;
             RecordOutputReceived(outputString);
-        }
-        public MockVersioningOutputter(CompleteVersion v) : base(v) {
-            EnvWasSet = false;
-            FileWasWritten = false;
-            WrittenToConsole = null;
-        }
-
-        public string GetTheValueRequestedToWrite() {
-            return ValToWrite;
         }
 
         private void RecordOutputReceived(string outputString) {

@@ -1,4 +1,5 @@
 ﻿namespace Plisky.CodeCraft.Test;
+
 using System;
 using System.Collections.Generic;
 using GlobExpressions;
@@ -8,37 +9,23 @@ using Xunit;
 
 public class MinmatchTests {
     private readonly Bilge b = new();
-    private readonly UnitTestHelper uth;
     private readonly TestSupport ts;
+    private readonly UnitTestHelper uth;
 
     public MinmatchTests() {
         uth = new UnitTestHelper();
         ts = new TestSupport(uth);
     }
 
-    private static void CheckTheseMatches(List<Tuple<string, bool>> mtchs, string againstThis) {
-        var mm = new Glob(againstThis.Replace('\\', '/'), GlobOptions.CaseInsensitive);
-        int i = 0;
-        foreach (var v in mtchs) {
-            i++;
-            bool isMatch = mm.IsMatch(v.Item1);
-            Assert.Equal(v.Item2, isMatch);
-        }
-    }
-
-    [Theory]
+    [Fact(DisplayName = nameof(GetDefaultMinimatchers_IsEmpty))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    [InlineData(@"C:\temp\verworking\assemblyinfo.cs", @"**\assemblyinfo.cs", true)]
-    [InlineData(@"C:\temp\verworking\testing.csproj", @"**/*.csproj", true)]
-    [InlineData(@"C:\temp\verworking\testing.csproj", @"**\verworking\*.csproj", true)]
-    [InlineData(@"C:\temp\verworking\AsUbBy\testing.csproj", @"**\asubby\**\*.csproj", true)]
-    [InlineData(@"C:\temp\verworking\AsUbBy\commonassemblyinfo.cs", @"**\asubby\**\common*.cs", true)]
-    public void MinimatchSyntax_Research(string filename, string minimatch, bool shouldPass) {
-        var mtchs = new List<Tuple<string, bool>> {
-            new Tuple<string, bool>(filename, shouldPass)
-        };
-        CheckTheseMatches(mtchs, minimatch);
+    public void GetDefaultMinimatchers_IsEmpty() {
+        b.Info.Flow();
+
+        var v = new MockVersioning(new MockVersionStorage(""));
+
+        Assert.True(v.mock.ReturnMinMatchers().Length == 0, "There should be no default minmatchers loaded by versioning");
     }
 
     [Fact]
@@ -59,16 +46,19 @@ public class MinmatchTests {
         Assert.True(mm2.IsMatch(@"C:\temp\test\testfile.tst"), "Cant match on full filename");
     }
 
-
-    [Fact(DisplayName = nameof(GetDefaultMinimatchers_IsEmpty))]
+    [Theory]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void GetDefaultMinimatchers_IsEmpty() {
-        b.Info.Flow();
-
-        var v = new MockVersioning(new MockVersionStorage(""));
-
-        Assert.True(v.mock.ReturnMinMatchers().Length == 0, "There should be no default minmatchers loaded by versioning");
+    [InlineData(@"C:\temp\verworking\assemblyinfo.cs", @"**\assemblyinfo.cs", true)]
+    [InlineData(@"C:\temp\verworking\testing.csproj", @"**/*.csproj", true)]
+    [InlineData(@"C:\temp\verworking\testing.csproj", @"**\verworking\*.csproj", true)]
+    [InlineData(@"C:\temp\verworking\AsUbBy\testing.csproj", @"**\asubby\**\*.csproj", true)]
+    [InlineData(@"C:\temp\verworking\AsUbBy\commonassemblyinfo.cs", @"**\asubby\**\common*.cs", true)]
+    public void MinimatchSyntax_Research(string filename, string minimatch, bool shouldPass) {
+        var mtchs = new List<Tuple<string, bool>> {
+            new Tuple<string, bool>(filename, shouldPass)
+        };
+        CheckTheseMatches(mtchs, minimatch);
     }
 
     [Fact(DisplayName = nameof(SetMinMatchers_ReplacesAll))]
@@ -99,5 +89,15 @@ public class MinmatchTests {
         v.LoadMiniMatches(srcFile);
 
         Assert.Equal(9, v.mock.ReturnMinMatchers().Length);
+    }
+
+    private static void CheckTheseMatches(List<Tuple<string, bool>> mtchs, string againstThis) {
+        var mm = new Glob(againstThis.Replace('\\', '/'), GlobOptions.CaseInsensitive);
+        int i = 0;
+        foreach (var v in mtchs) {
+            i++;
+            bool isMatch = mm.IsMatch(v.Item1);
+            Assert.Equal(v.Item2, isMatch);
+        }
     }
 }

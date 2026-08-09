@@ -34,11 +34,10 @@ public class VersioningOutputter {
 
     public string? FileTemplate { get; set; }
 
+    public string? PassiveOutputOverride { get; set; }
     public string? PverFileName { get; set; }
 
     public bool ReleaseRequested { get; set; }
-
-    public string? PassiveOutputOverride { get; set; }
 
     protected string ValToWrite => ReleaseRequested
                                    ? versionToLog.ReleaseName ?? ""

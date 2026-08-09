@@ -28,20 +28,15 @@ public record NexusConfig {
 }
 
 public class MarkerPosition {
-    public required int Position { get; set; }
     public required string Marker { get; set; }
+    public required int Position { get; set; }
     public string? Value { get; set; }
-
 }
+
 public class NexusSupport {
-    protected Bilge b = new Bilge("plisky-nexus");
     public const string NEXUS_PREFIX = "[NEXUS]";
+    protected Bilge b = new Bilge("plisky-nexus");
     private static readonly HttpClient client = new HttpClient();
-
-
-    Action<byte[], string> SaveCreator(Action<byte[], string, string> saver, string path) {
-        return (b, c) => saver(b, c, path);
-    }
 
     public async Task CacheNexusFiles(NexusConfig nc, string identifier, Action<byte[], string, string> saveFile) {
         b.Info.Flow($"{identifier}");
@@ -53,7 +48,6 @@ public class NexusSupport {
         string assetsApi = $"{nc.Server}/service/rest/v1/assets?repository={nc.Repository}";
 
         var files = new List<Tuple<string, string>>();
-
 
         try {
             b.Verbose.Log($"Attepting to connect  to {assetsApi}");
@@ -98,34 +92,7 @@ public class NexusSupport {
                 DownloadFileAsync(downloadPath, SaveCreator(saveFile, identifier), l.Item1, nc.Username, nc.Password).Wait();
             }
         }
-
     }
-
-    public async Task UploadFileAsync(Stream fileContent, string repositoryPath, string? username, string? password) {
-        try {
-
-
-            using (var content = new StreamContent(fileContent)) {
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-
-                var request = new HttpRequestMessage(HttpMethod.Put, repositoryPath) {
-                    Content = content
-                };
-
-                if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password)) {
-                    byte[] byteArray = new System.Text.UTF8Encoding().GetBytes($"{username}:{password}");
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-                }
-
-                var response = await client.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-            }
-        } catch (HttpRequestException) {
-            throw;
-        }
-    }
-
-
 
     public async Task DownloadFileAsync(string downloadUrl, Action<byte[], string> saveFile, string fileName, string? username, string? password) {
         b.Info.Flow();
@@ -149,8 +116,27 @@ public class NexusSupport {
         }
     }
 
-    public Dictionary<string, MarkerPosition> GetChunks(string nexusUrl, string[] markers) {
+    public async Task<bool> FileExistsAsync(string fileUrl, string? username, string? password) {
+        b.Info.Flow($"Checking existence of file at URL: {fileUrl}");
+        var request = new HttpRequestMessage(HttpMethod.Head, fileUrl);
 
+        if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password)) {
+            byte[] byteArray = new System.Text.UTF8Encoding().GetBytes($"{username}:{password}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+        }
+
+        try {
+            var response = await client.SendAsync(request);
+            b.Verbose.Log($"Received response: {(int)response.StatusCode} {response.StatusCode} for {fileUrl}");
+            bool result = response.IsSuccessStatusCode;
+            return result;
+        } catch (HttpRequestException ex) {
+            b.Warning.Log($"HTTP request exception when checking file existence at {fileUrl}: {ex.Message}");
+            return false;
+        }
+    }
+
+    public Dictionary<string, MarkerPosition> GetChunks(string nexusUrl, string[] markers) {
         var result = new Dictionary<string, MarkerPosition>();
 
         var mrks = new List<MarkerPosition>();
@@ -158,14 +144,12 @@ public class NexusSupport {
             var m = new MarkerPosition() {
                 Marker = l,
                 Position = nexusUrl.IndexOf(l)
-
             };
             mrks.Add(m);
         }
 
         var mio = mrks.OrderBy(p => p.Position).ToList();
         for (int i = 0; i < mio.Count; i++) {
-
             if (mio[i].Position < 0) {
                 continue;
             }
@@ -230,23 +214,29 @@ public class NexusSupport {
         return new Tuple<string, string>(string.Empty, string.Empty);
     }
 
-    public async Task<bool> FileExistsAsync(string fileUrl, string? username, string? password) {
-        b.Info.Flow($"Checking existence of file at URL: {fileUrl}");
-        var request = new HttpRequestMessage(HttpMethod.Head, fileUrl);
-
-        if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password)) {
-            byte[] byteArray = new System.Text.UTF8Encoding().GetBytes($"{username}:{password}");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-        }
-
+    public async Task UploadFileAsync(Stream fileContent, string repositoryPath, string? username, string? password) {
         try {
-            var response = await client.SendAsync(request);
-            b.Verbose.Log($"Received response: {(int)response.StatusCode} {response.StatusCode} for {fileUrl}");
-            bool result = response.IsSuccessStatusCode;
-            return result;
-        } catch (HttpRequestException ex) {
-            b.Warning.Log($"HTTP request exception when checking file existence at {fileUrl}: {ex.Message}");
-            return false;
+            using (var content = new StreamContent(fileContent)) {
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+
+                var request = new HttpRequestMessage(HttpMethod.Put, repositoryPath) {
+                    Content = content
+                };
+
+                if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password)) {
+                    byte[] byteArray = new System.Text.UTF8Encoding().GetBytes($"{username}:{password}");
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                }
+
+                var response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+            }
+        } catch (HttpRequestException) {
+            throw;
         }
+    }
+
+    Action<byte[], string> SaveCreator(Action<byte[], string, string> saver, string path) {
+        return (b, c) => saver(b, c, path);
     }
 }

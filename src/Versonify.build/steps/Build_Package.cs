@@ -1,8 +1,5 @@
-﻿
-using System;
-using System.IO;
+﻿using System;
 using Nuke.Common;
-using Nuke.Common.IO;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.NuGet;
 using Serilog;
@@ -38,7 +35,5 @@ public partial class Build : NukeBuild {
               .EnableNoBuild()
               .EnableNoRestore()
             );
-
-
         });
 }

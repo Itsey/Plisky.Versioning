@@ -9,10 +9,10 @@ using Shouldly;
 using Xunit;
 
 public class FileUpdateTests {
-    private readonly UnitTestHelper uth;
-    private readonly TestSupport ts;
-    protected static InMemoryHandler imh = new(100000);
     protected static Bilge b = null!;
+    protected static InMemoryHandler imh = new(100000);
+    private readonly TestSupport ts;
+    private readonly UnitTestHelper uth;
 
     public FileUpdateTests() {
         if (b == null) {
@@ -29,6 +29,21 @@ public class FileUpdateTests {
 
     ~FileUpdateTests() {
         uth.ClearUpTestFiles();
+    }
+
+    [Theory]
+    [InlineData("AssemblyVersion", "[assembly: AssemblyVersion(\"1.2.3.4\")]")]
+    [InlineData("AssemblyFileVersion", "[ assembly : AssemblyFileVersion ( \" 1.2.* \" ) ]")]
+    [InlineData("AssemblyInformationalVersion", "[assembly: AssemblyInformationalVersion(\"Beta-1.2\")] // trailing comment")]
+    [InlineData("AssemblyVersion", "   \t[assembly:\tAssemblyVersion(\"1.2.3.4\")]\t")]
+    [InlineData("AssemblyVersion", "[assembly: aSSeMbLyVeRsIoN(\"1.2.3.4\")]")]
+    [InlineData("AssemblyVersion", "//  \t[assembly: AssemblyVersion(\"1.2.3.4\")]")] // Note: regex matches; comment filtering is handled outside the regex.
+    public void GetRegex_MatchesExpectedAssemblyAttributeLines_WhenValidInput(string attributeName, string line) {
+        var sut = VersionFileUpdater.GetRegex(attributeName);
+
+        bool result = sut.IsMatch(line);
+
+        result.ShouldBeTrue();
     }
 
     [Fact(DisplayName = nameof(LiteralReplace_DefaultReplacesVersionAndReleaseName))]
@@ -53,67 +68,25 @@ public class FileUpdateTests {
         result.ShouldContain("1.1.1.1");
     }
 
-    [Fact(DisplayName = nameof(LiteralReplace_Version3_IsThreeDigits))]
-    [Trait(Traits.Age, Traits.Regression)]
+    [Fact(DisplayName = nameof(LiteralReplace_ExplicitDisplayStyle_OverridesVersionToken))]
+    [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void LiteralReplace_Version3_IsThreeDigits() {
-        b.Info.Flow();
-
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.VersionV3Txt)!;
-        string srcFile = uth.GetTestDataFile(reid);
-        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
-
-        var sut = new VersionFileUpdater(cv);
-        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Release);
-        string result = File.ReadAllText(srcFile);
-
-        result.ShouldNotContain("XXX-VERSION3-XXX");
-        result.ShouldNotContain("1.1.1.1");
-        result.ShouldContain("1.1.1");
-    }
-
-    [Fact(DisplayName = nameof(LiteralReplace_Version2_IsTwoDigits))]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void LiteralReplace_Version2_IsTwoDigits() {
-        b.Info.Flow();
-
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.VersionV3Txt)!;
-        string srcFile = uth.GetTestDataFile(reid);
-        File.WriteAllText(srcFile, File.ReadAllText(srcFile).Replace("XXX-VERSION3-XXX", "XXX-VERSION2-XXX"));
-        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
-
-        var sut = new VersionFileUpdater(cv);
-        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Release);
-        string result = File.ReadAllText(srcFile);
-
-        result.ShouldNotContain("XXX-VERSION3-XXX");
-        result.ShouldNotContain("XXX-VERSION2-XXX");
-        result.ShouldNotContain("1.1.1.1");
-        result.ShouldNotContain("1.1.1");
-        result.ShouldContain("1.1");
-    }
-
-    [Fact(DisplayName = nameof(LiteralReplace_NoDisplay_DoesNotUpdateVersion))]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void LiteralReplace_NoDisplay_DoesNotUpdateVersion() {
+    public void LiteralReplace_ExplicitDisplayStyle_OverridesVersionToken() {
         b.Info.Flow();
 
         string reid = TestResources.GetIdentifiers(TestResourcesReferences.ReleaseNameAndVerTxt)!;
         string srcFile = uth.GetTestDataFile(reid);
-        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", ".")) {
-            ReleaseName = "Unicorn"
-        };
+        File.WriteAllText(srcFile, "Value: XXX-VERSION-XXX");
 
+        var cv = new CompleteVersion("2.3-Alpha.1", '.', '-');
+        cv.Digits[2].GroupName = "pre-release";
+        cv.Digits[3].GroupName = "pre-release";
         var sut = new VersionFileUpdater(cv);
-        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.NoDisplay);
 
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Short, groupNamesForDisplay: "default,pre-release");
         string result = File.ReadAllText(srcFile);
-        result.ShouldNotContain("XXX-RELEASENAME-XXX");
-        result.ShouldContain("Unicorn");
-        result.ShouldContain("XXX-VERSION-XXX");
-        result.ShouldNotContain("1.1.1.1");
+
+        result.ShouldBe("Value: 2.3");
     }
 
     [Theory(DisplayName = nameof(LiteralReplace_Exploratory_MapsVersionMarkerForPreReleaseInput))]
@@ -170,7 +143,6 @@ public class FileUpdateTests {
         result.ShouldBe($"Value: {expected}");
     }
 
-
     [Theory(DisplayName = nameof(LiteralReplace_Exploratory_UsesCustomPreReleaseGroupName))]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -194,51 +166,82 @@ public class FileUpdateTests {
 
         result.ShouldBe($"Value: {expected}");
     }
-    [Fact(DisplayName = nameof(LiteralReplace_ExplicitDisplayStyle_OverridesVersionToken))]
-    [Trait(Traits.Age, Traits.Fresh)]
+
+    [Fact(DisplayName = nameof(LiteralReplace_NoDisplay_DoesNotUpdateVersion))]
+    [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void LiteralReplace_ExplicitDisplayStyle_OverridesVersionToken() {
+    public void LiteralReplace_NoDisplay_DoesNotUpdateVersion() {
         b.Info.Flow();
 
         string reid = TestResources.GetIdentifiers(TestResourcesReferences.ReleaseNameAndVerTxt)!;
         string srcFile = uth.GetTestDataFile(reid);
-        File.WriteAllText(srcFile, "Value: XXX-VERSION-XXX");
+        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", ".")) {
+            ReleaseName = "Unicorn"
+        };
 
-        var cv = new CompleteVersion("2.3-Alpha.1", '.', '-');
-        cv.Digits[2].GroupName = "pre-release";
-        cv.Digits[3].GroupName = "pre-release";
         var sut = new VersionFileUpdater(cv);
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.NoDisplay);
 
-        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Short, groupNamesForDisplay: "default,pre-release");
         string result = File.ReadAllText(srcFile);
-
-        result.ShouldBe("Value: 2.3");
+        result.ShouldNotContain("XXX-RELEASENAME-XXX");
+        result.ShouldContain("Unicorn");
+        result.ShouldContain("XXX-VERSION-XXX");
+        result.ShouldNotContain("1.1.1.1");
     }
 
-    [Fact(DisplayName = nameof(VersionFileUpdaterFindsFiles))]
+    [Fact(DisplayName = nameof(LiteralReplace_Version2_IsTwoDigits))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void VersionFileUpdaterFindsFiles() {
+    public void LiteralReplace_Version2_IsTwoDigits() {
         b.Info.Flow();
 
-        var msut = new MockVersionFileUpdater();
-        msut.mock.AddFilesystemFile("XX");
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.VersionV3Txt)!;
+        string srcFile = uth.GetTestDataFile(reid);
+        File.WriteAllText(srcFile, File.ReadAllText(srcFile).Replace("XXX-VERSION3-XXX", "XXX-VERSION2-XXX"));
+        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
 
-        msut.mock.ContainsFilesystemFile("XX").ShouldBeTrue();
+        var sut = new VersionFileUpdater(cv);
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Release);
+        string result = File.ReadAllText(srcFile);
+
+        result.ShouldNotContain("XXX-VERSION3-XXX");
+        result.ShouldNotContain("XXX-VERSION2-XXX");
+        result.ShouldNotContain("1.1.1.1");
+        result.ShouldNotContain("1.1.1");
+        result.ShouldContain("1.1");
     }
-    [Theory]
-    [InlineData("AssemblyVersion", "[assembly: AssemblyVersion(\"1.2.3.4\")]")]
-    [InlineData("AssemblyFileVersion", "[ assembly : AssemblyFileVersion ( \" 1.2.* \" ) ]")]
-    [InlineData("AssemblyInformationalVersion", "[assembly: AssemblyInformationalVersion(\"Beta-1.2\")] // trailing comment")]
-    [InlineData("AssemblyVersion", "   \t[assembly:\tAssemblyVersion(\"1.2.3.4\")]\t")]
-    [InlineData("AssemblyVersion", "[assembly: aSSeMbLyVeRsIoN(\"1.2.3.4\")]")]
-    [InlineData("AssemblyVersion", "//  \t[assembly: AssemblyVersion(\"1.2.3.4\")]")] // Note: regex matches; comment filtering is handled outside the regex.
-    public void GetRegex_MatchesExpectedAssemblyAttributeLines_WhenValidInput(string attributeName, string line) {
-        var sut = VersionFileUpdater.GetRegex(attributeName);
 
-        bool result = sut.IsMatch(line);
+    [Fact(DisplayName = nameof(LiteralReplace_Version3_IsThreeDigits))]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void LiteralReplace_Version3_IsThreeDigits() {
+        b.Info.Flow();
 
-        result.ShouldBeTrue();
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.VersionV3Txt)!;
+        string srcFile = uth.GetTestDataFile(reid);
+        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
+
+        var sut = new VersionFileUpdater(cv);
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.TextFile, DisplayType.Release);
+        string result = File.ReadAllText(srcFile);
+
+        result.ShouldNotContain("XXX-VERSION3-XXX");
+        result.ShouldNotContain("1.1.1.1");
+        result.ShouldContain("1.1.1");
+    }
+
+    [Fact]
+    public void PerformUpdate_Throws_WhenFileDoesNotExist() {
+        b.Info.Flow();
+        var cv = new CompleteVersion();
+        var sut = new VersionFileUpdater(cv);
+        string nonExistentFile = Path.Combine(Path.GetTempPath(), "ThisFileDoesNotExist12345.txt");
+
+        var ex = Should.Throw<FileNotFoundException>(() => {
+            _ = sut.PerformUpdate(nonExistentFile, FileUpdateType.TextFile);
+        });
+
+        ex.Message.ShouldContain("Filename must be present");
     }
 
     [Fact]
@@ -260,6 +263,23 @@ public class FileUpdateTests {
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
+    public void Regex_MatchesForFile() {
+        b.Info.Flow();
+
+        var rx = VersionFileUpdater.GetRegex("AssemblyInformationalVersion");
+
+        rx.IsMatch("[assembly: AssemblyInformationalVersion(\"0.0.0.0\")]").ShouldBeTrue("1 Invalid match for an assembly version");
+        rx.IsMatch("[assembly: AssemblyInformationalVersion(\"0.0.0\")]").ShouldBeTrue("2 Invalid match for an assembly version");
+        rx.IsMatch("[assembly: AssemblyInformationalVersion(\"0.0\")]").ShouldBeTrue("3 Invalid match for an assembly version");
+        rx.IsMatch("[assembly: AssemblyInformationalVersion(\"0\")] ").ShouldBeTrue("4 Invalid match for an assembly version");
+        rx.IsMatch("[assembly: AssemblyInformationalVersion(\"\")] ").ShouldBeTrue("5 Invalid match for an assembly version");
+        rx.IsMatch("[assembly:      AssemblyInformationalVersion     (\"0.0.0.0\"   )     ]").ShouldBeTrue("7 Invalid match for an assembly version");
+        rx.IsMatch("[assembly     :AssemblyInformationalVersion(\"0.0.0.0\")]").ShouldBeTrue("8 Invalid match for an assembly version");
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
     public void Regex_MatchesForInformational() {
         b.Info.Flow();
 
@@ -276,18 +296,39 @@ public class FileUpdateTests {
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void Regex_MatchesForFile() {
+    public void Update_AsmFileVer_Works() {
         b.Info.Flow();
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.JustFileVer)!;
+        string srcFile = uth.GetTestDataFile(reid);
+        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
+        string fn = ts.GetFileAsTemporary(srcFile);
+        var sut = new VersionFileUpdater(cv);
 
-        var rx = VersionFileUpdater.GetRegex("AssemblyInformationalVersion");
+        string response = sut.PerformUpdate(fn, FileUpdateType.NetFile);
 
-        rx.IsMatch("[assembly: AssemblyInformationalVersion(\"0.0.0.0\")]").ShouldBeTrue("1 Invalid match for an assembly version");
-        rx.IsMatch("[assembly: AssemblyInformationalVersion(\"0.0.0\")]").ShouldBeTrue("2 Invalid match for an assembly version");
-        rx.IsMatch("[assembly: AssemblyInformationalVersion(\"0.0\")]").ShouldBeTrue("3 Invalid match for an assembly version");
-        rx.IsMatch("[assembly: AssemblyInformationalVersion(\"0\")] ").ShouldBeTrue("4 Invalid match for an assembly version");
-        rx.IsMatch("[assembly: AssemblyInformationalVersion(\"\")] ").ShouldBeTrue("5 Invalid match for an assembly version");
-        rx.IsMatch("[assembly:      AssemblyInformationalVersion     (\"0.0.0.0\"   )     ]").ShouldBeTrue("7 Invalid match for an assembly version");
-        rx.IsMatch("[assembly     :AssemblyInformationalVersion(\"0.0.0.0\")]").ShouldBeTrue("8 Invalid match for an assembly version");
+        ts.DoesFileContainThisText(fn, "0.0.0.0").ShouldBeFalse("No update was made to the file at all");
+        ts.DoesFileContainThisText(fn, "1.1").ShouldBeTrue("The file does not appear to have been updated correctly.");
+        ts.DoesFileContainThisText(fn, "AssemblyFileVersion(\"1.1.1.1\")").ShouldBeTrue("The file does not have the full version in it");
+        response.ShouldContain($"Updated AssemblyFileVersion");
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Update_AsmInfVer_Works() {
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.JustInformational)!;
+        string srcFile = uth.GetTestDataFile(reid);
+
+        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
+        string fn = ts.GetFileAsTemporary(srcFile);
+
+        var sut = new VersionFileUpdater(cv);
+
+        _ = sut.PerformUpdate(fn, FileUpdateType.NetInformational);
+
+        ts.DoesFileContainThisText(fn, "0.0.0.0").ShouldBeFalse("No update was made to the file at all");
+        ts.DoesFileContainThisText(fn, "1.1").ShouldBeTrue("The file does not appear to have been updated correctly.");
+        ts.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"1.1.1.1\")").ShouldBeTrue("The file does not have the full version in it");
     }
 
     [Fact]
@@ -336,42 +377,30 @@ public class FileUpdateTests {
         ts.DoesFileContainThisText(fn, "using System.Reflection;").ShouldBeTrue("Collatoral Damage - Another element in the file was updated - Reflection First Line");
     }
 
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
+    [Fact(DisplayName = nameof(Update_Nuspec_BugNoUpdate))]
+    [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void Update_AsmInfVer_Works() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.JustInformational)!;
-        string srcFile = uth.GetTestDataFile(reid);
-
-        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
-        string fn = ts.GetFileAsTemporary(srcFile);
-
-        var sut = new VersionFileUpdater(cv);
-
-        _ = sut.PerformUpdate(fn, FileUpdateType.NetInformational);
-
-        ts.DoesFileContainThisText(fn, "0.0.0.0").ShouldBeFalse("No update was made to the file at all");
-        ts.DoesFileContainThisText(fn, "1.1").ShouldBeTrue("The file does not appear to have been updated correctly.");
-        ts.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"1.1.1.1\")").ShouldBeTrue("The file does not have the full version in it");
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Update_AsmFileVer_Works() {
+    public void Update_Nuspec_BugNoUpdate() {
         b.Info.Flow();
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.JustFileVer)!;
+        // BUG Case - for some reason nuspec was not being updated. B_NuspecUpdateFailed
+
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.BugNuspecUpdateFail)!;
         string srcFile = uth.GetTestDataFile(reid);
+
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
-        string fn = ts.GetFileAsTemporary(srcFile);
         var sut = new VersionFileUpdater(cv);
 
-        string response = sut.PerformUpdate(fn, FileUpdateType.NetFile);
+        string knownStartPoint = "<version>1.7.2.0</version>";
+        string destinationPoint = "<version>1.1.1.1</version>";
+        string txt = File.ReadAllText(srcFile);
 
-        ts.DoesFileContainThisText(fn, "0.0.0.0").ShouldBeFalse("No update was made to the file at all");
-        ts.DoesFileContainThisText(fn, "1.1").ShouldBeTrue("The file does not appear to have been updated correctly.");
-        ts.DoesFileContainThisText(fn, "AssemblyFileVersion(\"1.1.1.1\")").ShouldBeTrue("The file does not have the full version in it");
-        response.ShouldContain($"Updated AssemblyFileVersion");
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.Nuspec, DisplayType.Full);
+        string txt2 = File.ReadAllText(srcFile);
+
+        (txt.IndexOf(knownStartPoint) > 0).ShouldBeTrue();
+        (txt.IndexOf(destinationPoint) > 0).ShouldBeFalse();
+        (txt2.IndexOf(knownStartPoint) > 0).ShouldBeFalse();
+        (txt2.IndexOf(destinationPoint) > 0).ShouldBeTrue();
     }
 
     [Fact(DisplayName = nameof(Update_Nuspec_Works))]
@@ -408,59 +437,6 @@ public class FileUpdateTests {
         string after = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
         after.ShouldNotBe(before);
         response.ShouldContain("Updated Std Assembly");
-    }
-
-    [Fact(DisplayName = nameof(UpdateStd_AddsFileWhenMissing))]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void UpdateStd_AddsFileWhenMissing() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone)!;
-        string srcFile = uth.GetTestDataFile(reid);
-        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
-        var sut = new VersionFileUpdater(cv);
-        string before = ts.GetVersion(FileUpdateType.StdFile, srcFile);
-
-        _ = sut.PerformUpdate(srcFile, FileUpdateType.StdFile);
-
-        string after = ts.GetVersion(FileUpdateType.StdFile, srcFile);
-        before.ShouldBeNullOrEmpty();
-        after.ShouldNotBeNullOrEmpty();
-    }
-
-    [Fact(DisplayName = nameof(UpdateStd_AddsAsmWhenMissing))]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void UpdateStd_AddsAsmWhenMissing() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone)!;
-        string srcFile = uth.GetTestDataFile(reid);
-        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
-        var sut = new VersionFileUpdater(cv);
-        string before = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
-
-        _ = sut.PerformUpdate(srcFile, FileUpdateType.StdAssembly);
-
-        string after = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
-
-        before.ShouldBeNullOrEmpty();
-        after.ShouldNotBeNullOrEmpty();
-    }
-
-    [Fact(DisplayName = nameof(UpdateStd_AddsStdInfoWhenMissing))]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void UpdateStd_AddsStdInfoWhenMissing() {
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone)!;
-        string srcFile = uth.GetTestDataFile(reid);
-        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
-        var sut = new VersionFileUpdater(cv);
-        string before = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
-
-        _ = sut.PerformUpdate(srcFile, FileUpdateType.StdInformational);
-
-        string after = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
-
-        before.ShouldBeNullOrEmpty();
-        after.ShouldNotBeNullOrEmpty();
     }
 
     [Fact(DisplayName = nameof(Update_StdCSProjFile_Works))]
@@ -517,47 +493,68 @@ public class FileUpdateTests {
         response.ShouldContain("Updated Wix");
     }
 
-    [Fact(DisplayName = nameof(Update_Nuspec_BugNoUpdate))]
-    [Trait(Traits.Age, Traits.Fresh)]
+    [Fact(DisplayName = nameof(UpdateStd_AddsAsmWhenMissing))]
+    [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void Update_Nuspec_BugNoUpdate() {
-        b.Info.Flow();
-        // BUG Case - for some reason nuspec was not being updated. B_NuspecUpdateFailed
-
-        string reid = TestResources.GetIdentifiers(TestResourcesReferences.BugNuspecUpdateFail)!;
+    public void UpdateStd_AddsAsmWhenMissing() {
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone)!;
         string srcFile = uth.GetTestDataFile(reid);
-
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
+        string before = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
 
-        string knownStartPoint = "<version>1.7.2.0</version>";
-        string destinationPoint = "<version>1.1.1.1</version>";
-        string txt = File.ReadAllText(srcFile);
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.StdAssembly);
 
-        _ = sut.PerformUpdate(srcFile, FileUpdateType.Nuspec, DisplayType.Full);
-        string txt2 = File.ReadAllText(srcFile);
+        string after = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
 
-        (txt.IndexOf(knownStartPoint) > 0).ShouldBeTrue();
-        (txt.IndexOf(destinationPoint) > 0).ShouldBeFalse();
-        (txt2.IndexOf(knownStartPoint) > 0).ShouldBeFalse();
-        (txt2.IndexOf(destinationPoint) > 0).ShouldBeTrue();
+        before.ShouldBeNullOrEmpty();
+        after.ShouldNotBeNullOrEmpty();
     }
 
-    [Fact]
-    public void PerformUpdate_Throws_WhenFileDoesNotExist() {
-        b.Info.Flow();
-        var cv = new CompleteVersion();
+    [Fact(DisplayName = nameof(UpdateStd_AddsFileWhenMissing))]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void UpdateStd_AddsFileWhenMissing() {
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone)!;
+        string srcFile = uth.GetTestDataFile(reid);
+        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
-        string nonExistentFile = Path.Combine(Path.GetTempPath(), "ThisFileDoesNotExist12345.txt");
+        string before = ts.GetVersion(FileUpdateType.StdFile, srcFile);
 
-        var ex = Should.Throw<FileNotFoundException>(() => {
-            _ = sut.PerformUpdate(nonExistentFile, FileUpdateType.TextFile);
-        });
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.StdFile);
 
-        ex.Message.ShouldContain("Filename must be present");
+        string after = ts.GetVersion(FileUpdateType.StdFile, srcFile);
+        before.ShouldBeNullOrEmpty();
+        after.ShouldNotBeNullOrEmpty();
+    }
+
+    [Fact(DisplayName = nameof(UpdateStd_AddsStdInfoWhenMissing))]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void UpdateStd_AddsStdInfoWhenMissing() {
+        string reid = TestResources.GetIdentifiers(TestResourcesReferences.NetStdNone)!;
+        string srcFile = uth.GetTestDataFile(reid);
+        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
+        var sut = new VersionFileUpdater(cv);
+        string before = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
+
+        _ = sut.PerformUpdate(srcFile, FileUpdateType.StdInformational);
+
+        string after = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
+
+        before.ShouldBeNullOrEmpty();
+        after.ShouldNotBeNullOrEmpty();
+    }
+
+    [Fact(DisplayName = nameof(VersionFileUpdaterFindsFiles))]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void VersionFileUpdaterFindsFiles() {
+        b.Info.Flow();
+
+        var msut = new MockVersionFileUpdater();
+        msut.mock.AddFilesystemFile("XX");
+
+        msut.mock.ContainsFilesystemFile("XX").ShouldBeTrue();
     }
 }
-
-
-
-

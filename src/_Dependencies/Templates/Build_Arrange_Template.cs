@@ -2,11 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Contracts;
-using Nuke.Common;
-using Nuke.Common.IO;
-using Nuke.Common.Tools.DotNet;
-using Plisky.Nuke.Fusion;
-using Serilog;
 
 public partial class Build : NukeBuild {
 
@@ -19,8 +14,17 @@ public partial class Build : NukeBuild {
             Log.Information("--> Arrange <-- ");
         });
 
-    private Target Clean => _ => _
+    public Target RestoreStep => _ => _
+        .After(ArrangeStep, Clean, MollyCheck)
         .DependsOn(Initialise)
+        .Before(ConstructStep)
+        .Executes(() => {
+            Log.Information("--> NuGet Restore <--");
+            DotNetTasks.DotNetRestore(s => s.SetProjectFile(Solution));
+        });
+
+    private Target Clean => _ => _
+            .DependsOn(Initialise)
         .After(ArrangeStep, Initialise)
         .Before(ConstructStep)
         .Executes(() => {
@@ -69,10 +73,8 @@ public partial class Build : NukeBuild {
                return;
            }
 
-
            Log.Verbose($"MC ({settings.MollyRulesToken}) ({settings.MollyPrimaryToken}) ({GitRepository.LocalDirectory})");
            var mc = new MollycoddleTasks();
-
 
            string formatter = IsLocalBuild ? "plain" : "azdo";
 
@@ -93,15 +95,6 @@ public partial class Build : NukeBuild {
            Log.Information("Mollycoddle Structure Linting Completes.");
        });
 
-    public Target RestoreStep => _ => _
-        .After(ArrangeStep, Clean, MollyCheck)
-        .DependsOn(Initialise)
-        .Before(ConstructStep)
-        .Executes(() => {
-            Log.Information("--> NuGet Restore <--");
-            DotNetTasks.DotNetRestore(s => s.SetProjectFile(Solution));
-        });
-
     [Pure]
     private ValidationResult? ValidateMollySettings(string? mollyRulesToken, bool localDirectoryExists) {
         var errors = new List<string>();
@@ -117,7 +110,5 @@ public partial class Build : NukeBuild {
             return new ValidationResult("Mollycoddle: Parameter Validation Failed.", errors);
         }
         return ValidationResult.Success;
-
     }
 }
-

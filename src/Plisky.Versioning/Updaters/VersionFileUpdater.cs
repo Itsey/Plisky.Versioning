@@ -8,14 +8,14 @@ using System.Xml.Linq;
 using Plisky.Diagnostics;
 
 public class VersionFileUpdater {
-    protected Bilge b = new Bilge("Plisky-Versioning");
-    private const string ASMFILE_FILEVER_TAG = "AssemblyFileVersion";
-    private const string ASMFILE_VER_TAG = "AssemblyVersion";
-    private const string ASMFILE_INFVER_TAG = "AssemblyInformationalVersion";
-    private const string ASM_STD_ASMVTAG = "AssemblyVersion";
-    private const string ASM_STD_VERSTAG = "Version";
-    private const string ASM_STD_FILETAG = "FileVersion";
     protected const string RELEASE_NAME_FILE_IDENTIFIER = "XXX-RELEASENAME-XXX";
+    protected Bilge b = new Bilge("Plisky-Versioning");
+    private const string ASM_STD_ASMVTAG = "AssemblyVersion";
+    private const string ASM_STD_FILETAG = "FileVersion";
+    private const string ASM_STD_VERSTAG = "Version";
+    private const string ASMFILE_FILEVER_TAG = "AssemblyFileVersion";
+    private const string ASMFILE_INFVER_TAG = "AssemblyInformationalVersion";
+    private const string ASMFILE_VER_TAG = "AssemblyVersion";
 
     //private readonly IHookVersioningChanges? hook; //is this needed?
     private readonly CompleteVersion cv;
@@ -94,48 +94,6 @@ public class VersionFileUpdater {
         return responseLog;
     }
 
-    protected virtual string UpdateLiteralReplacer(string fileToCheck, CompleteVersion versonToWrite, DisplayType displayStyle, DisplayType originalDisplayStyle = DisplayType.Default, string groupNamesForDisplay = "") {
-#if DEBUG
-        if (!File.Exists(fileToCheck)) { throw new InvalidOperationException("Must not be possible, check this before you reach this code"); }
-#endif
-        string response = string.Empty;
-
-        Func<string, string> replacer;
-
-        if (displayStyle == DisplayType.NoDisplay) {
-            replacer = new Func<string, string>((inney) => {
-                if (!inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
-                    response = "WARNING - No Release Name Identifier Found";
-                    return inney;
-                } else {
-                    response = $"Replacing {RELEASE_NAME_FILE_IDENTIFIER} with {versonToWrite.ReleaseName}";
-                    return inney.Replace(RELEASE_NAME_FILE_IDENTIFIER, versonToWrite.ReleaseName);
-                }
-            });
-        } else {
-            replacer = new Func<string, string>((inney) => {
-                if (!inney.Contains("XXX-VERSION") && !inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
-                    response = "WARNING - No Versioning or Release Name Identifier Found, no updates possible.";
-                    return inney;
-                }
-                response = "Replacing XXX-VERSION* with " + GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay);
-
-                return inney.Replace(RELEASE_NAME_FILE_IDENTIFIER, versonToWrite.ReleaseName)
-                .Replace("XXX-VERSION-XXX", GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay))
-                .Replace("XXX-VERSIONT-XXX", GetVersionStringForLiteral(versonToWrite, DisplayType.ThreeDigit, groupNamesForDisplay))
-                .Replace("XXX-VERSIONF-XXX", GetVersionStringForLiteral(versonToWrite, DisplayType.FourDigit, groupNamesForDisplay))
-                .Replace("XXX-VERSION3-XXX", versonToWrite.GetVersionString(DisplayType.ThreeDigitNumeric))
-                .Replace("XXX-VERSION2-XXX", GetVersionStringForLiteral(versonToWrite, DisplayType.Short, groupNamesForDisplay))
-                .Replace("XXX-VERSION4-XXX", versonToWrite.GetVersionString(DisplayType.FourDigitNumeric));
-            });
-        }
-
-        string fileText = replacer(File.ReadAllText(fileToCheck));
-        File.WriteAllText(fileToCheck, fileText);
-        return response;
-    }
-
-
     protected string GetVersionStringForLiteral(CompleteVersion version, DisplayType displayType, string groupNamesForDisplay) {
         return displayType switch {
             DisplayType.Default => version.GetVersionStringByGroupSelection(groupNamesForDisplay, int.MaxValue),
@@ -145,111 +103,6 @@ public class VersionFileUpdater {
             DisplayType.FourDigit => version.GetVersionStringByGroupSelection(groupNamesForDisplay, 4),
             _ => version.GetVersionString(displayType)
         };
-    }
-
-    // Special handling for the VERSIONT literal: when pre-release group is requested trim a trailing numeric pre-release part (e.g. ".1").
-    //protected string GetVersionTString(CompleteVersion version, string groupNamesForDisplay) {
-    //    // Reuse existing API and use a single stdlib Regex to drop a trailing numeric pre-release segment.
-    //    string s = version.GetVersionStringByGroupSelection(groupNamesForDisplay, 3) ?? string.Empty;
-    //    return System.Text.RegularExpressions.Regex.Replace(s, @"\.\d+$", "");
-    //}
-    protected virtual void UpdateStdCSPRoj(string fl, string versonToWrite, string propName) {
-        const string PROPERTYGROUP_ELNAME = "PropertyGroup";
-        const string PROJECT_ELNAME = "Project";
-#if DEBUG
-        if (!File.Exists(fl)) { throw new InvalidOperationException("Must not be possible, validate that the file exists prior to this point in the code."); }
-#endif
-        b.Info.Log($"Updating NetStd style file with ver {versonToWrite} property {propName}", fl);
-
-        var xd2 = XDocument.Load(fl);
-
-        var el2 = xd2.Element(PROJECT_ELNAME);
-        if (el2 == null) {
-            b.Error.Log($"Unable to locate [{PROJECT_ELNAME}] element in file [{fl}], version update failed.", "Likely this is not a .net standard csproj but a framework one.");
-            return;
-        }
-
-        var propGroupElement = el2?.Element(PROPERTYGROUP_ELNAME);
-        if (propGroupElement != null) {
-            b.Verbose.Log("PropertyGroup Matched");
-            var versionElementToUpdate = propGroupElement.Element(propName);
-            if (versionElementToUpdate == null) {
-                b.Verbose.Log($"Element {propName} not found, Adding.");
-                versionElementToUpdate = new XElement(propName);
-                propGroupElement.Add(versionElementToUpdate);
-            }
-            versionElementToUpdate.Value = versonToWrite;
-        } else {
-            b.Warning.Log($"Unable to locate [{PROPERTYGROUP_ELNAME}] element in the file [{fl}], version update failed");
-        }
-
-        xd2.Save(fl);
-    }
-
-    protected virtual void UpdateWixFile(string fileName, string versionToWrite) {
-        const string WIXNAMESPACE = "http://schemas.microsoft.com/wix/2006/wi";
-        var xd = XDocument.Load(fileName);
-        XNamespace ns = WIXNAMESPACE;
-        var el = xd.Element(ns + "Wix")?.Element(ns + "Product");
-        if (el == null) {
-            b.Verbose.Log("No Wix/Product element found, nothing to do");
-            return;
-        }
-
-        var at1 = el?.Attribute("Version");
-        if (at1 != null) {
-            at1.Value = versionToWrite;
-            var at2 = el?.Attribute("Name");
-            if (at2 != null) {
-                b.Verbose.Log("Secondary name element found");
-                at2.Value = at2.Value.Replace("XXX_VERSION_XXX", versionToWrite);
-            }
-        } else {
-            b.Verbose.Log("Invalid attribute, could not find Wix/Product [version]");
-        }
-
-        xd.Save(fileName);
-    }
-
-    protected virtual string UpdateNuspecFile(string fileName, string versionText) {
-        const string NUGETNAMESPACE = "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd";
-        string result;
-
-        b.Verbose.Log("About to load filename", fileName);
-
-        var xd = XDocument.Load(fileName);
-        XNamespace ns = NUGETNAMESPACE;
-        var el2 = xd.Element(ns + "package")?.Element(ns + "metadata")?.Element(ns + "version");
-
-        if (el2 == null) {
-            b.Warning.Log("element package/metadata/version using namespace not found, trying alternative");
-            el2 = xd.Element("package")?.Element("metadata")?.Element("version");
-        }
-
-        if (el2 != null) {
-            result = $"{el2.Name} with {el2.Value} being set to {versionText}";
-            try {
-                b.Verbose.Log($"Performing Update - {result}");
-                el2.Value = versionText;
-                b.Verbose.Log($"About to save. - {fileName}");
-
-                xd.Save(fileName);
-                string[] x = File.ReadAllLines(fileName);
-                foreach (string n in x) {
-                    b.Verbose.Log("LINE: " + n);
-                }
-
-                b.Verbose.Log(xd.Element(ns + "package")?.Element(ns + "metadata")?.Element(ns + "version")?.Value);
-            } catch (Exception ex) {
-                b.Warning.Dump(ex, "Unable to save nuspec file");
-                result = "WARNING >> Unable to save nuspec file, update failed.";
-            }
-        } else {
-            b.Warning.Log("Invalid element in the Nuget file, can not update.");
-            result = "WARNING >> Element not found in nuspec, no changes made.";
-        }
-
-        return result;
     }
 
     /// <summary>
@@ -319,5 +172,150 @@ public class VersionFileUpdater {
 
         b.Info.Log("The attribute " + targetAttribute + " was applied to the file " + fileName + " Successfully.");
     }
-}
 
+    protected virtual string UpdateLiteralReplacer(string fileToCheck, CompleteVersion versonToWrite, DisplayType displayStyle, DisplayType originalDisplayStyle = DisplayType.Default, string groupNamesForDisplay = "") {
+#if DEBUG
+        if (!File.Exists(fileToCheck)) { throw new InvalidOperationException("Must not be possible, check this before you reach this code"); }
+#endif
+        string response = string.Empty;
+
+        Func<string, string> replacer;
+
+        if (displayStyle == DisplayType.NoDisplay) {
+            replacer = new Func<string, string>((inney) => {
+                if (!inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
+                    response = "WARNING - No Release Name Identifier Found";
+                    return inney;
+                } else {
+                    response = $"Replacing {RELEASE_NAME_FILE_IDENTIFIER} with {versonToWrite.ReleaseName}";
+                    return inney.Replace(RELEASE_NAME_FILE_IDENTIFIER, versonToWrite.ReleaseName);
+                }
+            });
+        } else {
+            replacer = new Func<string, string>((inney) => {
+                if (!inney.Contains("XXX-VERSION") && !inney.Contains(RELEASE_NAME_FILE_IDENTIFIER)) {
+                    response = "WARNING - No Versioning or Release Name Identifier Found, no updates possible.";
+                    return inney;
+                }
+                response = "Replacing XXX-VERSION* with " + GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay);
+
+                return inney.Replace(RELEASE_NAME_FILE_IDENTIFIER, versonToWrite.ReleaseName)
+                .Replace("XXX-VERSION-XXX", GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay))
+                .Replace("XXX-VERSIONT-XXX", GetVersionStringForLiteral(versonToWrite, DisplayType.ThreeDigit, groupNamesForDisplay))
+                .Replace("XXX-VERSIONF-XXX", GetVersionStringForLiteral(versonToWrite, DisplayType.FourDigit, groupNamesForDisplay))
+                .Replace("XXX-VERSION3-XXX", versonToWrite.GetVersionString(DisplayType.ThreeDigitNumeric))
+                .Replace("XXX-VERSION2-XXX", GetVersionStringForLiteral(versonToWrite, DisplayType.Short, groupNamesForDisplay))
+                .Replace("XXX-VERSION4-XXX", versonToWrite.GetVersionString(DisplayType.FourDigitNumeric));
+            });
+        }
+
+        string fileText = replacer(File.ReadAllText(fileToCheck));
+        File.WriteAllText(fileToCheck, fileText);
+        return response;
+    }
+
+    protected virtual string UpdateNuspecFile(string fileName, string versionText) {
+        const string NUGETNAMESPACE = "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd";
+        string result;
+
+        b.Verbose.Log("About to load filename", fileName);
+
+        var xd = XDocument.Load(fileName);
+        XNamespace ns = NUGETNAMESPACE;
+        var el2 = xd.Element(ns + "package")?.Element(ns + "metadata")?.Element(ns + "version");
+
+        if (el2 == null) {
+            b.Warning.Log("element package/metadata/version using namespace not found, trying alternative");
+            el2 = xd.Element("package")?.Element("metadata")?.Element("version");
+        }
+
+        if (el2 != null) {
+            result = $"{el2.Name} with {el2.Value} being set to {versionText}";
+            try {
+                b.Verbose.Log($"Performing Update - {result}");
+                el2.Value = versionText;
+                b.Verbose.Log($"About to save. - {fileName}");
+
+                xd.Save(fileName);
+                string[] x = File.ReadAllLines(fileName);
+                foreach (string n in x) {
+                    b.Verbose.Log("LINE: " + n);
+                }
+
+                b.Verbose.Log(xd.Element(ns + "package")?.Element(ns + "metadata")?.Element(ns + "version")?.Value);
+            } catch (Exception ex) {
+                b.Warning.Dump(ex, "Unable to save nuspec file");
+                result = "WARNING >> Unable to save nuspec file, update failed.";
+            }
+        } else {
+            b.Warning.Log("Invalid element in the Nuget file, can not update.");
+            result = "WARNING >> Element not found in nuspec, no changes made.";
+        }
+
+        return result;
+    }
+
+    // Special handling for the VERSIONT literal: when pre-release group is requested trim a trailing numeric pre-release part (e.g. ".1").
+    //protected string GetVersionTString(CompleteVersion version, string groupNamesForDisplay) {
+    //    // Reuse existing API and use a single stdlib Regex to drop a trailing numeric pre-release segment.
+    //    string s = version.GetVersionStringByGroupSelection(groupNamesForDisplay, 3) ?? string.Empty;
+    //    return System.Text.RegularExpressions.Regex.Replace(s, @"\.\d+$", "");
+    //}
+    protected virtual void UpdateStdCSPRoj(string fl, string versonToWrite, string propName) {
+        const string PROPERTYGROUP_ELNAME = "PropertyGroup";
+        const string PROJECT_ELNAME = "Project";
+#if DEBUG
+        if (!File.Exists(fl)) { throw new InvalidOperationException("Must not be possible, validate that the file exists prior to this point in the code."); }
+#endif
+        b.Info.Log($"Updating NetStd style file with ver {versonToWrite} property {propName}", fl);
+
+        var xd2 = XDocument.Load(fl);
+
+        var el2 = xd2.Element(PROJECT_ELNAME);
+        if (el2 == null) {
+            b.Error.Log($"Unable to locate [{PROJECT_ELNAME}] element in file [{fl}], version update failed.", "Likely this is not a .net standard csproj but a framework one.");
+            return;
+        }
+
+        var propGroupElement = el2?.Element(PROPERTYGROUP_ELNAME);
+        if (propGroupElement != null) {
+            b.Verbose.Log("PropertyGroup Matched");
+            var versionElementToUpdate = propGroupElement.Element(propName);
+            if (versionElementToUpdate == null) {
+                b.Verbose.Log($"Element {propName} not found, Adding.");
+                versionElementToUpdate = new XElement(propName);
+                propGroupElement.Add(versionElementToUpdate);
+            }
+            versionElementToUpdate.Value = versonToWrite;
+        } else {
+            b.Warning.Log($"Unable to locate [{PROPERTYGROUP_ELNAME}] element in the file [{fl}], version update failed");
+        }
+
+        xd2.Save(fl);
+    }
+
+    protected virtual void UpdateWixFile(string fileName, string versionToWrite) {
+        const string WIXNAMESPACE = "http://schemas.microsoft.com/wix/2006/wi";
+        var xd = XDocument.Load(fileName);
+        XNamespace ns = WIXNAMESPACE;
+        var el = xd.Element(ns + "Wix")?.Element(ns + "Product");
+        if (el == null) {
+            b.Verbose.Log("No Wix/Product element found, nothing to do");
+            return;
+        }
+
+        var at1 = el?.Attribute("Version");
+        if (at1 != null) {
+            at1.Value = versionToWrite;
+            var at2 = el?.Attribute("Name");
+            if (at2 != null) {
+                b.Verbose.Log("Secondary name element found");
+                at2.Value = at2.Value.Replace("XXX_VERSION_XXX", versionToWrite);
+            }
+        } else {
+            b.Verbose.Log("Invalid attribute, could not find Wix/Product [version]");
+        }
+
+        xd.Save(fileName);
+    }
+}

@@ -8,12 +8,12 @@ using Plisky.Diagnostics;
 
 public class Versioning {
     protected Bilge b = new Bilge("Plisky-Versioning");
+    protected CompleteVersion cv;
     protected List<Tuple<string, FileUpdateType>> filenamesRegistered = new List<Tuple<string, FileUpdateType>>();
     protected Dictionary<FileUpdateType, List<string>> fileUpdateMinmatchers = new Dictionary<FileUpdateType, List<string>>();
-    protected CompleteVersion cv;
-    protected VersionFileUpdater vfu;
     protected VersionStorage repo;
     protected bool testMode;
+    protected VersionFileUpdater vfu;
 
     public Versioning(VersionStorage jvp, bool dryRun = false) {
         b.Verbose.Log($"Versioning Online - DryRun {dryRun}");
@@ -29,34 +29,12 @@ public class Versioning {
         }
     }
 
-    public void Increment(string? newReleaseName = null) {
-        if ((!string.IsNullOrEmpty(newReleaseName)) && (newReleaseName != cv.ReleaseName)) {
-            cv.ReleaseName = newReleaseName;
-        }
-        cv.Increment();
-    }
-
-    public CompleteVersion Version {
-        get { return cv; }
-    }
+    public string FileUpdateDisplayGroups { get; set; } = string.Empty;
 
     public Action<string>? Logger { get; set; }
 
-    public string FileUpdateDisplayGroups { get; set; } = string.Empty;
-
-    public override string ToString() {
-        return cv.ToString();
-    }
-
-    public void AddNugetFile(string targetNugetFile) {
-        if (targetNugetFile == null) {
-            throw new ArgumentNullException(nameof(targetNugetFile));
-        }
-        if ((string.IsNullOrEmpty(targetNugetFile)) || (!File.Exists(targetNugetFile))) {
-            throw new FileNotFoundException("Filename not found", targetNugetFile);
-        }
-
-        filenamesRegistered.Add(new Tuple<string, FileUpdateType>(targetNugetFile, FileUpdateType.Nuspec));
+    public CompleteVersion Version {
+        get { return cv; }
     }
 
     public void AddCSharpFile(string targetCSFile) {
@@ -70,43 +48,20 @@ public class Versioning {
         filenamesRegistered.Add(new Tuple<string, FileUpdateType>(targetCSFile, FileUpdateType.NetAssembly));
     }
 
-    public int UpdateAllRegisteredFiles() {
-        Log("Update All Files");
-
-        int numberFilesUpdated = 0;
-
-        foreach (var f in filenamesRegistered) {
-            Log("Updating : " + f);
-            string s = vfu.PerformUpdate(f.Item1, f.Item2, groupNamesForDisplay: FileUpdateDisplayGroups);
-            if (!testMode) {
-                Log($"Updated : {s}");
-                b.Verbose.Log($"Update Completed {f.Item1} : {f.Item2}");
-            } else {
-                Log($"DRYRUN - Would have updated : {s}. Instead taking no action.");
-            }
-
-            numberFilesUpdated++;
+    public void AddNugetFile(string targetNugetFile) {
+        if (targetNugetFile == null) {
+            throw new ArgumentNullException(nameof(targetNugetFile));
+        }
+        if ((string.IsNullOrEmpty(targetNugetFile)) || (!File.Exists(targetNugetFile))) {
+            throw new FileNotFoundException("Filename not found", targetNugetFile);
         }
 
-        if (numberFilesUpdated == 0) {
-            Warning("WARNING - No files found to update.");
-        }
-        return numberFilesUpdated;
+        filenamesRegistered.Add(new Tuple<string, FileUpdateType>(targetNugetFile, FileUpdateType.Nuspec));
     }
 
-    private void Log(string v) {
-        b.Info.Log(v);
-        Logger?.Invoke(v);
-    }
-    private void Warning(string v) {
-        b.Warning.Log(v);
-        Logger?.Invoke(v);
-    }
-
-    public string GetVersion() {
-        string result = cv.ToString();
-        b.Verbose.Log($"Returning Verison {result}");
-        return result;
+    public void ClearMiniMatchers() {
+        b.Verbose.Log("Clearing Minimatchers");
+        fileUpdateMinmatchers.Clear();
     }
 
     public string GetBehaviour(string digit) {
@@ -115,10 +70,19 @@ public class Versioning {
         return result;
     }
 
-    public void UpdateBehaviour(string digitToUpdate, DigitIncrementBehaviour newBehaviour) {
-        b.Verbose.Log($"Updating Behaviour for digit {digitToUpdate} to behaviour {newBehaviour}");
-        cv.ApplyBehaviourUpdate(digitToUpdate, newBehaviour);
+    public string GetVersion() {
+        string result = cv.ToString();
+        b.Verbose.Log($"Returning Verison {result}");
+        return result;
     }
+
+    public void Increment(string? newReleaseName = null) {
+        if ((!string.IsNullOrEmpty(newReleaseName)) && (newReleaseName != cv.ReleaseName)) {
+            cv.ReleaseName = newReleaseName;
+        }
+        cv.Increment();
+    }
+
     public void LoadMiniMatches(params string[] srcFile) {
         b.Verbose.Dump(srcFile, "Load MiniMatchers from Array");
         if (srcFile.Length == 1) {
@@ -135,34 +99,13 @@ public class Versioning {
         }
     }
 
-    private void AddMMLine(string line) {
-        var mmPattern = ParseMMStringToPattern(line);
-
-        if (mmPattern != null) {
-            if (!fileUpdateMinmatchers.ContainsKey(mmPattern.Item1)) {
-                fileUpdateMinmatchers.Add(mmPattern.Item1, []);
-            }
-            fileUpdateMinmatchers[mmPattern.Item1].Add(mmPattern.Item2);
-            Log($"{mmPattern.Item1} Registered For {mmPattern.Item2}");
+    public void SaveUpdatedVersion() {
+        if (!testMode) {
+            Log("Updating Version In Storage");
+            repo.Persist(Version);
         } else {
-            Warning($"Invalid MM Line: {line}");
+            Log("DryRun enabled, not updating version storage.");
         }
-    }
-
-    private static Tuple<FileUpdateType, string>? ParseMMStringToPattern(string line) {
-        Tuple<FileUpdateType, string>? result = null;
-        string[] ln = line.Split('|');
-        if (ln.Length == 2) {
-            // Valid
-            if (Enum.TryParse<FileUpdateType>(ln[1], out var fut)) {
-                result = new Tuple<FileUpdateType, string>(fut, ln[0]);
-            }
-        }
-        return result;
-    }
-
-    protected virtual IEnumerable<string> ActualGetFiles(string root) {
-        return Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories);
     }
 
     public List<string> SearchForAllFiles(string root) {
@@ -206,17 +149,6 @@ public class Versioning {
         return result;
     }
 
-    public void SaveUpdatedVersion() {
-
-        if (!testMode) {
-            Log("Updating Version In Storage");
-            repo.Persist(Version);
-        } else {
-            Log("DryRun enabled, not updating version storage.");
-        }
-    }
-
-
     public void SetMiniMatches(FileUpdateType target, params string[] versionTargetMinMatch) {
         if (!fileUpdateMinmatchers.ContainsKey(target)) {
             fileUpdateMinmatchers.Add(target, new List<string>());
@@ -224,8 +156,76 @@ public class Versioning {
         fileUpdateMinmatchers[target].AddRange(versionTargetMinMatch);
     }
 
-    public void ClearMiniMatchers() {
-        b.Verbose.Log("Clearing Minimatchers");
-        fileUpdateMinmatchers.Clear();
+    public override string ToString() {
+        return cv.ToString();
+    }
+
+    public int UpdateAllRegisteredFiles() {
+        Log("Update All Files");
+
+        int numberFilesUpdated = 0;
+
+        foreach (var f in filenamesRegistered) {
+            Log("Updating : " + f);
+            string s = vfu.PerformUpdate(f.Item1, f.Item2, groupNamesForDisplay: FileUpdateDisplayGroups);
+            if (!testMode) {
+                Log($"Updated : {s}");
+                b.Verbose.Log($"Update Completed {f.Item1} : {f.Item2}");
+            } else {
+                Log($"DRYRUN - Would have updated : {s}. Instead taking no action.");
+            }
+
+            numberFilesUpdated++;
+        }
+
+        if (numberFilesUpdated == 0) {
+            Warning("WARNING - No files found to update.");
+        }
+        return numberFilesUpdated;
+    }
+
+    public void UpdateBehaviour(string digitToUpdate, DigitIncrementBehaviour newBehaviour) {
+        b.Verbose.Log($"Updating Behaviour for digit {digitToUpdate} to behaviour {newBehaviour}");
+        cv.ApplyBehaviourUpdate(digitToUpdate, newBehaviour);
+    }
+
+    protected virtual IEnumerable<string> ActualGetFiles(string root) {
+        return Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories);
+    }
+
+    private static Tuple<FileUpdateType, string>? ParseMMStringToPattern(string line) {
+        Tuple<FileUpdateType, string>? result = null;
+        string[] ln = line.Split('|');
+        if (ln.Length == 2) {
+            // Valid
+            if (Enum.TryParse<FileUpdateType>(ln[1], out var fut)) {
+                result = new Tuple<FileUpdateType, string>(fut, ln[0]);
+            }
+        }
+        return result;
+    }
+
+    private void AddMMLine(string line) {
+        var mmPattern = ParseMMStringToPattern(line);
+
+        if (mmPattern != null) {
+            if (!fileUpdateMinmatchers.ContainsKey(mmPattern.Item1)) {
+                fileUpdateMinmatchers.Add(mmPattern.Item1, []);
+            }
+            fileUpdateMinmatchers[mmPattern.Item1].Add(mmPattern.Item2);
+            Log($"{mmPattern.Item1} Registered For {mmPattern.Item2}");
+        } else {
+            Warning($"Invalid MM Line: {line}");
+        }
+    }
+
+    private void Log(string v) {
+        b.Info.Log(v);
+        Logger?.Invoke(v);
+    }
+
+    private void Warning(string v) {
+        b.Warning.Log(v);
+        Logger?.Invoke(v);
     }
 }

@@ -8,16 +8,57 @@ using Xunit;
 
 public class VersionStorageTests {
     private readonly Bilge b = new();
-    private readonly UnitTestHelper uth;
     private readonly TestSupport ts;
+    private readonly UnitTestHelper uth;
 
     public VersionStorageTests() {
         uth = new UnitTestHelper();
         ts = new TestSupport(uth);
     }
 
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Basic_save_works() {
+        var msut = new MockVersionStorage("itsamock");
+        VersionStorage sut = msut;
 
+        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"));
+        sut.Persist(cv);
+        Assert.True(msut.PersistWasCalled, "The persist method was not called");
+        Assert.Equal("1111", msut.VersionStringPersisted);
+    }
 
+    [Fact(DisplayName = nameof(Storage_DefaultValidationIsTrue))]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Storage_DefaultValidationIsTrue() {
+        b.Info.Flow();
+        VersionStorage sut = new MockVersionStorage("itsamock");
+        Assert.True(sut.ValidateInitialisation());
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Integration)]
+    public void VersionStorage_Json_BackwardCompatibleWithoutGroupName() {
+        string fn = uth.NewTemporaryFileName(true);
+        string legacyStore = "{\"Digits\":[{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"1\",\"PreFix\":\"\"},{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"2\",\"PreFix\":\".\"},{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"3\",\"PreFix\":\".\"}],\"DisplayTypes\":{\"NetAssembly\":1,\"NetFile\":2,\"NetInformational\":2,\"Wix\":2,\"Nuspec\":4,\"StdAssembly\":1,\"StdFile\":2,\"StdInformational\":2,\"TextFile\":1},\"IsDefault\":false,\"ReleaseName\":null}";
+        File.WriteAllText(fn, legacyStore);
+
+        var sut = new JsonVersionPersister(fn);
+        var loaded = sut.GetVersion();
+
+        Assert.Equal(3, loaded.Digits.Length);
+        Assert.Equal(string.Empty, loaded.Digits[0].GroupName);
+        Assert.Equal(string.Empty, loaded.Digits[1].GroupName);
+        Assert.Equal(string.Empty, loaded.Digits[2].GroupName);
+
+        sut.Persist(loaded);
+        using var doc = JsonDocument.Parse(File.ReadAllText(fn));
+        string groupName = doc.RootElement.GetProperty("Digits")[0].GetProperty("GroupName").GetString() ?? "missing";
+        Assert.Equal(string.Empty, groupName);
+    }
 
     [Fact]
     public void VersionStorage_Json_Loads() {
@@ -37,24 +78,12 @@ public class VersionStorageTests {
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Integration)]
-    public void VersionStoreAndLoad_StoresUpdatedValues() {
+    public void VersionStorage_Json_Saves() {
         string fn = uth.NewTemporaryFileName(true);
         var sut = new JsonVersionPersister(fn);
-        var cv = new CompleteVersion(new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement),
-            new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement),
-            new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement),
-            new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement));
-
-        cv.Increment();
-        _ = cv.GetVersionString();
+        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"));
         sut.Persist(cv);
-        var cv2 = sut.GetVersion();
-
-        Assert.Equal(cv.GetVersionString(), cv2.GetVersionString()); //, "The two version strings should match");
-        Assert.Equal("2.2.2.2", cv2.GetVersionString()); //, "The loaded version string should keep the increment");
-
-        cv.Increment(); cv2.Increment();
-        Assert.Equal(cv.GetVersionString(), cv2.GetVersionString()); //, "The two version strings should match");
+        Assert.True(File.Exists(fn), "The file must be created");
     }
 
     [Fact]
@@ -94,32 +123,26 @@ public class VersionStorageTests {
 
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Basic_save_works() {
-        var msut = new MockVersionStorage("itsamock");
-        VersionStorage sut = msut;
+    [Trait(Traits.Style, Traits.Integration)]
+    public void VersionStoreAndLoad_StoresUpdatedValues() {
+        string fn = uth.NewTemporaryFileName(true);
+        var sut = new JsonVersionPersister(fn);
+        var cv = new CompleteVersion(new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement),
+            new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement),
+            new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement),
+            new VersionUnit("1", ".", DigitIncrementBehaviour.ContinualIncrement));
 
-        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"));
+        cv.Increment();
+        _ = cv.GetVersionString();
         sut.Persist(cv);
-        Assert.True(msut.PersistWasCalled, "The persist method was not called");
-        Assert.Equal("1111", msut.VersionStringPersisted);
+        var cv2 = sut.GetVersion();
+
+        Assert.Equal(cv.GetVersionString(), cv2.GetVersionString()); //, "The two version strings should match");
+        Assert.Equal("2.2.2.2", cv2.GetVersionString()); //, "The loaded version string should keep the increment");
+
+        cv.Increment(); cv2.Increment();
+        Assert.Equal(cv.GetVersionString(), cv2.GetVersionString()); //, "The two version strings should match");
     }
-
-
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Unit)]
-    [Fact]
-    public void When_created_valid_version_marked_as_default() {
-        b.Info.Flow();
-
-        VersionStorage vs = new MockVersionStorage("default");
-        var ver = vs.GetVersion();
-
-        Assert.True(ver.IsDefault);
-        Assert.Equal(4, ver.Digits.Length);
-        Assert.Equal("0.0.0.0", ver.ToString());
-    }
-
 
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -135,45 +158,17 @@ public class VersionStorageTests {
         Assert.Equal("0.0.0.0", ver.ToString());
     }
 
-    [Fact(DisplayName = nameof(Storage_DefaultValidationIsTrue))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void Storage_DefaultValidationIsTrue() {
+    [Fact]
+    public void When_created_valid_version_marked_as_default() {
         b.Info.Flow();
-        VersionStorage sut = new MockVersionStorage("itsamock");
-        Assert.True(sut.ValidateInitialisation());
-    }
 
-    [Fact]
-    [Trait(Traits.Age, Traits.Regression)]
-    [Trait(Traits.Style, Traits.Integration)]
-    public void VersionStorage_Json_Saves() {
-        string fn = uth.NewTemporaryFileName(true);
-        var sut = new JsonVersionPersister(fn);
-        var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"), new VersionUnit("1"));
-        sut.Persist(cv);
-        Assert.True(File.Exists(fn), "The file must be created");
-    }
+        VersionStorage vs = new MockVersionStorage("default");
+        var ver = vs.GetVersion();
 
-    [Fact]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [Trait(Traits.Style, Traits.Integration)]
-    public void VersionStorage_Json_BackwardCompatibleWithoutGroupName() {
-        string fn = uth.NewTemporaryFileName(true);
-        string legacyStore = "{\"Digits\":[{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"1\",\"PreFix\":\"\"},{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"2\",\"PreFix\":\".\"},{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"3\",\"PreFix\":\".\"}],\"DisplayTypes\":{\"NetAssembly\":1,\"NetFile\":2,\"NetInformational\":2,\"Wix\":2,\"Nuspec\":4,\"StdAssembly\":1,\"StdFile\":2,\"StdInformational\":2,\"TextFile\":1},\"IsDefault\":false,\"ReleaseName\":null}";
-        File.WriteAllText(fn, legacyStore);
-
-        var sut = new JsonVersionPersister(fn);
-        var loaded = sut.GetVersion();
-
-        Assert.Equal(3, loaded.Digits.Length);
-        Assert.Equal(string.Empty, loaded.Digits[0].GroupName);
-        Assert.Equal(string.Empty, loaded.Digits[1].GroupName);
-        Assert.Equal(string.Empty, loaded.Digits[2].GroupName);
-
-        sut.Persist(loaded);
-        using var doc = JsonDocument.Parse(File.ReadAllText(fn));
-        string groupName = doc.RootElement.GetProperty("Digits")[0].GetProperty("GroupName").GetString() ?? "missing";
-        Assert.Equal(string.Empty, groupName);
+        Assert.True(ver.IsDefault);
+        Assert.Equal(4, ver.Digits.Length);
+        Assert.Equal("0.0.0.0", ver.ToString());
     }
 }

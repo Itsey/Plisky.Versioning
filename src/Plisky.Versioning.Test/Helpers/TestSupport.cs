@@ -10,6 +10,10 @@ namespace Plisky.CodeCraft.Test {
         private Bilge b = new Bilge();
         private UnitTestHelper uth;
 
+        public TestSupport(UnitTestHelper newuth) {
+            uth = newuth;
+        }
+
         public string CreateStoredVersionNumer() {
             string fn = uth.NewTemporaryFileName(true);
             var cv = GetDefaultVersion();
@@ -18,6 +22,9 @@ namespace Plisky.CodeCraft.Test {
             return fn;
         }
 
+        public bool DoesFileContainThisText(string fn, string v) {
+            return File.ReadAllText(fn).Contains(v);
+        }
 
         public CompleteVersion GetDefaultVersion() {
             return new CompleteVersion(
@@ -26,6 +33,12 @@ namespace Plisky.CodeCraft.Test {
                 new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement),
                 new VersionUnit("0", ".", DigitIncrementBehaviour.ContinualIncrement)
             );
+        }
+
+        public string GetFileAsTemporary(string srcFile) {
+            string fn = uth.NewTemporaryFileName(true);
+            File.Copy(srcFile, fn);
+            return fn;
         }
 
         public string GetVersion(FileUpdateType fut, string srcFile) {
@@ -54,26 +67,13 @@ namespace Plisky.CodeCraft.Test {
             string after = el2!.Value;
             return after;
         }
+
         public string GetVersionFromWix(string srcFile) {
             XNamespace ns = "http://schemas.microsoft.com/wix/2006/wi";
             var xd2 = XDocument.Load(srcFile);
             var el2 = xd2.Element(ns + "Wix")?.Element(ns + "Product")?.Attribute("Version");
             string after = el2!.Value;
             return after;
-        }
-
-        public TestSupport(UnitTestHelper newuth) {
-            uth = newuth;
-        }
-
-        public string GetFileAsTemporary(string srcFile) {
-            string fn = uth.NewTemporaryFileName(true);
-            File.Copy(srcFile, fn);
-            return fn;
-        }
-
-        public bool DoesFileContainThisText(string fn, string v) {
-            return File.ReadAllText(fn).Contains(v);
         }
     }
 }

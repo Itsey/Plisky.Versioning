@@ -150,6 +150,26 @@ public class VersionOutputterTests {
         op.OutputLines.Length.ShouldBe(digits, "Correct number of lines of output should follow behaviour output.");
     }
 
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Outputter_Environment_UsesGroupedPassiveOverrideValue() {
+        b.Info.Flow();
+
+        var version = new CompleteVersion("1.2.3.4");
+        version.Digits[2].GroupName = "pre-release";
+        string groupedValue = version.GetVersionStringByGroup("pre-release");
+
+        var sut = new MockVersioningOutputter(version) {
+            PassiveOutputOverride = groupedValue
+        };
+
+        sut.DoOutput(OutputPossibilities.Environment, VersioningCommand.PassiveOutput);
+
+        sut.EnvWasSet.ShouldBeTrue("Environment output should still be selected.");
+        sut.GetTheValueRequestedToWrite().ShouldBe(".3");
+    }
+
     [Fact(DisplayName = nameof(Outputter_Environment_WritesToEnvironment))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
@@ -182,26 +202,6 @@ public class VersionOutputterTests {
 
         op.FileWasWritten.ShouldBeTrue("FileWasWritten should be true when writing to file.");
         op.EnvWasSet.ShouldBeFalse("EnvWasSet should be false when writing to file.");
-    }
-
-    [Fact]
-    [Trait(Traits.Age, Traits.Fresh)]
-    [Trait(Traits.Style, Traits.Unit)]
-    public void Outputter_Environment_UsesGroupedPassiveOverrideValue() {
-        b.Info.Flow();
-
-        var version = new CompleteVersion("1.2.3.4");
-        version.Digits[2].GroupName = "pre-release";
-        string groupedValue = version.GetVersionStringByGroup("pre-release");
-
-        var sut = new MockVersioningOutputter(version) {
-            PassiveOutputOverride = groupedValue
-        };
-
-        sut.DoOutput(OutputPossibilities.Environment, VersioningCommand.PassiveOutput);
-
-        sut.EnvWasSet.ShouldBeTrue("Environment output should still be selected.");
-        sut.GetTheValueRequestedToWrite().ShouldBe(".3");
     }
 
     [Fact]

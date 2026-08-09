@@ -55,7 +55,6 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     }
 
     [Fact(Skip = "Deprecated alias support kept till vnext - LFY-70.")]
-
     public async Task Deprecated_VS_alias_is_not_accepted() {
         b.Info.Flow();
         string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;

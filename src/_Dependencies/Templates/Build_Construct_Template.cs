@@ -1,78 +1,8 @@
 ﻿using System;
 using System.Linq;
-using Nuke.Common;
-using Nuke.Common.Tools.DotNet;
-using Plisky.Nuke.Fusion;
-using Serilog;
 
 public partial class Build : NukeBuild {
     // Standard entrypoint for compiling the app.  Arrange [Construct] Examine Package Release Test
-
-    public Target ConstructStep => _ => _
-        .Before(ExamineStep, Wrapup)
-        .After(ArrangeStep)
-        .Triggers(Compile, ApplyVersion)
-        .DependsOn(Initialise, ArrangeStep)
-        .Executes(() => {
-        });
-
-    public Target VersionQuickStep => _ => _
-      .After(ConstructStep)
-      .DependsOn(Initialise)
-      .Before(Compile)
-      .Executes(() => {
-          Log.Information($"Manual Quick Step QV:{QuickVersion}");
-
-          if (settings == null) {
-              Log.Error("Build>ApplyVersion>Settings is null.");
-              throw new InvalidOperationException("The settings must be set");
-          }
-
-          if (Solution == null) {
-              Log.Error("Build>ApplyVersion>Solution is null.");
-              throw new InvalidOperationException("The solution must be set");
-          }
-
-          if (!string.IsNullOrEmpty(QuickVersion)) {
-              var vc = new VersonifyTasks();
-
-              vc.OverrideCommand(s => s
-                .SetVersionPersistanceValue(settings.VersioningPersistanceToken)
-                .SetDebug(true)
-                .SetRoot(Solution.Directory)
-                .SetQuickValue(QuickVersion)
-              );
-          }
-      });
-
-    public Target QueryNextVersion => _ => _
-      .After(ConstructStep)
-      .DependsOn(Initialise)
-      .Before(Compile)
-      .Executes(() => {
-          if (settings == null) {
-              Log.Error("Build>ApplyVersion>Settings is null.");
-              throw new InvalidOperationException("The settings must be set");
-          }
-
-          if (Solution == null) {
-              Log.Error("Build>ApplyVersion>Solution is null.");
-              throw new InvalidOperationException("The solution must be set");
-          }
-
-          string versioningToken = settings.VersioningPersistanceTokenRelease;
-          if (PreRelease) {
-              Log.Information("Build>QueryNextVersion>PreRelease is set, using non release Token.");
-              versioningToken = settings.VersioningPersistanceToken;
-          }
-          var vc = new VersonifyTasks();
-          vc.PassiveCommand(s => s
-          .SetVersionPersistanceValue(versioningToken)
-          .SetOutputStyle("con-nf")
-          .SetRoot(Solution.Directory));
-
-          Log.Information($"Version Is:{vc.VersionLiteral}");
-      });
 
     public Target ApplyVersion => _ => _
       .After(ConstructStep)
@@ -173,6 +103,72 @@ public partial class Build : NukeBuild {
 
           // Set Azure DevOps variable for use in pipeline/release steps
           Console.WriteLine($"##vso[task.setvariable variable=FullVersionNumber;isOutput=true]{FullVersionNumber}");
+      });
+
+    public Target ConstructStep => _ => _
+            .Before(ExamineStep, Wrapup)
+        .After(ArrangeStep)
+        .Triggers(Compile, ApplyVersion)
+        .DependsOn(Initialise, ArrangeStep)
+        .Executes(() => {
+        });
+
+    public Target QueryNextVersion => _ => _
+      .After(ConstructStep)
+      .DependsOn(Initialise)
+      .Before(Compile)
+      .Executes(() => {
+          if (settings == null) {
+              Log.Error("Build>ApplyVersion>Settings is null.");
+              throw new InvalidOperationException("The settings must be set");
+          }
+
+          if (Solution == null) {
+              Log.Error("Build>ApplyVersion>Solution is null.");
+              throw new InvalidOperationException("The solution must be set");
+          }
+
+          string versioningToken = settings.VersioningPersistanceTokenRelease;
+          if (PreRelease) {
+              Log.Information("Build>QueryNextVersion>PreRelease is set, using non release Token.");
+              versioningToken = settings.VersioningPersistanceToken;
+          }
+          var vc = new VersonifyTasks();
+          vc.PassiveCommand(s => s
+          .SetVersionPersistanceValue(versioningToken)
+          .SetOutputStyle("con-nf")
+          .SetRoot(Solution.Directory));
+
+          Log.Information($"Version Is:{vc.VersionLiteral}");
+      });
+
+    public Target VersionQuickStep => _ => _
+          .After(ConstructStep)
+      .DependsOn(Initialise)
+      .Before(Compile)
+      .Executes(() => {
+          Log.Information($"Manual Quick Step QV:{QuickVersion}");
+
+          if (settings == null) {
+              Log.Error("Build>ApplyVersion>Settings is null.");
+              throw new InvalidOperationException("The settings must be set");
+          }
+
+          if (Solution == null) {
+              Log.Error("Build>ApplyVersion>Solution is null.");
+              throw new InvalidOperationException("The solution must be set");
+          }
+
+          if (!string.IsNullOrEmpty(QuickVersion)) {
+              var vc = new VersonifyTasks();
+
+              vc.OverrideCommand(s => s
+                .SetVersionPersistanceValue(settings.VersioningPersistanceToken)
+                .SetDebug(true)
+                .SetRoot(Solution.Directory)
+                .SetQuickValue(QuickVersion)
+              );
+          }
       });
 
     private Target Compile => _ => _

@@ -17,14 +17,15 @@ public class MockVersionFileUpdater : VersionFileUpdater {
             parent = p;
         }
 
-        public void Mock_MockingBird() {
-        }
-
         public void AddFilesystemFile(string fname) {
             parent.allFileSystemFiles.Add(fname);
         }
+
         public bool ContainsFilesystemFile(string fname) {
             return parent.allFileSystemFiles.Contains(fname);
+        }
+
+        public void Mock_MockingBird() {
         }
     }
 

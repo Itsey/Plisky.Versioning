@@ -9,30 +9,10 @@ using Plisky.Diagnostics;
 public class CompleteVersion {
     protected Bilge b = new Bilge("Plisky-Versioning");
 
-    private string? actualReleaseName;
-    private string? pendingReleaseName;
     private const string ALLDIGITSWILDCARD = "*";
     private const string DEFAULTDIGITGROUP = "default";
-
-    /// <summary>
-    /// Returns the default, empty, version instance which is four digits and all fixed except the
-    /// build digit which is set to autoincrementresetany.
-    /// </summary>
-    /// <returns></returns>
-    public static CompleteVersion GetDefault() {
-        return new CompleteVersion(
-            new VersionUnit("0"),
-            new VersionUnit("0", "."),
-            new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny),
-            new VersionUnit("0", ".")
-        ) {
-            IsDefault = true
-        };
-    }
-
-    public VersionUnit[] Digits { get; set; } = Array.Empty<VersionUnit>();
-
-    public Dictionary<FileUpdateType, DisplayType> DisplayTypes { get; set; } = new Dictionary<FileUpdateType, DisplayType>();
+    private string? actualReleaseName;
+    private string? pendingReleaseName;
 
     public CompleteVersion() {
         DisplayTypes.Add(FileUpdateType.NetAssembly, DisplayType.FourDigitNumeric);
@@ -88,6 +68,10 @@ public class CompleteVersion {
         }
     }
 
+    public VersionUnit[] Digits { get; set; } = Array.Empty<VersionUnit>();
+
+    public Dictionary<FileUpdateType, DisplayType> DisplayTypes { get; set; } = new Dictionary<FileUpdateType, DisplayType>();
+
     public bool IsDefault { get; set; }
 
     public string? ReleaseName {
@@ -95,13 +79,51 @@ public class CompleteVersion {
         set => actualReleaseName = value;
     }
 
-    public void SetDisplayTypeForVersion(FileUpdateType fut, DisplayType dt) {
-        DisplayTypes[fut] = dt;
+    /// <summary>
+    /// Returns the default, empty, version instance which is four digits and all fixed except the
+    /// build digit which is set to autoincrementresetany.
+    /// </summary>
+    /// <returns></returns>
+    public static CompleteVersion GetDefault() {
+        return new CompleteVersion(
+            new VersionUnit("0"),
+            new VersionUnit("0", "."),
+            new VersionUnit("0", ".", DigitIncrementBehaviour.AutoIncrementWithResetAny),
+            new VersionUnit("0", ".")
+        ) {
+            IsDefault = true
+        };
     }
 
-    public DisplayType GetDisplayType(FileUpdateType fut, DisplayType dt = DisplayType.Default) {
-        if (dt != DisplayType.Default) { return dt; }
-        return DisplayTypes[fut];
+    public static string NormalizeDigitGroup(string? groupName) {
+        if (string.IsNullOrWhiteSpace(groupName)) {
+            return string.Empty;
+        }
+
+        string result = groupName.Trim();
+        if (result.Equals(DEFAULTDIGITGROUP, StringComparison.OrdinalIgnoreCase)) {
+            return string.Empty;
+        }
+
+        return result;
+    }
+
+    public void ApplyBehaviourUpdate(string digitToUpdate, DigitIncrementBehaviour newBehaviour) {
+        if (digitToUpdate == ALLDIGITSWILDCARD) {
+            b.Verbose.Log($"Applying behaviour update to all digits to {newBehaviour}");
+            foreach (var digit in Digits) {
+                digit.SetBehaviour(newBehaviour);
+            }
+            return;
+        }
+
+        Debug.Assert(int.TryParse(digitToUpdate, out _), "Digit to update is not a valid integer, this should not happen.");
+        Debug.Assert(Digits[int.Parse(digitToUpdate)] != null, "Digit to update is null, this should not happen.");
+        Debug.Assert(Digits.Length > int.Parse(digitToUpdate), "Digit to update is out of range of the digits available.");
+
+        b.Verbose.Log($"Applying behaviour update for digit {digitToUpdate} to behaviour {newBehaviour}");
+        int idx = int.Parse(digitToUpdate);
+        Digits[idx].SetBehaviour(newBehaviour);
     }
 
     /// <summary>
@@ -126,147 +148,12 @@ public class CompleteVersion {
         }
     }
 
-    protected string? ManipulateValueBasedOnPattern(string pattern, string? currentValue) {
-        if (string.IsNullOrEmpty(pattern)) { return null; }
+    public void ApplyValueUpdate(int digitToUpdate, string newValue) {
+        Debug.Assert(digitToUpdate >= 0 && digitToUpdate < Digits.Length, "Digit to update is not a valid integer, this should not happen.");
+        Debug.Assert(Digits[digitToUpdate] != null, "Digit to update is null, this should not happen.");
 
-        if (int.TryParse(currentValue, out int currentInteger)) {
-            if (pattern == "+") {
-                return (++currentInteger).ToString();
-            } else if (pattern == "-") {
-                return (--currentInteger).ToString();
-            }
-        } else {
-            if (int.TryParse(pattern, out int patternAsInt)) {
-                return patternAsInt.ToString();
-            }
-        }
-
-        // Fallthrough - pattern is a version name.
-        return pattern;
-    }
-
-    public string GetVersionString(DisplayType dt = DisplayType.Full) {
-        b.Info.Flow();
-
-        string result = string.Empty;
-        int stopPoint = Digits.Length;
-
-        switch (dt) {
-            case DisplayType.FourDigitNumeric:
-                return NumericDisplayString(4);
-            case DisplayType.ThreeDigitNumeric:
-                return NumericDisplayString(3);
-            case DisplayType.QueuedFull:
-                return QueuedDisplayString();
-            case DisplayType.Release:
-                return ReleaseName ?? string.Empty;
-            case DisplayType.Short when Digits.Length > 2:
-                stopPoint = 2;
-                break;
-            case DisplayType.ThreeDigit:
-                return GetVersionStringWithSelectedGroups(3);
-            case DisplayType.FourDigit:
-                return GetVersionStringWithSelectedGroups(4);
-        }
-
-        for (int i = 0; i < stopPoint; i++) {
-            result += Digits[i].ToString();
-        }
-        b.Verbose.Log($"DisplayType - Stop {stopPoint} |{result}|");
-        return result;
-    }
-
-    private List<int> GetMainDigitIndices(int limit) {
-        var indices = new List<int>();
-        for (int i = 0; i < Digits.Length && indices.Count < limit; i++) {
-            if (string.IsNullOrEmpty(NormalizeDigitGroup(Digits[i].GroupName))) {
-                indices.Add(i);
-            }
-        }
-        return indices;
-    }
-
-    private List<int> GetGroupedDigitIndices() {
-        var indices = new List<int>();
-        for (int i = 0; i < Digits.Length; i++) {
-            if (!string.IsNullOrEmpty(NormalizeDigitGroup(Digits[i].GroupName))) {
-                indices.Add(i);
-            }
-        }
-        return indices;
-    }
-
-    private string BuildVersionStringFromIndices(List<int> indices) {
-        string result = string.Empty;
-        for (int i = 0; i < indices.Count; i++) {
-            result += Digits[indices[i]].ToString();
-        }
-        return result;
-    }
-
-    // Returns up to `limit` default-group digits followed by all explicitly grouped digits.
-    // Index-based (group membership), not suffix-based, so sparse/interleaved groups work correctly.
-    private string GetVersionStringWithSelectedGroups(int mainDigitLimit) {
-        var mainDigits = GetMainDigitIndices(mainDigitLimit);
-        var groupedDigits = GetGroupedDigitIndices();
-
-        string result = BuildVersionStringFromIndices(mainDigits) + BuildVersionStringFromIndices(groupedDigits);
-        b.Verbose.Log($"DisplayType - MainCount {mainDigits.Count} GroupedCount {groupedDigits.Count} |{result}|");
-        return result;
-    }
-
-    private string QueuedDisplayString() {
-        // Create a new array to hold the queued digits, reflecting any pending overrides.
-        string result = string.Empty;
-        var queuedDigits = new VersionUnit[Digits.Length];
-        for (int i = 0; i < Digits.Length; i++) {
-            var original = Digits[i];
-            queuedDigits[i] = new VersionUnit(
-                original.IncrementOverride ?? original.Value ?? string.Empty,
-                original.PreFix,
-                original.Behaviour
-            );
-            result += queuedDigits[i].ToString();
-        }
-        b.Verbose.Log($"DisplayType - QueuedFull {result}");
-
-        return result;
-    }
-
-    private string NumericDisplayString(int digitLimit = 4) {
-        string result = string.Empty;
-        int digitsFound = 0;
-        string mtcPrefix = string.Empty;
-
-        // Start with no prefix then use . prefixes and pick up .s only.
-        // Grouped (non-default) digits are excluded: numeric display types are for release versions only.
-        for (int i = 0; i < Digits.Length && digitsFound < digitLimit; i++) {
-            if (!string.IsNullOrEmpty(NormalizeDigitGroup(Digits[i].GroupName))) {
-                continue;
-            }
-            if (Digits[i].PreFix == mtcPrefix) {
-                mtcPrefix = ".";
-                if (ushort.TryParse(Digits[i].Value, out ushort _)) {
-                    digitsFound++;
-                    result += Digits[i].ToString();
-                } else {
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
-
-        while (digitsFound < digitLimit) {
-            digitsFound++;
-            result += ".0";
-        }
-        b.Verbose.Log($"DisplayType - Numeric Limit {digitLimit} |{result}|");
-        return result;
-    }
-
-    public override string ToString() {
-        return GetVersionString(DisplayType.Full);
+        b.Verbose.Log($"Applying value update for digit {digitToUpdate} to value {newValue}");
+        Digits[digitToUpdate].Value = GetValueForDigit(Digits[digitToUpdate], newValue);
     }
 
     public string GetBehaviourString(string digitRequested) {
@@ -281,145 +168,6 @@ public class CompleteVersion {
             int digitIndex = int.Parse(digitRequested);
             result = $"[{digitIndex}]:{Digits[digitIndex].Behaviour}({(int)Digits[digitIndex].Behaviour})";
         }
-        return result;
-    }
-
-    public void ApplyBehaviourUpdate(string digitToUpdate, DigitIncrementBehaviour newBehaviour) {
-        if (digitToUpdate == ALLDIGITSWILDCARD) {
-            b.Verbose.Log($"Applying behaviour update to all digits to {newBehaviour}");
-            foreach (var digit in Digits) {
-                digit.SetBehaviour(newBehaviour);
-            }
-            return;
-        }
-
-        Debug.Assert(int.TryParse(digitToUpdate, out _), "Digit to update is not a valid integer, this should not happen.");
-        Debug.Assert(Digits[int.Parse(digitToUpdate)] != null, "Digit to update is null, this should not happen.");
-        Debug.Assert(Digits.Length > int.Parse(digitToUpdate), "Digit to update is out of range of the digits available.");
-
-        b.Verbose.Log($"Applying behaviour update for digit {digitToUpdate} to behaviour {newBehaviour}");
-        int idx = int.Parse(digitToUpdate);
-        Digits[idx].SetBehaviour(newBehaviour);
-    }
-
-    public void Increment() {
-        bool lastChanged = false;
-        bool anyChanged = false;
-        var t1 = DateTime.Now;
-
-        if (pendingReleaseName != null) {
-            ReleaseName = pendingReleaseName;
-            pendingReleaseName = null;
-        }
-
-        b.Verbose.Log("Incrementing Version.", ReleaseName);
-
-        foreach (var un in Digits) {
-            if (un.Value == null) {
-                b.Warning.Log($"Digit is null, skipping increment.");
-                continue;
-            }
-            string tmp = un.Value;
-            lastChanged = un.PerformIncrement(lastChanged, anyChanged, t1, t1);
-            b.Verbose.Log($"{tmp}>{un.Value} using {un.Behaviour}");
-            if (lastChanged) { anyChanged = true; }
-        }
-    }
-
-    public bool ValidateDigitOptions(string[] digitsRequested) {
-        bool isValid = false;
-
-        if (digitsRequested is null || digitsRequested.Length == 0) {
-            Console.WriteLine("Error >> No digit specified, please use the -DG option.");
-            return isValid;
-        }
-        b.Verbose.Log($"Validating Digit Options [{string.Join(",", digitsRequested)}]");
-
-        foreach (string d in digitsRequested) {
-            if (string.IsNullOrWhiteSpace(d)) {
-                continue;
-            }
-            if (d.Equals(ALLDIGITSWILDCARD) || (int.TryParse(d, out int result) && result >= 0 && result < Digits.Length)) {
-                b.Verbose.Log($"Digit [{d}] is valid.");
-                isValid = true;
-            } else {
-                throw new ArgumentOutOfRangeException(nameof(digitsRequested), $"The digit [{d}] is not a valid digit. It must be a positive integer or '*' (all digits).");
-            }
-        }
-        return isValid;
-    }
-
-    private string? GetValueForDigit(VersionUnit digit, string newValue) {
-        if (string.Equals(newValue, "ReleaseName", StringComparison.OrdinalIgnoreCase) && digit.Behaviour == DigitIncrementBehaviour.Fixed) {
-            return ReleaseName;
-        }
-        return newValue;
-    }
-
-    public void SetCompleteVersionFromString(string versionString) {
-        string[] versionParts = versionString.Split('.');
-        if (versionParts.Length > Digits.Length) {
-            b.Warning.Log($"Warning: Version string has more parts ({versionParts.Length}) than available digits ({Digits.Length}). Extra parts will be ignored.");
-        }
-        for (int i = 0; i < Digits.Length; i++) {
-            string versionPart = i < versionParts.Length ? versionParts[i] : "0";
-            ApplyValueUpdate(i, versionPart);
-        }
-    }
-
-    public void SetIndividualDigits(string[] digitsToUpdate, string valueToSet) {
-        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALLDIGITSWILDCARD) {
-            for (int i = 0; i < Digits.Length; i++) {
-                ApplyValueUpdate(i, valueToSet);
-            }
-        } else {
-            for (int i = 0; i < digitsToUpdate.Length; i++) {
-                Debug.Assert(int.TryParse(digitsToUpdate[i], out _), "Digit to update is not a valid integer, this should not happen.");
-                ApplyValueUpdate(int.Parse(digitsToUpdate[i]), valueToSet);
-            }
-        }
-    }
-
-    public void ApplyValueUpdate(int digitToUpdate, string newValue) {
-        Debug.Assert(digitToUpdate >= 0 && digitToUpdate < Digits.Length, "Digit to update is not a valid integer, this should not happen.");
-        Debug.Assert(Digits[digitToUpdate] != null, "Digit to update is null, this should not happen.");
-
-        b.Verbose.Log($"Applying value update for digit {digitToUpdate} to value {newValue}");
-        Digits[digitToUpdate].Value = GetValueForDigit(Digits[digitToUpdate], newValue);
-    }
-
-    public void SetReleaseName(string newReleaseName) {
-        ReleaseName = newReleaseName;
-    }
-
-    public void SetPrefixForDigit(string digitToUpdate, string newPrefix) {
-        if (digitToUpdate == ALLDIGITSWILDCARD) {
-            b.Verbose.Log($"Applying prefix update to all digits to {newPrefix}");
-            for (int i = 1; i < Digits.Length; i++) {
-                Digits[i].PreFix = newPrefix;
-            }
-            return;
-        }
-
-        Debug.Assert(int.TryParse(digitToUpdate, out _), "Digit to update is not a valid integer, this should not happen.");
-        Debug.Assert(Digits[int.Parse(digitToUpdate)] != null, "Digit to update is null, this should not happen.");
-        Debug.Assert(Digits.Length > int.Parse(digitToUpdate), "Digit to update is out of range of the digits available.");
-
-        b.Verbose.Log($"Applying prefix update for digit {digitToUpdate} to prefix {newPrefix}");
-        int idx = int.Parse(digitToUpdate);
-        Digits[idx].PreFix = newPrefix;
-    }
-
-    public static string NormalizeDigitGroup(string? groupName) {
-        if (string.IsNullOrWhiteSpace(groupName)) {
-            return string.Empty;
-        }
-
-        string result = groupName.Trim();
-        if (result.Equals(DEFAULTDIGITGROUP, StringComparison.OrdinalIgnoreCase)) {
-            return string.Empty;
-        }
-
         return result;
     }
 
@@ -457,6 +205,48 @@ public class CompleteVersion {
         return matchingIndices.ToArray();
     }
 
+    public DisplayType GetDisplayType(FileUpdateType fut, DisplayType dt = DisplayType.Default) {
+        if (dt != DisplayType.Default) { return dt; }
+        return DisplayTypes[fut];
+    }
+
+    public string GetVersionString(DisplayType dt = DisplayType.Full) {
+        b.Info.Flow();
+
+        string result = string.Empty;
+        int stopPoint = Digits.Length;
+
+        switch (dt) {
+            case DisplayType.FourDigitNumeric:
+                return NumericDisplayString(4);
+
+            case DisplayType.ThreeDigitNumeric:
+                return NumericDisplayString(3);
+
+            case DisplayType.QueuedFull:
+                return QueuedDisplayString();
+
+            case DisplayType.Release:
+                return ReleaseName ?? string.Empty;
+
+            case DisplayType.Short when Digits.Length > 2:
+                stopPoint = 2;
+                break;
+
+            case DisplayType.ThreeDigit:
+                return GetVersionStringWithSelectedGroups(3);
+
+            case DisplayType.FourDigit:
+                return GetVersionStringWithSelectedGroups(4);
+        }
+
+        for (int i = 0; i < stopPoint; i++) {
+            result += Digits[i].ToString();
+        }
+        b.Verbose.Log($"DisplayType - Stop {stopPoint} |{result}|");
+        return result;
+    }
+
     /// <summary>
     /// Gets a version string containing only digits from the specified groups, preserving their original indices.
     /// </summary>
@@ -489,6 +279,7 @@ public class CompleteVersion {
 
         return result;
     }
+
     /// <summary>
     /// Gets a version string for selected groups with a limit applied only to default-group digits.
     /// Named-group digits in the selected set are always appended in original order.
@@ -529,6 +320,30 @@ public class CompleteVersion {
         return result;
     }
 
+    public void Increment() {
+        bool lastChanged = false;
+        bool anyChanged = false;
+        var t1 = DateTime.Now;
+
+        if (pendingReleaseName != null) {
+            ReleaseName = pendingReleaseName;
+            pendingReleaseName = null;
+        }
+
+        b.Verbose.Log("Incrementing Version.", ReleaseName);
+
+        foreach (var un in Digits) {
+            if (un.Value == null) {
+                b.Warning.Log($"Digit is null, skipping increment.");
+                continue;
+            }
+            string tmp = un.Value;
+            lastChanged = un.PerformIncrement(lastChanged, anyChanged, t1, t1);
+            b.Verbose.Log($"{tmp}>{un.Value} using {un.Behaviour}");
+            if (lastChanged) { anyChanged = true; }
+        }
+    }
+
     /// <summary>
     /// Increments only the digits belonging to specified groups.
     /// </summary>
@@ -565,5 +380,197 @@ public class CompleteVersion {
             b.Verbose.Log($"{tmp}>{un.Value} using {un.Behaviour}");
             if (lastChanged) { anyChanged = true; }
         }
+    }
+
+    public void SetCompleteVersionFromString(string versionString) {
+        string[] versionParts = versionString.Split('.');
+        if (versionParts.Length > Digits.Length) {
+            b.Warning.Log($"Warning: Version string has more parts ({versionParts.Length}) than available digits ({Digits.Length}). Extra parts will be ignored.");
+        }
+        for (int i = 0; i < Digits.Length; i++) {
+            string versionPart = i < versionParts.Length ? versionParts[i] : "0";
+            ApplyValueUpdate(i, versionPart);
+        }
+    }
+
+    public void SetDisplayTypeForVersion(FileUpdateType fut, DisplayType dt) {
+        DisplayTypes[fut] = dt;
+    }
+
+    public void SetIndividualDigits(string[] digitsToUpdate, string valueToSet) {
+        if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALLDIGITSWILDCARD) {
+            for (int i = 0; i < Digits.Length; i++) {
+                ApplyValueUpdate(i, valueToSet);
+            }
+        } else {
+            for (int i = 0; i < digitsToUpdate.Length; i++) {
+                Debug.Assert(int.TryParse(digitsToUpdate[i], out _), "Digit to update is not a valid integer, this should not happen.");
+                ApplyValueUpdate(int.Parse(digitsToUpdate[i]), valueToSet);
+            }
+        }
+    }
+
+    public void SetPrefixForDigit(string digitToUpdate, string newPrefix) {
+        if (digitToUpdate == ALLDIGITSWILDCARD) {
+            b.Verbose.Log($"Applying prefix update to all digits to {newPrefix}");
+            for (int i = 1; i < Digits.Length; i++) {
+                Digits[i].PreFix = newPrefix;
+            }
+            return;
+        }
+
+        Debug.Assert(int.TryParse(digitToUpdate, out _), "Digit to update is not a valid integer, this should not happen.");
+        Debug.Assert(Digits[int.Parse(digitToUpdate)] != null, "Digit to update is null, this should not happen.");
+        Debug.Assert(Digits.Length > int.Parse(digitToUpdate), "Digit to update is out of range of the digits available.");
+
+        b.Verbose.Log($"Applying prefix update for digit {digitToUpdate} to prefix {newPrefix}");
+        int idx = int.Parse(digitToUpdate);
+        Digits[idx].PreFix = newPrefix;
+    }
+
+    public void SetReleaseName(string newReleaseName) {
+        ReleaseName = newReleaseName;
+    }
+
+    public override string ToString() {
+        return GetVersionString(DisplayType.Full);
+    }
+
+    public bool ValidateDigitOptions(string[] digitsRequested) {
+        bool isValid = false;
+
+        if (digitsRequested is null || digitsRequested.Length == 0) {
+            Console.WriteLine("Error >> No digit specified, please use the -DG option.");
+            return isValid;
+        }
+        b.Verbose.Log($"Validating Digit Options [{string.Join(",", digitsRequested)}]");
+
+        foreach (string d in digitsRequested) {
+            if (string.IsNullOrWhiteSpace(d)) {
+                continue;
+            }
+            if (d.Equals(ALLDIGITSWILDCARD) || (int.TryParse(d, out int result) && result >= 0 && result < Digits.Length)) {
+                b.Verbose.Log($"Digit [{d}] is valid.");
+                isValid = true;
+            } else {
+                throw new ArgumentOutOfRangeException(nameof(digitsRequested), $"The digit [{d}] is not a valid digit. It must be a positive integer or '*' (all digits).");
+            }
+        }
+        return isValid;
+    }
+
+    protected string? ManipulateValueBasedOnPattern(string pattern, string? currentValue) {
+        if (string.IsNullOrEmpty(pattern)) { return null; }
+
+        if (int.TryParse(currentValue, out int currentInteger)) {
+            if (pattern == "+") {
+                return (++currentInteger).ToString();
+            } else if (pattern == "-") {
+                return (--currentInteger).ToString();
+            }
+        } else {
+            if (int.TryParse(pattern, out int patternAsInt)) {
+                return patternAsInt.ToString();
+            }
+        }
+
+        // Fallthrough - pattern is a version name.
+        return pattern;
+    }
+
+    private string BuildVersionStringFromIndices(List<int> indices) {
+        string result = string.Empty;
+        for (int i = 0; i < indices.Count; i++) {
+            result += Digits[indices[i]].ToString();
+        }
+        return result;
+    }
+
+    private List<int> GetGroupedDigitIndices() {
+        var indices = new List<int>();
+        for (int i = 0; i < Digits.Length; i++) {
+            if (!string.IsNullOrEmpty(NormalizeDigitGroup(Digits[i].GroupName))) {
+                indices.Add(i);
+            }
+        }
+        return indices;
+    }
+
+    private List<int> GetMainDigitIndices(int limit) {
+        var indices = new List<int>();
+        for (int i = 0; i < Digits.Length && indices.Count < limit; i++) {
+            if (string.IsNullOrEmpty(NormalizeDigitGroup(Digits[i].GroupName))) {
+                indices.Add(i);
+            }
+        }
+        return indices;
+    }
+
+    private string? GetValueForDigit(VersionUnit digit, string newValue) {
+        if (string.Equals(newValue, "ReleaseName", StringComparison.OrdinalIgnoreCase) && digit.Behaviour == DigitIncrementBehaviour.Fixed) {
+            return ReleaseName;
+        }
+        return newValue;
+    }
+
+    // Returns up to `limit` default-group digits followed by all explicitly grouped digits.
+    // Index-based (group membership), not suffix-based, so sparse/interleaved groups work correctly.
+    private string GetVersionStringWithSelectedGroups(int mainDigitLimit) {
+        var mainDigits = GetMainDigitIndices(mainDigitLimit);
+        var groupedDigits = GetGroupedDigitIndices();
+
+        string result = BuildVersionStringFromIndices(mainDigits) + BuildVersionStringFromIndices(groupedDigits);
+        b.Verbose.Log($"DisplayType - MainCount {mainDigits.Count} GroupedCount {groupedDigits.Count} |{result}|");
+        return result;
+    }
+
+    private string NumericDisplayString(int digitLimit = 4) {
+        string result = string.Empty;
+        int digitsFound = 0;
+        string mtcPrefix = string.Empty;
+
+        // Start with no prefix then use . prefixes and pick up .s only.
+        // Grouped (non-default) digits are excluded: numeric display types are for release versions only.
+        for (int i = 0; i < Digits.Length && digitsFound < digitLimit; i++) {
+            if (!string.IsNullOrEmpty(NormalizeDigitGroup(Digits[i].GroupName))) {
+                continue;
+            }
+            if (Digits[i].PreFix == mtcPrefix) {
+                mtcPrefix = ".";
+                if (ushort.TryParse(Digits[i].Value, out ushort _)) {
+                    digitsFound++;
+                    result += Digits[i].ToString();
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        while (digitsFound < digitLimit) {
+            digitsFound++;
+            result += ".0";
+        }
+        b.Verbose.Log($"DisplayType - Numeric Limit {digitLimit} |{result}|");
+        return result;
+    }
+
+    private string QueuedDisplayString() {
+        // Create a new array to hold the queued digits, reflecting any pending overrides.
+        string result = string.Empty;
+        var queuedDigits = new VersionUnit[Digits.Length];
+        for (int i = 0; i < Digits.Length; i++) {
+            var original = Digits[i];
+            queuedDigits[i] = new VersionUnit(
+                original.IncrementOverride ?? original.Value ?? string.Empty,
+                original.PreFix,
+                original.Behaviour
+            );
+            result += queuedDigits[i].ToString();
+        }
+        b.Verbose.Log($"DisplayType - QueuedFull {result}");
+
+        return result;
     }
 }

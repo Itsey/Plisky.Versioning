@@ -4,22 +4,9 @@ using System;
 using Plisky.Diagnostics;
 
 public class VersionUnit {
-    public DigitIncrementBehaviour Behaviour { get; set; }
-    private Bilge b = new Bilge("Plisky-VersionUnit");
     private const int DAYS_IN_A_WEEK = 7;
-
     private string? actualValue = null;
-
-    public string? IncrementOverride { get; set; }
-
-    public string? Value {
-        get { return actualValue; }
-        set { actualValue = value; ValidateForBehaviour(); }
-    }
-
-    public string PreFix { get; set; }
-
-    public string GroupName { get; set; } = string.Empty;
+    private Bilge b = new Bilge("Plisky-VersionUnit");
 
     public VersionUnit() : this(string.Empty, string.Empty, DigitIncrementBehaviour.Fixed) {
     }
@@ -31,6 +18,27 @@ public class VersionUnit {
         Value = versionValue;
         PreFix = versionPrefix;
         SetBehaviour(beh);
+    }
+
+    public DigitIncrementBehaviour Behaviour { get; set; }
+    public string GroupName { get; set; } = string.Empty;
+    public string? IncrementOverride { get; set; }
+
+    public string PreFix { get; set; }
+
+    public string? Value {
+        get { return actualValue; }
+        set { actualValue = value; ValidateForBehaviour(); }
+    }
+
+    public void SetBehaviour(DigitIncrementBehaviour newBehaviour) {
+        b.Verbose.Log($"New behaviour being set {newBehaviour}");
+        Behaviour = newBehaviour;
+        ValidateForBehaviour();
+    }
+
+    public override string ToString() {
+        return PreFix + Value;
     }
 
     /// <summary>
@@ -130,12 +138,6 @@ public class VersionUnit {
         return false;
     }
 
-    public void SetBehaviour(DigitIncrementBehaviour newBehaviour) {
-        b.Verbose.Log($"New behaviour being set {newBehaviour}");
-        Behaviour = newBehaviour;
-        ValidateForBehaviour();
-    }
-
     private void ValidateForBehaviour() {
         if ((Behaviour != DigitIncrementBehaviour.Fixed) && (Behaviour != DigitIncrementBehaviour.ReleaseName)) {
             try {
@@ -144,9 +146,5 @@ public class VersionUnit {
                 throw new InvalidOperationException($"Behaviour set to {Behaviour}.  This requires an integer value for the digit. Only Fixed and ReleaseName behaviours can be strings", inr);
             }
         }
-    }
-
-    public override string ToString() {
-        return PreFix + Value;
     }
 }

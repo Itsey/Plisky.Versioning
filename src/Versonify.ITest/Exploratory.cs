@@ -17,51 +17,6 @@ public class Exploratory {
         th = new TestHelper(uth);
     }
 
-
-    [Fact]
-    [Trait("Regression", "LFY-66")]
-    public async Task Create_file_using_old_commandline_still_creates_file() {
-        b.Info.Flow();
-        try {
-
-            string tpth = Path.Combine(Path.GetTempPath(), "dummy1.vstore");
-
-            if (File.Exists(tpth)) { File.Delete(tpth); } // Shouldnt be required but sometimes manual debugging leaves it around
-
-            uth.RegisterTemporaryFilename(tpth);
-
-            b.Verbose.Log($"Test case - old -VS create file, expecting file at {tpth}");
-            var output = await th.ExecuteVersonifyWithStreams($"-Command=CreateVersion -vs={tpth} -Q=\"2.3.0.0\" -Release=Austen");
-            b.Verbose.Log("StdOut", output.StdOut);
-
-            output.StdErr.ShouldContain("deprecated");
-            File.Exists(tpth).ShouldBeTrue();
-
-        } finally {
-            uth.ClearUpTestFiles();
-        }
-    }
-
-    [Fact]
-    [Trait("Regression", "LFY-66")]
-    public async Task Create_file_using_new_commandline_creates_file() {
-        b.Info.Flow();
-        try {
-
-            string tpth = Path.Combine(Path.GetTempPath(), "dummy1.vstore");
-            uth.RegisterTemporaryFilename(tpth);
-
-            b.Verbose.Log($"Test case - new -v create file, expecting file at {tpth}");
-            string output = await th.ExecuteVersonify($"-Command=CreateVersion -v={tpth} -Q=2.3.0.0 -Release=Austen ");
-            b.Verbose.Log("StdOut", output);
-
-            output.ShouldNotContain("deprecated");
-            File.Exists(tpth).ShouldBeTrue();
-        } finally {
-            uth.ClearUpTestFiles();
-        }
-    }
-
     [Theory]
     [InlineData(1, "Fixed", DigitIncrementBehaviour.Fixed)]
     [InlineData(2, "autoincrementwithreset", DigitIncrementBehaviour.AutoIncrementWithReset)]
@@ -138,6 +93,47 @@ public class Exploratory {
         string s = await th.ExecuteVersonify(args);
 
         s.ShouldContain("PNFV]", customMessage: "Nuke Marker not found in output");
+    }
+
+    [Fact]
+    [Trait("Regression", "LFY-66")]
+    public async Task Create_file_using_new_commandline_creates_file() {
+        b.Info.Flow();
+        try {
+            string tpth = Path.Combine(Path.GetTempPath(), "dummy1.vstore");
+            uth.RegisterTemporaryFilename(tpth);
+
+            b.Verbose.Log($"Test case - new -v create file, expecting file at {tpth}");
+            string output = await th.ExecuteVersonify($"-Command=CreateVersion -v={tpth} -Q=2.3.0.0 -Release=Austen ");
+            b.Verbose.Log("StdOut", output);
+
+            output.ShouldNotContain("deprecated");
+            File.Exists(tpth).ShouldBeTrue();
+        } finally {
+            uth.ClearUpTestFiles();
+        }
+    }
+
+    [Fact]
+    [Trait("Regression", "LFY-66")]
+    public async Task Create_file_using_old_commandline_still_creates_file() {
+        b.Info.Flow();
+        try {
+            string tpth = Path.Combine(Path.GetTempPath(), "dummy1.vstore");
+
+            if (File.Exists(tpth)) { File.Delete(tpth); } // Shouldnt be required but sometimes manual debugging leaves it around
+
+            uth.RegisterTemporaryFilename(tpth);
+
+            b.Verbose.Log($"Test case - old -VS create file, expecting file at {tpth}");
+            var output = await th.ExecuteVersonifyWithStreams($"-Command=CreateVersion -vs={tpth} -Q=\"2.3.0.0\" -Release=Austen");
+            b.Verbose.Log("StdOut", output.StdOut);
+
+            output.StdErr.ShouldContain("deprecated");
+            File.Exists(tpth).ShouldBeTrue();
+        } finally {
+            uth.ClearUpTestFiles();
+        }
     }
 
     [Fact(DisplayName = "Passing Z Ensures Zero Return.")]
