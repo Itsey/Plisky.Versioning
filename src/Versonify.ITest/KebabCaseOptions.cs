@@ -63,11 +63,11 @@ public class KebabCaseOptions : IDisposable {
         string finalArgs = BuildArgsForAlias(deprecatedAlias, versionStorePath, workingDirectory, projectFilePath);
 
         if (deprecatedAlias.Equals("-NoOverride", StringComparison.Ordinal)) {
-            _ = await sut.ExecuteVersonify($"override --version-source={versionStorePath} --quick-value=9.9.9");
+            _ = await sut.ExecuteVersonify($"override --version-source={versionStorePath} --quick-value=9.9.9", appendDebug: false);
             sut.LastExecutionExitCode.ShouldBe(0);
         }
 
-        var result = await sut.ExecuteVersonifyWithStreams(finalArgs, workingDirectory);
+        var result = await sut.ExecuteVersonifyWithStreams(finalArgs, workingDirectory, appendDebug: false);
         string expectedWarning = $"WARNING: '{deprecatedAlias}' is deprecated. Use '{canonicalAlias}' instead.";
 
         result.ExitCode.ShouldBe(0);
@@ -128,11 +128,13 @@ public class KebabCaseOptions : IDisposable {
 
     [Fact]
     public async Task Repeated_deprecated_alias_emits_single_warning() {
+        b.Info.Flow();
+
         string workingDirectory = CreateTemporaryDirectory();
         string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
-        string finalArgs = $"passive -VersionSource={versionStorePath} -Debug -Debug";
+        string finalArgs = $"passive --version-source={versionStorePath} -Debug -Debug";
 
-        var result = await sut.ExecuteVersonifyWithStreams(finalArgs, workingDirectory);
+        var result = await sut.ExecuteVersonifyWithStreams(finalArgs, workingDirectory, appendDebug: false);
         string expectedWarning = "WARNING: '-Debug' is deprecated. Use '--debug' instead.";
 
         result.ExitCode.ShouldBe(0);
@@ -181,7 +183,7 @@ public class KebabCaseOptions : IDisposable {
         int result = 0;
         string[] lines = stderr.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
         foreach (string line in lines) {
-            if (line.Equals(expectedWarning, StringComparison.Ordinal)) {
+            if (line.Equals(expectedWarning, StringComparison.OrdinalIgnoreCase)) {
                 result++;
             }
         }

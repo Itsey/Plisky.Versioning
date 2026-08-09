@@ -6,23 +6,56 @@ using Plisky.CodeCraft;
 using Plisky.Versioning;
 
 public static class ArgumentValidator {
+#if DEBUG
+    public const string TEST_VALID_ARGUMENT = "###VALID###";
+#endif
+
+    public static bool ShouldSetCompleteVersionFromString(string[] digitsToUpdate, string? valueToSet) {
+        if (string.IsNullOrWhiteSpace(valueToSet)) {
+            return false;
+        }
+        if (digitsToUpdate.Length == 0 && valueToSet.Contains('.')) {
+            return true;
+        }
+        return false;
+    }
+
     public static bool ValidateArgumentSettings(VersonifyOptions options) {
         bool valid = true;
+        bool checkNext = true;
 
-        // Common checks
-        if (!string.IsNullOrWhiteSpace(options.Root) && !Directory.Exists(options.Root)) {
-            Console.WriteLine("Error >> Invalid Directory For Root:" + options.Root);
-            valid = false;
-        }
-        if (string.IsNullOrWhiteSpace(options.VersionPersistanceValue)) {
-            Console.WriteLine("Error >> A versioning store must be selected.  Use -V= and pass your initialisation data");
-            valid = false;
-        }
-        if (!string.IsNullOrWhiteSpace(options.PverFileName)) {
-            char[] invalidChars = Path.GetInvalidFileNameChars();
-            if (options.PverFileName.IndexOfAny(invalidChars) >= 0) {
-                Console.WriteLine($"The output file name [{options.PverFileName}] contains invalid characters.");
+#if DEBUG
+        checkNext = !(options.Root == TEST_VALID_ARGUMENT);
+#endif
+
+        if (checkNext) {
+            if (!string.IsNullOrWhiteSpace(options.Root) && !Directory.Exists(options.Root)) {
+                Console.WriteLine("Error >> Invalid Directory For Root:" + options.Root);
                 valid = false;
+            }
+        }
+
+#if DEBUG
+        checkNext = !(options.VersionPersistanceValue == TEST_VALID_ARGUMENT);
+#endif
+
+        if (checkNext) {
+            if (string.IsNullOrWhiteSpace(options.VersionPersistanceValue)) {
+                Console.WriteLine("Error >> A versioning store must be selected.  Use -v= and pass your initialisation data");
+                valid = false;
+            }
+        }
+
+#if DEBUG
+        checkNext = !(options.PverFileName == TEST_VALID_ARGUMENT);
+#endif
+        if (checkNext) {
+            if (!string.IsNullOrWhiteSpace(options.PverFileName)) {
+                char[] invalidChars = Path.GetInvalidFileNameChars();
+                if (options.PverFileName.IndexOfAny(invalidChars) >= 0) {
+                    Console.WriteLine($"The output file name [{options.PverFileName}] contains invalid characters.");
+                    valid = false;
+                }
             }
         }
 
@@ -44,12 +77,18 @@ public static class ArgumentValidator {
             }
         }
 
+        if (options.RequestedCommand == VersioningCommand.Invalid) {
+            Console.WriteLine($"Error >> The command was not valid: {options.Command} is not recognised as a valid command.");
+            return false;
+        }
+
         // Command-specific checks
         switch (options.RequestedCommand) {
             case VersioningCommand.BehaviourOutput:
             case VersioningCommand.BehaviourUpdate:
                 valid &= ValidateDigitsPresent(options.DigitManipulations, "Behaviour");
                 break;
+
             case VersioningCommand.SetDigitValue:
                 bool hasQuickValue = !string.IsNullOrWhiteSpace(options.QuickValue);
                 bool hasDigitGroup = options.DigitGroup != null || options.PreRelease;
@@ -64,18 +103,21 @@ public static class ArgumentValidator {
                     valid &= ValidateDigitsPresent(options.DigitManipulations, "Set");
                 }
                 break;
+
             case VersioningCommand.Override:
                 if (string.IsNullOrWhiteSpace(options.QuickValue)) {
                     Console.WriteLine("Error >> The Override command requires a version pattern to apply. Use -Q=<pattern> to set the override pattern.");
                     valid = false;
                 }
                 break;
+
             case VersioningCommand.SetReleaseName:
                 if (!string.IsNullOrEmpty(options.QuickValue)) {
                     Console.WriteLine("Error >> Both QuickValue (-Q) and Release (-R) cannot be provided for the Set command. Please specify only one.");
                     valid = false;
                 }
                 break;
+
             case VersioningCommand.SetDigitPrefix:
                 valid &= ValidateDigitsPresent(options.DigitManipulations, "Prefix");
                 if (options.QuickValue == null) {    // Allow empty string or whitespace as valid prefix
@@ -83,6 +125,7 @@ public static class ArgumentValidator {
                     valid = false;
                 }
                 break;
+
             case VersioningCommand.UpdateFiles:
                 if ((options.VersionTargetMinMatch == null) || (options.VersionTargetMinMatch.Length == 0)) {
                     Console.WriteLine("Error >> The Update command requires a minmatch .txt file to be provided. Use -M=<path to minmatch file.>");
@@ -117,15 +160,5 @@ public static class ArgumentValidator {
             return false;
         }
         return true;
-    }
-
-    public static bool ShouldSetCompleteVersionFromString(string[] digitsToUpdate, string? valueToSet) {
-        if (string.IsNullOrWhiteSpace(valueToSet)) {
-            return false;
-        }
-        if (digitsToUpdate.Length == 0 && valueToSet.Contains('.')) {
-            return true;
-        }
-        return false;
     }
 }

@@ -21,20 +21,13 @@ public class VersonifyOptions {
     public string? Command { get; set; }
 
     public string? ConsoleTemplate { get; private set; }
-    public string? PverFileName { get; set; }
-    public DigitIncrementBehaviour IncrementBehaviour { get; set; }
-
     public bool Debug { get; set; }
-
-    public bool DryRunOnly { get; set; }
-
+    public string? DigitGroup { get; set; }
     public string[]? DigitManipulations { get; set; }
-
-    public bool ReturnZero { get; set; }
-
+    public bool DryRunOnly { get; set; }
+    public bool GetMdHelp { get; set; }
+    public DigitIncrementBehaviour IncrementBehaviour { get; set; }
     public bool NoOverride { get; set; }
-
-    public string? RawOutputOptions { get; set; }
 
     public string OutputOptions {
         get { return outOpts; }
@@ -52,35 +45,11 @@ public class VersonifyOptions {
     }
 
     public bool PerformIncrement { get; set; }
-
-    public bool GetMdHelp { get; set; }
-
-    public string? QuickValue { get; set; }
-
-    public string? Release { get; set; }
-
-    public string? Root {
-        get {
-            if (string.IsNullOrEmpty(pathPassed)) {
-                return null;
-            }
-            return Path.GetFullPath(pathPassed);
-        }
-        set {
-            pathPassed = value;
-        }
-    }
-
-
-    public string? Trace { get; set; }
-
-    public string? VersionPersistanceValue { get; set; }
-
-    public string[]? VersionTargetMinMatch { get; set; }
-
-    public string? DigitGroup { get; set; }
-
     public bool PreRelease { get; set; }
+    public string? PverFileName { get; set; }
+    public string? QuickValue { get; set; }
+    public string? RawOutputOptions { get; set; }
+    public string? Release { get; set; }
 
     public VersioningCommand RequestedCommand {
         get {
@@ -90,12 +59,16 @@ public class VersonifyOptions {
             switch (Command.ToLowerInvariant()) {
                 case "createversion":
                     return VersioningCommand.CreateNewVersion;
+
                 case "override":
                     return VersioningCommand.Override;
+
                 case "updatefiles":
                     return VersioningCommand.UpdateFiles;
+
                 case "passive":
                     return VersioningCommand.PassiveOutput;
+
                 case "behaviour":
                     if (string.IsNullOrEmpty(QuickValue)) {
                         return VersioningCommand.BehaviourOutput;
@@ -106,6 +79,7 @@ public class VersonifyOptions {
                         }
                     }
                     return VersioningCommand.Invalid;
+
                 case "set":
                     if (Release != null) {
                         return VersioningCommand.SetReleaseName;
@@ -114,10 +88,45 @@ public class VersonifyOptions {
                     }
                 case "prefix":
                     return VersioningCommand.SetDigitPrefix;
+
                 default:
                     return VersioningCommand.Invalid;
             }
         }
+    }
+
+    public bool ReturnZero { get; set; }
+
+    public string? Root {
+        get {
+            if (string.IsNullOrEmpty(pathPassed)) {
+                return null;
+            }
+#if DEBUG
+            if (pathPassed == ArgumentValidator.TEST_VALID_ARGUMENT) {
+                return pathPassed;
+            }
+#endif
+            return Path.GetFullPath(pathPassed);
+        }
+        set {
+            pathPassed = value;
+        }
+    }
+
+    public string? Trace { get; set; }
+
+    public string? VersionPersistanceValue { get; set; }
+
+    public string[]? VersionTargetMinMatch { get; set; }
+
+    public static bool TryParseDigitIncrementBehaviour(string value, out DigitIncrementBehaviour behaviour) {
+        if (Enum.TryParse<DigitIncrementBehaviour>(value, true, out behaviour) &&
+            Enum.IsDefined(typeof(DigitIncrementBehaviour), behaviour)) {
+            return true;
+        }
+        Console.WriteLine($"Error: '{value}' is not a valid digit increment behaviour.");
+        return false;
     }
 
     public string[] GetDigits() {
@@ -131,15 +140,6 @@ public class VersonifyOptions {
         return DigitManipulations;
     }
 
-    public static bool TryParseDigitIncrementBehaviour(string value, out DigitIncrementBehaviour behaviour) {
-        if (Enum.TryParse<DigitIncrementBehaviour>(value, true, out behaviour) &&
-            Enum.IsDefined(typeof(DigitIncrementBehaviour), behaviour)) {
-            return true;
-        }
-        Console.WriteLine($"Error: '{value}' is not a valid digit increment behaviour.");
-        return false;
-    }
-
     private void ParseOutputOptions() {
         b.Verbose.Flow();
 
@@ -150,7 +150,6 @@ public class VersonifyOptions {
         } else {
             outcache = OutputPossibilities.None;
         }
-
 
         if (string.IsNullOrEmpty(outOpts)) {
             b.Verbose.Log("No output options specified, defaulting to none.");

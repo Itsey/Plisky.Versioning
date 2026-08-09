@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Plisky.Diagnostics;
 using Plisky.Test;
 using Shouldly;
 
@@ -10,10 +11,21 @@ internal sealed class VersonifyExecutionResult {
     public string StdOut { get; init; } = string.Empty;
 }
 
+internal sealed class VersonifyExecutionOutput {
+    public string Item1 { get; init; } = string.Empty;
+    public int Item2 { get; init; }
+
+    public static implicit operator string(VersonifyExecutionOutput output) {
+        return output.Item1;
+    }
+}
+
 public class TestHelper {
+    protected Bilge b;
     private UnitTestHelper uth;
 
     public TestHelper(UnitTestHelper unitTestHelper) {
+        b = new Bilge("Versonify.TestHelper");
         uth = unitTestHelper;
     }
 
@@ -35,21 +47,28 @@ public class TestHelper {
 
     public string GetVersonifyPath() => VersonifyPathCache ??= ResolveVersonifyPath();
 
-    internal async Task<string> ExecuteVersonify(string v, string? workingDirectory = null) {
-        var result = await ExecuteVersonifyWithStreams(v, workingDirectory);
-        return result.StdOut;
+    internal async Task<VersonifyExecutionOutput> ExecuteVersonify(string v, string? workingDirectory = null, bool appendDebug = true) {
+        b.Info.Flow();
+        var result = await ExecuteVersonifyWithStreams(v, workingDirectory, appendDebug);
+
+        return new VersonifyExecutionOutput {
+            Item1 = result.StdOut,
+            Item2 = result.ExitCode,
+        };
     }
 
-    internal async Task<VersonifyExecutionResult> ExecuteVersonifyWithStreams(string v, string? workingDirectory = null) {
+    internal async Task<VersonifyExecutionResult> ExecuteVersonifyWithStreams(string v, string? workingDirectory = null, bool appendDebug = true) {
+        b.Info.Flow();
         var psi = new ProcessStartInfo();
         psi.FileName = GetVersonifyPath();
-        psi.Arguments = v;
+        psi.Arguments = appendDebug ? $"{v} --debug --trace=Verbose" : v;
         psi.RedirectStandardOutput = true;
         psi.RedirectStandardError = true;
         if (!string.IsNullOrEmpty(workingDirectory)) {
             psi.WorkingDirectory = workingDirectory;
         }
 
+        b.Verbose.Log($"Starting versonfiy - {psi.Arguments}");
         var p = Process.Start(psi);
 
         p.ShouldNotBeNull();
@@ -66,6 +85,8 @@ public class TestHelper {
             StdErr = stdErr,
             ExitCode = p.ExitCode,
         };
+
+        b.Verbose.Log($"Complete - {p.ExitCode}", stdOut);
         return result;
     }
 
@@ -80,6 +101,7 @@ public class TestHelper {
         }
 
         string locatedPathToVersonify = Path.Combine(solutionPath, "Versonify", "bin", currentConfiguration, currentTargetFramework, "versonify.exe");
+        b.Info.Log($"Versonify Path {locatedPathToVersonify}");
         if (!File.Exists(locatedPathToVersonify)) {
             throw new FileNotFoundException($"Executable not found. {locatedPathToVersonify}", locatedPathToVersonify);
         }

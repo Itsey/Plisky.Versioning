@@ -2,7 +2,7 @@
   "profiles": {
     "Versonify": {
       "commandName": "Project",
-      "commandLineArgs": "--command=CreateVersion -v=%TEMP%dummy.vstore -Q=\"1.0.0.0.0.0\" --release=mynewrelease"
+      "commandLineArgs": "-Command=CreateVersion -vs=c:\\temp\\Temp\\dummy1.vstore -Q=\"2.3.0.0\" -Release=Austen --debug --trace=Verbose"
     },
     "VersonifyHelp": {
       "commandName": "Project",

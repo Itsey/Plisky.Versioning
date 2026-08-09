@@ -13,14 +13,17 @@ public class XunitAutoTraceFixture : XunitTestFramework {
         : base(messageSink) {
         bool trace = true;
         if (trace) {
-            Bilge.AddHandler(new TCPHandler(new TCPHandlerOptions("127.0.0.1", 9060, true)), HandlerAddOptions.SingleType);
+            var hnd = new TCPHandler(new TCPHandlerOptions("127.0.0.1", 9060, true));
+            hnd.SetFormatter(new FlimFlamV4Formatter());
+            Bilge.AddHandler(hnd, HandlerAddOptions.SingleType);
             Bilge.SetConfigurationResolver((a, b) => System.Diagnostics.SourceLevels.Verbose);
-            Bilge.Alert.Online("testing-online");
+            Bilge.Alert.Online("versonify tests");
             Bilge.Default.Info.Log("Diagnostic fixture activating trace");
         }
     }
 
     public new void Dispose() {
+        Bilge.ForceFlush();
         base.Dispose();
     }
 }

@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using Versonify;
 
 namespace Versonify.ITest;
 
@@ -17,7 +15,7 @@ public class CanonicalLongOptionsTestData : IEnumerable<object[]> {
         new object[] { Clargs.Build(new(ArgNames.Unknown, "override"), new(ArgNames.VersionSource, "{VS}"), new(ArgNames.QuickValue, "9.9.9")) },
         new object[] { Clargs.Build(new(ArgNames.Unknown, "set"), new(ArgNames.VersionSource, "{VS}"), new(ArgNames.Release, "Beta")) },
         new object[] { Clargs.Build(new(ArgNames.Unknown, "updatefiles"), new(ArgNames.Root, "{ROOT}"), new(ArgNames.VersionSource, "{VS}"), new(ArgNames.MinMatch, "{MM}|StdFile")) },
-        new object[] { Clargs.Build(new(ArgNames.Unknown, "passive"), new(ArgNames.VersionSource, "{VS}"), new(ArgNames.Trace, "info")) },
+        new object[] { Clargs.Build(new(ArgNames.Unknown, "passive"), new(ArgNames.VersionSource, "{VS}"), new(ArgNames.DryRun, string.Empty)) },
         new object[] { Clargs.Build(new(ArgNames.Unknown, "passive"), new(ArgNames.VersionSource, "{VS}")) },
         new object[] { Clargs.Build(new(ArgNames.Unknown, "updatefiles"), new(ArgNames.Root, "{ROOT}"), new(ArgNames.VersionSource, "{VS}"), new(ArgNames.Increment, string.Empty), new(ArgNames.MinMatch, "{MM}|StdFile")) },
         new object[] { Clargs.Build(new(ArgNames.Unknown, "passive"), new(ArgNames.VersionSource, "{VS}"), new(ArgNames.DigitGroup, "default")) },

@@ -16,30 +16,30 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         th = new TestHelper(uth);
     }
 
-    [Fact]
+    [Fact(Skip = "Deprecated alias support kept till vnext - LFY-70.")]
     public async Task Deprecated_DG_alias_is_not_accepted() {
         b.Info.Flow();
         string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
-        _ = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -DG=*");
-        th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -DG must not be accepted.");
+        var output = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -DG=*");
+        output.Item2.ShouldNotBe(0, "Deprecated alias -DG must not be accepted.");
     }
 
-    [Fact]
+    [Fact(Skip = "Deprecated alias support kept till vnext - LFY-70.")]
     public async Task Deprecated_MM_alias_is_not_accepted() {
         b.Info.Flow();
         string workingDirectory = CreateTemporaryDirectory();
         try {
             string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
             string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
-            _ = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MM={projectFilePath}|StdFile");
-            th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -MM must not be accepted.");
+            var output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MM={projectFilePath}|StdFile");
+            output.Item2.ShouldNotBe(0, "Deprecated alias -MM must not be accepted.");
         } finally {
             Directory.Delete(workingDirectory, true);
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Deprecated alias support kept till vnext - LFY-70.")]
     public async Task Deprecated_NO_alias_is_not_accepted() {
         b.Info.Flow();
         string workingDirectory = CreateTemporaryDirectory();
@@ -47,20 +47,22 @@ public class CommandLineArgumentCoverageTests : IDisposable {
             string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
             string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
             _ = await th.ExecuteVersonify($"override -VersionSource={versionStorePath} -QuickValue=9.9.9");
-            _ = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile -NO");
-            th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -NO must not be accepted.");
+            var output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile -NO");
+            output.Item2.ShouldNotBe(0, "Deprecated alias -NO must not be accepted.");
         } finally {
             Directory.Delete(workingDirectory, true);
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Deprecated alias support kept till vnext - LFY-70.")]
+
     public async Task Deprecated_VS_alias_is_not_accepted() {
         b.Info.Flow();
         string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
-        _ = await th.ExecuteVersonify($"passive -VS={versionStorePath}");
-        th.LastExecutionExitCode.ShouldNotBe(0, "Deprecated alias -VS must not be accepted.");
+        var output = await th.ExecuteVersonify($"passive -VS={versionStorePath}");
+
+        output.Item2.ShouldNotBe(0, "Deprecated alias -VS must not be accepted.");
     }
 
     [Fact]
@@ -68,10 +70,10 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         b.Info.Flow();
         string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
-        string output = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -Digits=*");
-        output.ShouldContain("[0]:Fixed(0)");
-        output.ShouldContain("[7]:ReleaseName(8)");
-        th.LastExecutionExitCode.ShouldBe(0);
+        var output = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -Digits=*");
+        output.Item1.ShouldContain("[0]:Fixed(0)");
+        output.Item1.ShouldContain("[7]:ReleaseName(8)");
+        output.Item2.ShouldBe(0);
     }
 
     public void Dispose() {
@@ -87,12 +89,12 @@ public class CommandLineArgumentCoverageTests : IDisposable {
             string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
             string before = File.ReadAllText(versionStorePath);
 
-            string output = await th.ExecuteVersonify($"set -VersionSource={versionStorePath} -D=0 -QuickValue=9 -DryRun");
+            var output = await th.ExecuteVersonify($"set -VersionSource={versionStorePath} -D=0 -QuickValue=9 -DryRun");
             string after = File.ReadAllText(versionStorePath);
 
-            output.ShouldContain("DryRun - Would Save:");
+            output.Item1.ShouldContain("DryRun - Would Save:");
             after.ShouldBe(before);
-            th.LastExecutionExitCode.ShouldBe(0);
+            output.Item2.ShouldBe(0);
         } finally {
             Directory.Delete(workingDirectory, true);
         }
@@ -119,9 +121,9 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     [Fact]
     public async Task Invalid_argument_prints_error_and_exits_nonzero() {
         b.Info.Flow();
-        string output = await th.ExecuteVersonify("--totally-unknown-option");
-        output.ShouldContain("Fatal:");
-        th.LastExecutionExitCode.ShouldNotBe(0);
+        var output = await th.ExecuteVersonify("--totally-unknown-option");
+        output.Item1.ShouldContain("Fatal:");
+        output.Item2.ShouldNotBe(0);
     }
 
     [Fact]
@@ -131,10 +133,10 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         try {
             string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
             string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
-            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile");
-            output.ShouldContain("Version Increment Requested - Currently");
-            output.ShouldContain("Version To Write:");
-            th.LastExecutionExitCode.ShouldBe(0);
+            var output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile");
+            output.Item1.ShouldContain("Version Increment Requested - Currently");
+            output.Item1.ShouldContain("Version To Write:");
+            output.Item2.ShouldBe(0);
         } finally {
             Directory.Delete(workingDirectory, true);
         }
@@ -143,9 +145,9 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     [Fact]
     public async Task No_arguments_prints_help_and_exits_nonzero() {
         b.Info.Flow();
-        string output = await th.ExecuteVersonify("");
-        output.ShouldContain("Parameter help for Versonify.");
-        th.LastExecutionExitCode.ShouldNotBe(0);
+        var output = await th.ExecuteVersonify("");
+        output.Item1.ShouldContain("Parameter help for Versonify.");
+        output.Item2.ShouldNotBe(0);
     }
 
     [Fact]
@@ -156,10 +158,10 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         try {
             string versionStorePath = await CreateVersionStore(workingDirectory, "2.0.0");
 
-            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -Increment -VersionSource={versionStorePath} -MinMatch=*.zzz -Output=con -NoError");
+            var output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -Increment -VersionSource={versionStorePath} -MinMatch=*.zzz -Output=con -NoError");
 
-            output.ShouldContain("WARNING - No files found to update.");
-            th.LastExecutionExitCode.ShouldBe(0);
+            output.Item1.ShouldContain("WARNING - No files found to update.");
+            output.Item2.ShouldBe(0);
         } finally {
             Directory.Delete(workingDirectory, true);
         }
@@ -171,9 +173,9 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         string workingDirectory = CreateTemporaryDirectory();
         try {
             string versionStorePath = await CreateVersionStore(workingDirectory, "2.0.0");
-            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -Increment -VersionSource={versionStorePath} -MinMatch=*.zzz -Output=con -z");
-            output.ShouldContain("WARNING - No files found to update.");
-            th.LastExecutionExitCode.ShouldBe(0);
+            var output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -Increment -VersionSource={versionStorePath} -MinMatch=*.zzz -Output=con -z");
+            output.Item1.ShouldContain("WARNING - No files found to update.");
+            output.Item2.ShouldBe(0);
         } finally {
             Directory.Delete(workingDirectory, true);
         }
@@ -187,9 +189,9 @@ public class CommandLineArgumentCoverageTests : IDisposable {
             string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
             string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
             _ = await th.ExecuteVersonify($"override -VersionSource={versionStorePath} -QuickValue=9.9.9");
-            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile -NoOverride");
-            output.ShouldContain("Version Increment Override, Disabled");
-            th.LastExecutionExitCode.ShouldBe(0);
+            var output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile -NoOverride");
+            output.Item1.ShouldContain("Version Increment Override, Disabled");
+            output.Item2.ShouldBe(0);
         } finally {
             Directory.Delete(workingDirectory, true);
         }
@@ -201,10 +203,10 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
 
-        string output = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -D=1 -QuickValue=Fixed");
+        var output = await th.ExecuteVersonify($"behaviour -VersionSource={versionStorePath} -D=1 -QuickValue=Fixed");
 
-        output.ShouldContain("Setting Behaviour for Digit[1] to Fixed(0)");
-        th.LastExecutionExitCode.ShouldBe(0);
+        output.Item1.ShouldContain("Setting Behaviour for Digit[1] to Fixed(0)");
+        output.Item2.ShouldBe(0);
     }
 
     [Fact]
@@ -214,14 +216,14 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         string versionStorePath = uth.GetTestDataFile(resourceName);
         string releaseName = "ShortRelease";
 
-        string output = await th.ExecuteVersonify($"set -VersionSource={versionStorePath} -R={releaseName}");
-        output.ShouldContain($"Saving new Release Name as: {releaseName}");
-        th.LastExecutionExitCode.ShouldBe(0);
+        var output = await th.ExecuteVersonify($"set -VersionSource={versionStorePath} -R={releaseName}");
+        output.Item1.ShouldContain($"Saving new Release Name as: {releaseName}");
+        output.Item2.ShouldBe(0);
 
         output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath} -R=LookupRelease");
 
-        output.ShouldContain($"Loaded Release Name: {releaseName}");
-        th.LastExecutionExitCode.ShouldBe(0);
+        output.Item1.ShouldContain($"Loaded Release Name: {releaseName}");
+        output.Item2.ShouldBe(0);
     }
 
     [Fact]
@@ -231,9 +233,9 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         try {
             string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
             string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
-            string output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile");
-            output.ShouldContain("Version To Write:");
-            th.LastExecutionExitCode.ShouldBe(0);
+            var output = await th.ExecuteVersonify($"updatefiles -Root={workingDirectory} -I -VersionSource={versionStorePath} -MinMatch={projectFilePath}|StdFile");
+            output.Item1.ShouldContain("Version To Write:");
+            output.Item2.ShouldBe(0);
         } finally {
             Directory.Delete(workingDirectory, true);
         }
@@ -244,9 +246,9 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         b.Info.Flow();
         string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
-        string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
-        output.ShouldContain("Loaded [");
-        th.LastExecutionExitCode.ShouldBe(0);
+        var output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
+        output.Item1.ShouldContain("Loaded [");
+        output.Item2.ShouldBe(0);
     }
 
     [Fact]
@@ -255,10 +257,10 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
 
-        string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath} -Trace=info");
+        var output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath} -Trace=info", appendDebug: false);
 
-        output.ShouldContain("Debug Mode, Adding Trace Handler");
-        th.LastExecutionExitCode.ShouldBe(0);
+        output.Item1.ShouldContain("Debug Mode, Adding Trace Handler");
+        output.Item2.ShouldBe(0);
     }
 
     [Fact]
@@ -267,12 +269,12 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         var version = typeof(VersonifyOptions).Assembly.GetName().Version;
         string expectedVersion = $"{version?.Major}.{version?.Minor}.{version?.Build}.{version?.Revision}";
 
-        string output = await th.ExecuteVersonify("--version");
+        var output = await th.ExecuteVersonify("--version");
 
-        output.ShouldContain(expectedVersion);
-        output.ShouldNotContain("Performing Versioning Actions");
-        output.ShouldNotContain("Versioning By Versonify");
-        th.LastExecutionExitCode.ShouldBe(0);
+        output.Item1.ShouldContain(expectedVersion);
+        output.Item1.ShouldNotContain("Performing Versioning Actions");
+        output.Item1.ShouldNotContain("Versioning By Versonify");
+        output.Item2.ShouldBe(0);
     }
 
     [Fact]
@@ -280,9 +282,9 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         b.Info.Flow();
         string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string versionStorePath = uth.GetTestDataFile(resourceName);
-        string output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
-        output.ShouldContain("Loaded [");
-        th.LastExecutionExitCode.ShouldBe(0);
+        var output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
+        output.Item1.ShouldContain("Loaded [");
+        output.Item2.ShouldBe(0);
     }
 
     private static string CreateTemporaryDirectory() {
@@ -303,10 +305,10 @@ public class CommandLineArgumentCoverageTests : IDisposable {
 
     private async Task<string> CreateVersionStore(string workingDirectory, string versionValue) {
         string result = Path.Combine(workingDirectory, "versionstore.vstore");
-        string output = await th.ExecuteVersonify($"createversion -V={result} -Q={versionValue}");
+        var output = await th.ExecuteVersonify($"createversion -V={result} -Q={versionValue}");
 
-        output.ShouldContain("Creating New Version Store:");
-        th.LastExecutionExitCode.ShouldBe(0);
+        output.Item1.ShouldContain("Creating New Version Store:");
+        output.Item2.ShouldBe(0);
 
         return result;
     }

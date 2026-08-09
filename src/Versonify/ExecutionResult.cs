@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 
 namespace Versonify {
+
     internal class ExecutionResult {
-        protected List<string> AllErrors { get; set; } = new List<string>();
-        public bool WasProcessedSuccessfully { get; internal set; }
+
         public string[] Errors {
             get {
                 return AllErrors.ToArray();
@@ -11,10 +11,13 @@ namespace Versonify {
         }
 
         public int ExitCode { get; set; }
+        public bool WasProcessedSuccessfully { get; internal set; }
+        protected List<string> AllErrors { get; set; } = new List<string>();
 
         internal void AddError(string errorMessage) {
             AllErrors.Add(errorMessage);
         }
+
         internal void AddError(string errorMessage, int exit) {
             AllErrors.Add(errorMessage);
             ExitCode = exit;

@@ -25,13 +25,16 @@ public class Exploratory {
         try {
 
             string tpth = Path.Combine(Path.GetTempPath(), "dummy1.vstore");
+
+            if (File.Exists(tpth)) { File.Delete(tpth); } // Shouldnt be required but sometimes manual debugging leaves it around
+
             uth.RegisterTemporaryFilename(tpth);
 
             b.Verbose.Log($"Test case - old -VS create file, expecting file at {tpth}");
-            string output = await th.ExecuteVersonify($"-Command=CreateVersion -VS={tpth} -Q=\"2.3.0.0\" -Release=Austen --trace=Verbose");
-            b.Verbose.Log("StdOut", output);
+            var output = await th.ExecuteVersonifyWithStreams($"-Command=CreateVersion -vs={tpth} -Q=\"2.3.0.0\" -Release=Austen");
+            b.Verbose.Log("StdOut", output.StdOut);
 
-            output.ShouldContain("deprecated");
+            output.StdErr.ShouldContain("deprecated");
             File.Exists(tpth).ShouldBeTrue();
 
         } finally {
@@ -49,7 +52,7 @@ public class Exploratory {
             uth.RegisterTemporaryFilename(tpth);
 
             b.Verbose.Log($"Test case - new -v create file, expecting file at {tpth}");
-            string output = await th.ExecuteVersonify($"-Command=CreateVersion -Debug --trace=Verbose -v={tpth} -Q=2.3.0.0 -Release=Austen ");
+            string output = await th.ExecuteVersonify($"-Command=CreateVersion -v={tpth} -Q=2.3.0.0 -Release=Austen ");
             b.Verbose.Log("StdOut", output);
 
             output.ShouldNotContain("deprecated");
@@ -70,10 +73,10 @@ public class Exploratory {
         string vStoreFilePath = uth.GetTestDataFile(resName);
         string expectedOutput = $"Setting Behaviour for Digit[{digitPosition}] to {outputdata}({(int)outputdata})";
 
-        string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition} -Q={quickValue}");
+        var output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition} -Q={quickValue}");
 
-        output.ShouldContain(expectedOutput);
-        th.LastExecutionExitCode.ShouldBe(0);
+        output.Item1.ShouldContain(expectedOutput);
+        output.Item2.ShouldBe(0);
     }
 
     [Fact]
@@ -82,17 +85,17 @@ public class Exploratory {
         string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d=*");
+        var output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d=*");
 
-        output.ShouldContain("[0]:Fixed(0)");
-        output.ShouldContain("[1]:DaysSinceDate(2)");
-        output.ShouldContain("[2]:DailyAutoIncrement(3)");
-        output.ShouldContain("[3]:AutoIncrementWithReset(4)");
-        output.ShouldContain("[4]:AutoIncrementWithResetAny(5)");
-        output.ShouldContain("[5]:ContinualIncrement(6)");
-        output.ShouldContain("[6]:WeeksSinceDate(7)");
-        output.ShouldContain("[7]:ReleaseName(8)");
-        th.LastExecutionExitCode.ShouldBe(0);
+        output.Item1.ShouldContain("[0]:Fixed(0)");
+        output.Item1.ShouldContain("[1]:DaysSinceDate(2)");
+        output.Item1.ShouldContain("[2]:DailyAutoIncrement(3)");
+        output.Item1.ShouldContain("[3]:AutoIncrementWithReset(4)");
+        output.Item1.ShouldContain("[4]:AutoIncrementWithResetAny(5)");
+        output.Item1.ShouldContain("[5]:ContinualIncrement(6)");
+        output.Item1.ShouldContain("[6]:WeeksSinceDate(7)");
+        output.Item1.ShouldContain("[7]:ReleaseName(8)");
+        output.Item2.ShouldBe(0);
     }
 
     [Theory]
@@ -104,11 +107,11 @@ public class Exploratory {
         string resName = TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!;
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        string output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition}");
+        var output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition}");
 
-        output.ShouldContain(outputData);
-        output.ShouldNotContain(noOutputData);
-        th.LastExecutionExitCode.ShouldBe(0);
+        output.Item1.ShouldContain(outputData);
+        output.Item1.ShouldNotContain(noOutputData);
+        output.Item2.ShouldBe(0);
     }
 
     [Fact]
@@ -118,11 +121,11 @@ public class Exploratory {
         string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        string args = $"passive -v={vStoreFilePath} -O=con -Debug -Q=1.9.4.3";
-        string s = await th.ExecuteVersonify(args);
+        string args = $"passive -v={vStoreFilePath} -O=con -Q=1.9.4.3";
+        var output = await th.ExecuteVersonify(args);
 
-        s.ShouldNotContain("PNFV]");
-        th.LastExecutionExitCode.ShouldBe(0);
+        output.Item1.ShouldNotContain("PNFV]");
+        output.Item2.ShouldBe(0);
     }
 
     [Fact]
@@ -131,7 +134,7 @@ public class Exploratory {
         string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        string args = $"passive -v={vStoreFilePath} -O=con-nf -Debug -Q=1.9.4.3";
+        string args = $"passive -v={vStoreFilePath} -O=con-nf -Q=1.9.4.3";
         string s = await th.ExecuteVersonify(args);
 
         s.ShouldContain("PNFV]", customMessage: "Nuke Marker not found in output");
@@ -145,12 +148,11 @@ public class Exploratory {
         Directory.CreateDirectory(pth);
 
         string versionStore = Path.Combine(pth, "vstore.delme");
-        string output; // = await th.ExecuteVersonify("");
-        output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
+        var output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
         output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con -z");
 
-        output.ShouldContain("WARNING - No files found to update.");
-        th.LastExecutionExitCode.ShouldBe(0, "Failure to update files should return error.");
+        output.Item1.ShouldContain("WARNING - No files found to update.");
+        output.Item2.ShouldBe(0, "Failure to update files should return error.");
     }
 
     [Fact(DisplayName = "No Files Updated, Returns Exit Code")]
@@ -161,12 +163,11 @@ public class Exploratory {
         Directory.CreateDirectory(pth);
 
         string versionStore = Path.Combine(pth, "vstore.delme");
-        string output; // = await th.ExecuteVersonify("");
-        output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
+        var output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
         output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con");
 
-        output.ShouldContain("WARNING - No files found to update.");
-        th.LastExecutionExitCode.ShouldNotBe(0, "Failure to update files should return error.");
+        output.Item1.ShouldContain("WARNING - No files found to update.");
+        output.Item2.ShouldNotBe(0, "Failure to update files should return error.");
 
         Directory.Delete(pth, true);
     }
@@ -174,19 +175,20 @@ public class Exploratory {
     [Fact]
     public async Task No_arguments_presents_default_help() {
         b.Info.Flow();
-        string output = await th.ExecuteVersonify("");
+        var output = await th.ExecuteVersonify("");
 
-        output.ShouldContain("Parameter help for Versonify.");
-        th.LastExecutionExitCode.ShouldNotBe(0, "No Parameters is an error condition.");
+        output.Item1.ShouldContain("Parameter help for Versonify.");
+        output.Item2.ShouldNotBe(0, "No Parameters is an error condition.");
     }
 
     [Fact(DisplayName = "No minmatch returns error code")]
     public async Task No_match_is_passed_fails_when_update_requested() {
         b.Info.Flow();
-        string output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root=z:\\temp -Increment -v=z:\\t\\t.txt -output=con");
 
-        output.ShouldContain("Error >> The Update command requires a minmatch");
-        th.LastExecutionExitCode.ShouldNotBe(0, "Failure to update files should return error.");
+        var output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={ArgumentValidator.TEST_VALID_ARGUMENT} -Increment -v=z:\\t\\t.txt -output=con");
+
+        output.Item1.ShouldContain("Error >> The Update command requires a minmatch");
+        output.Item2.ShouldNotBe(0, "Failure to update files should return error.");
     }
 
     [Fact()] //Skip = "This looks like it could be a bug in current implementation while evidencing LFY-10")]
@@ -271,7 +273,7 @@ public class Exploratory {
             vStoreFilePath = vStoreFilePath + ".invalid";
         }
 
-        string output = await th.ExecuteVersonify($"{command} -v={vStoreFilePath}");
+        string output = await th.ExecuteVersonify($"{command} -v={vStoreFilePath}", appendDebug: false);
 
         if (shouldError) {
             output.ShouldContain("Error >>");

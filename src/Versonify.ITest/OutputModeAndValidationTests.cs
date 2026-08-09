@@ -24,19 +24,19 @@ public class OutputModeAndValidationTests {
     public async Task Behaviour_command_missing_digit_argument_returns_error() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"behaviour -V={store}");
-        output.ShouldContain("Error >>");
-        th.LastExecutionExitCode.ShouldNotBe(0);
+        var output = await th.ExecuteVersonify($"behaviour -V={store}");
+        output.Item1.ShouldContain("Error >>");
+        output.Item2.ShouldNotBe(0);
     }
 
     [Fact]
     public async Task Behaviour_semicolon_separated_digits_processes_multiple_digits() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!);
-        string output = await th.ExecuteVersonify($"behaviour -V={store} -D=0;1");
-        output.ShouldContain("[0]:");
-        output.ShouldContain("[1]:");
-        th.LastExecutionExitCode.ShouldBe(0);
+        var output = await th.ExecuteVersonify($"behaviour -V={store} -D=0;1");
+        output.Item1.ShouldContain("[0]:");
+        output.Item1.ShouldContain("[1]:");
+        output.Item2.ShouldBe(0);
     }
 
     [Fact]
@@ -44,36 +44,36 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         string nonExistentPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
-        string output = await th.ExecuteVersonify($"passive -V={store} -Root={nonExistentPath}");
-        output.ShouldContain("Error >> Invalid Directory");
-        th.LastExecutionExitCode.ShouldNotBe(0);
+        var output = await th.ExecuteVersonify($"passive -V={store} -Root={nonExistentPath}");
+        output.Item1.ShouldContain("Error >> Invalid Directory");
+        output.Item2.ShouldNotBe(0);
     }
 
     [Fact]
     public async Task Debug_flag_echoes_command_line_arguments_to_stdout() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"passive -V={store} -Debug");
-        output.ShouldContain("Command Line:");
-        th.LastExecutionExitCode.ShouldBe(0);
+        var output = await th.ExecuteVersonify($"passive -v={store} --debug", appendDebug: false);
+        output.Item1.ShouldContain("Command Line Arguments:");
+        output.Item2.ShouldBe(0);
     }
 
     [Fact]
     public async Task Output_azdo_custom_variable_writes_named_pipeline_variable() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"passive -V={store} -Output=azdo:MyVar");
-        output.ShouldContain("##vso[task.setvariable variable=MyVar");
-        th.LastExecutionExitCode.ShouldBe(0);
+        var output = await th.ExecuteVersonify($"passive -V={store} -Output=azdo:MyVar");
+        output.Item1.ShouldContain("##vso[task.setvariable variable=MyVar");
+        output.Item2.ShouldBe(0);
     }
 
     [Fact]
     public async Task Output_azdo_default_writes_default_vso_pipeline_variable() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"passive -V={store} -Output=azdo");
-        output.ShouldContain("##vso[task.setvariable variable=CodeVersionNumber");
-        th.LastExecutionExitCode.ShouldBe(0);
+        var output = await th.ExecuteVersonify($"passive -V={store} -Output=azdo");
+        output.Item1.ShouldContain("##vso[task.setvariable variable=CodeVersionNumber");
+        output.Item2.ShouldBe(0);
     }
 
     [Fact]
@@ -83,9 +83,9 @@ public class OutputModeAndValidationTests {
         string store = await CreateVersionStore(tempDir, "1.0.0");
 
         try {
-            string output = await th.ExecuteVersonify($"passive -V={store} -Output=file", tempDir);
+            var output = await th.ExecuteVersonify($"passive -V={store} -Output=file", tempDir);
             File.Exists(Path.Combine(tempDir, "pver-latest.txt")).ShouldBeTrue();
-            th.LastExecutionExitCode.ShouldBe(0);
+            output.Item2.ShouldBe(0);
         } finally {
             Directory.Delete(tempDir, true);
         }
@@ -107,9 +107,9 @@ public class OutputModeAndValidationTests {
         string customFile = Path.Combine(tempDir, CUSTOMFILENAME);
 
         try {
-            string output = await th.ExecuteVersonify($"passive -V={store} -Output=file:{CUSTOMFILENAME}", tempDir);
+            var output = await th.ExecuteVersonify($"passive -V={store} -Output=file:{CUSTOMFILENAME}", tempDir);
             File.Exists(customFile).ShouldBeTrue();
-            th.LastExecutionExitCode.ShouldBe(0);
+            output.Item2.ShouldBe(0);
         } finally {
             Directory.Delete(tempDir, true);
         }
@@ -120,9 +120,9 @@ public class OutputModeAndValidationTests {
     public async Task Output_vsts_alias_writes_default_vso_pipeline_variable() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"passive -V={store} -Output=vsts");
-        output.ShouldContain("##vso[task.setvariable variable=CodeVersionNumber");
-        th.LastExecutionExitCode.ShouldBe(0);
+        var output = await th.ExecuteVersonify($"passive -V={store} -Output=vsts");
+        output.Item1.ShouldContain("##vso[task.setvariable variable=CodeVersionNumber");
+        output.Item2.ShouldBe(0);
     }
 
     // Group E — Validation errors
@@ -130,27 +130,27 @@ public class OutputModeAndValidationTests {
     public async Task Override_command_missing_value_argument_returns_error() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"override -V={store}");
-        output.ShouldContain("Error >>");
-        th.LastExecutionExitCode.ShouldNotBe(0);
+        var output = await th.ExecuteVersonify($"override -V={store}");
+        output.Item1.ShouldContain("Error >>");
+        output.Item2.ShouldNotBe(0);
     }
 
     [Fact]
     public async Task Prefix_command_missing_digit_argument_returns_error() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"prefix -V={store} -Q=-");
-        output.ShouldContain("Error >>");
-        th.LastExecutionExitCode.ShouldNotBe(0);
+        var output = await th.ExecuteVersonify($"prefix -V={store} -Q=-");
+        output.Item1.ShouldContain("Error >>");
+        output.Item2.ShouldNotBe(0);
     }
 
     [Fact]
     public async Task Prefix_command_missing_value_argument_returns_error() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"prefix -V={store} -D=0");
-        output.ShouldContain("Error >>");
-        th.LastExecutionExitCode.ShouldNotBe(0);
+        var output = await th.ExecuteVersonify($"prefix -V={store} -D=0");
+        output.Item1.ShouldContain("Error >>");
+        output.Item2.ShouldNotBe(0);
     }
 
     [Fact]
@@ -160,11 +160,11 @@ public class OutputModeAndValidationTests {
         string store = await CreateVersionStore(tempDir, "1.0.0.0");
 
         try {
-            _ = await th.ExecuteVersonify($"prefix -V={store} -D=2 -Q=-");
-            th.LastExecutionExitCode.ShouldBe(0);
-            string output = await th.ExecuteVersonify($"passive -V={store}");
-            output.ShouldContain("-");
-            th.LastExecutionExitCode.ShouldBe(0);
+            var output = await th.ExecuteVersonify($"prefix -V={store} -D=2 -Q=-");
+            output.Item2.ShouldBe(0);
+            output = await th.ExecuteVersonify($"passive -V={store}");
+            output.Item1.ShouldContain("-");
+            output.Item2.ShouldBe(0);
         } finally {
             Directory.Delete(tempDir, true);
         }
@@ -177,18 +177,18 @@ public class OutputModeAndValidationTests {
     public async Task Set_command_missing_value_argument_returns_error() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"set -V={store}");
-        output.ShouldContain("Error >>");
-        th.LastExecutionExitCode.ShouldNotBe(0);
+        var output = await th.ExecuteVersonify($"set -V={store}");
+        output.Item1.ShouldContain("Error >>");
+        output.Item2.ShouldNotBe(0);
     }
 
     [Fact]
     public async Task Set_command_with_conflicting_Q_and_R_arguments_returns_error() {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
-        string output = await th.ExecuteVersonify($"set -V={store} -Q=9 -R=MyRelease");
-        output.ShouldContain("Error >>");
-        th.LastExecutionExitCode.ShouldNotBe(0);
+        var output = await th.ExecuteVersonify($"set -V={store} -Q=9 -R=MyRelease");
+        output.Item1.ShouldContain("Error >>");
+        output.Item2.ShouldNotBe(0);
     }
 
     private static string CreateTemporaryDirectory() {
@@ -199,9 +199,9 @@ public class OutputModeAndValidationTests {
 
     private async Task<string> CreateVersionStore(string workingDirectory, string versionValue) {
         string result = Path.Combine(workingDirectory, "versionstore.vstore");
-        string output = await th.ExecuteVersonify($"createversion -V={result} -Q={versionValue}");
-        output.ShouldContain("Creating New Version Store:");
-        th.LastExecutionExitCode.ShouldBe(0);
+        var output = await th.ExecuteVersonify($"createversion -V={result} -Q={versionValue}");
+        output.Item1.ShouldContain("Creating New Version Store:");
+        output.Item2.ShouldBe(0);
         return result;
     }
 }

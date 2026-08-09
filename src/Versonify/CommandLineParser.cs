@@ -7,23 +7,28 @@ using static Versonify.Clargs;
 
 public static class CommandLineParser {
 
-    private static readonly IReadOnlyDictionary<string, string> deprecatedAliasMap = new Dictionary<string, string>(StringComparer.Ordinal) {
-        ["-Command"] = COMMAND_ARG,
-        ["-Debug"] = DEBUG_ARG,
-        ["-DryRun"] = DRY_RUN_ARG,
-        ["-Digits"] = DIGITS_ARG,
-        ["-NoError"] = NO_ERROR_ARG,
-        ["-NoOverride"] = NO_OVERRIDE_ARG,
-        ["-Output"] = OUTPUT_ARG,
-        ["-Increment"] = INCREMENT_ARG,
-        ["-QuickValue"] = QUICK_VALUE_ARG,
-        ["-Release"] = RELEASE_ARG,
-        ["-Root"] = ROOT_ARG,
-        ["-Trace"] = TRACE_ARG,
-        ["-VersionSource"] = VERSION_SOURCE_ARG,
-        ["-MinMatch"] = MIN_MATCH_ARG,
+    private static readonly IReadOnlyDictionary<string, string> deprecatedAliasMapLower = new Dictionary<string, string>(StringComparer.Ordinal) {
+        ["-command"] = COMMAND_ARG,
+        ["-debug"] = DEBUG_ARG,
+        ["-dryrun"] = DRY_RUN_ARG,
+        ["-digits"] = DIGITS_ARG,
+        ["-noerror"] = NO_ERROR_ARG,
+        ["-nooverride"] = NO_OVERRIDE_ARG,
         ["-output"] = OUTPUT_ARG,
+        ["-increment"] = INCREMENT_ARG,
+        ["-quickvalue"] = QUICK_VALUE_ARG,
+        ["-release"] = RELEASE_ARG,
+        ["-root"] = ROOT_ARG,
+        ["-trace"] = TRACE_ARG,
+        ["-versionsource"] = VERSION_SOURCE_ARG,
+        ["-vs"] = VERSION_SOURCE_ARG,
+        ["-minmatch"] = MIN_MATCH_ARG,
     };
+
+    public static void DisplayHelp() {
+        var helpCommand = BuildRootCommand(false);
+        helpCommand.Parse(new[] { HELP_ARG }).Invoke(new System.CommandLine.InvocationConfiguration());
+    }
 
     public static bool IsHelpRequested(string[] args) {
         foreach (string arg in args) {
@@ -34,11 +39,6 @@ public static class CommandLineParser {
         }
 
         return false;
-    }
-
-    public static void DisplayHelp() {
-        var helpCommand = BuildRootCommand(false);
-        helpCommand.Parse(new[] { HELP_ARG }).Invoke(new System.CommandLine.InvocationConfiguration());
     }
 
     public static (bool Success, VersonifyOptions Options) Parse(string[] args) {
@@ -110,51 +110,6 @@ public static class CommandLineParser {
         options.OutputOptions = options.RawOutputOptions ?? "";
 
         return (true, options);
-    }
-
-    private static string[] NormalizeDigitGroupArguments(string[] args) {
-        string[] result = new string[args.Length];
-        const string LONGDIGITGROUP = DIGIT_GROUP_ARG + "=";
-        const string SHORTDIGITGROUP = "-g=";
-
-        for (int i = 0; i < args.Length; i++) {
-            string argument = args[i];
-            if (argument.StartsWith(LONGDIGITGROUP, StringComparison.Ordinal)) {
-                string value = argument.Substring(LONGDIGITGROUP.Length);
-                if (string.IsNullOrEmpty(value) || value == "\"\"") {
-                    result[i] = $"{LONGDIGITGROUP}default";
-                } else {
-                    result[i] = argument;
-                }
-            } else if (argument.StartsWith(SHORTDIGITGROUP, StringComparison.Ordinal)) {
-                string value = argument.Substring(SHORTDIGITGROUP.Length);
-                if (string.IsNullOrEmpty(value) || value == "\"\"") {
-                    result[i] = $"{SHORTDIGITGROUP}default";
-                } else {
-                    result[i] = argument;
-                }
-            } else {
-                result[i] = argument;
-            }
-        }
-
-        return result;
-    }
-
-    private static Option<T>? FindOption<T>(RootCommand rootCommand, string alias) {
-        foreach (var symbol in rootCommand.Options) {
-            if (symbol is Option<T> opt) {
-                if (symbol.Name.Equals(alias, StringComparison.Ordinal)) {
-                    return opt;
-                }
-                foreach (string a in opt.Aliases) {
-                    if (a.Equals(alias, StringComparison.Ordinal)) {
-                        return opt;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     private static RootCommand BuildRootCommand(bool includeDeprecatedAliases = true) {
@@ -231,12 +186,7 @@ public static class CommandLineParser {
         traceOpt.Description = "Trace level: info|verbose|off";
         rc.Add(traceOpt);
 
-#if false
-        // Holding pattern for LFY-66 more work required to get to the bottom of this.
         string[] versionSourceAliases = includeDeprecatedAliases ? new[] { "-V", "-v", "-VS", "-vs", "-VersionSource" } : new[] { "-V", "-v" };
-#else
-        string[] versionSourceAliases = includeDeprecatedAliases ? new[] { "-V", "-v", "-VersionSource" } : new[] { "-V", "-v" };
-#endif
         var versionSourceOpt = new Option<string>(VERSION_SOURCE_ARG, versionSourceAliases);
         versionSourceOpt.Description = "Version store initialisation string";
         rc.Add(versionSourceOpt);
@@ -262,8 +212,9 @@ public static class CommandLineParser {
     private static void EmitDeprecatedAliasWarnings(string[] args) {
         var seenAliases = new HashSet<string>(StringComparer.Ordinal);
         foreach (string arg in args) {
-            string extractedToken = ExtractOptionToken(arg);
-            if (!deprecatedAliasMap.TryGetValue(extractedToken, out string? canonicalAlias)) {
+            string extractedToken = ExtractOptionToken(arg).ToLowerInvariant();
+
+            if (!deprecatedAliasMapLower.TryGetValue(extractedToken, out string? canonicalAlias)) {
                 continue;
             }
 
@@ -286,7 +237,52 @@ public static class CommandLineParser {
         return rawArg;
     }
 
+    private static Option<T>? FindOption<T>(RootCommand rootCommand, string alias) {
+        foreach (var symbol in rootCommand.Options) {
+            if (symbol is Option<T> opt) {
+                if (symbol.Name.Equals(alias, StringComparison.Ordinal)) {
+                    return opt;
+                }
+                foreach (string a in opt.Aliases) {
+                    if (a.Equals(alias, StringComparison.Ordinal)) {
+                        return opt;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     private static string FormatDeprecationWarning(string deprecatedAlias, string canonicalAlias) {
         return $"WARNING: '{deprecatedAlias}' is deprecated. Use '{canonicalAlias}' instead.";
+    }
+
+    private static string[] NormalizeDigitGroupArguments(string[] args) {
+        string[] result = new string[args.Length];
+        const string LONGDIGITGROUP = DIGIT_GROUP_ARG + "=";
+        const string SHORTDIGITGROUP = "-g=";
+
+        for (int i = 0; i < args.Length; i++) {
+            string argument = args[i];
+            if (argument.StartsWith(LONGDIGITGROUP, StringComparison.Ordinal)) {
+                string value = argument.Substring(LONGDIGITGROUP.Length);
+                if (string.IsNullOrEmpty(value) || value == "\"\"") {
+                    result[i] = $"{LONGDIGITGROUP}default";
+                } else {
+                    result[i] = argument;
+                }
+            } else if (argument.StartsWith(SHORTDIGITGROUP, StringComparison.Ordinal)) {
+                string value = argument.Substring(SHORTDIGITGROUP.Length);
+                if (string.IsNullOrEmpty(value) || value == "\"\"") {
+                    result[i] = $"{SHORTDIGITGROUP}default";
+                } else {
+                    result[i] = argument;
+                }
+            } else {
+                result[i] = argument;
+            }
+        }
+
+        return result;
     }
 }
