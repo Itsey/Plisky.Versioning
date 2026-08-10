@@ -42,7 +42,7 @@ public static class CommandLineParser {
     }
 
     public static (bool Success, VersonifyOptions Options) Parse(string[] args) {
-        var options = new VersonifyOptions();
+        var result = new VersonifyOptions();
         var rootCommand = BuildRootCommand();
         string[] normalizedArgs = NormalizeDigitGroupArguments(args);
         var parseResult = rootCommand.Parse(normalizedArgs);
@@ -52,7 +52,7 @@ public static class CommandLineParser {
             foreach (var error in parseResult.Errors) {
                 Console.WriteLine(error.Message);
             }
-            return (false, options);
+            return (false, result);
         }
 
         EmitDeprecatedAliasWarnings(args);
@@ -79,33 +79,33 @@ public static class CommandLineParser {
 
         string? cmdFromPositional = parseResult.GetValue(commandArg!);
         string? cmdFromOption = parseResult.GetValue(commandOpt!);
-        options.Command = cmdFromPositional ?? cmdFromOption;
+        result.Command = cmdFromPositional ?? cmdFromOption;
 
-        options.Debug = parseResult.GetValue(debugOpt!);
-        options.DryRunOnly = parseResult.GetValue(dryRunOpt!);
-        options.ReturnZero = parseResult.GetValue(noErrorOpt!);
-        options.GetMdHelp = parseResult.GetValue(getMdHelpOpt!);
-        options.NoOverride = parseResult.GetValue(noOverrideOpt!);
-        options.PerformIncrement = parseResult.GetValue(incrementOpt!);
-        options.QuickValue = parseResult.GetValue(quickValueOpt!);
-        options.Release = parseResult.GetValue(releaseOpt!);
-        options.Root = parseResult.GetValue(rootPathOpt!);
-        options.Trace = parseResult.GetValue(traceOpt!);
-        options.VersionPersistanceValue = parseResult.GetValue(versionSourceOpt!);
+        result.Debug = parseResult.GetValue(debugOpt!);
+        result.DryRunOnly = parseResult.GetValue(dryRunOpt!);
+        result.ReturnZero = parseResult.GetValue(noErrorOpt!);
+        result.GetMdHelp = parseResult.GetValue(getMdHelpOpt!);
+        result.NoOverride = parseResult.GetValue(noOverrideOpt!);
+        result.PerformIncrement = parseResult.GetValue(incrementOpt!);
+        result.QuickValue = parseResult.GetValue(quickValueOpt!);
+        result.Release = parseResult.GetValue(releaseOpt!);
+        result.Root = parseResult.GetValue(rootPathOpt!);
+        result.Trace = parseResult.GetValue(traceOpt!);
+        result.VersionPersistanceValue = parseResult.GetValue(versionSourceOpt!);
 
         string? rawDigits = parseResult.GetValue(digitsOpt!);
-        options.DigitManipulations = rawDigits?.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        result.DigitManipulations = rawDigits?.Split(';', StringSplitOptions.RemoveEmptyEntries);
 
         string? rawMinMatch = parseResult.GetValue(minMatchOpt!);
-        options.VersionTargetMinMatch = rawMinMatch?.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        result.VersionTargetMinMatch = rawMinMatch?.Split(';', StringSplitOptions.RemoveEmptyEntries);
 
-        options.DigitGroup = parseResult.GetValue(digitGroupOpt!);
-        options.PreRelease = parseResult.GetValue(preReleaseOpt!);
+        result.DigitGroup = parseResult.GetValue(digitGroupOpt!);
+        result.PreRelease = parseResult.GetValue(preReleaseOpt!);
 
-        options.RawOutputOptions = parseResult.GetValue(outputOpt!);
-        options.OutputOptions = options.RawOutputOptions ?? "";
+        result.RawOutputOptions = parseResult.GetValue(outputOpt!);
+        result.OutputOptions = result.RawOutputOptions ?? "";
 
-        return (true, options);
+        return (true, result);
     }
 
     private static RootCommand BuildRootCommand(bool includeDeprecatedAliases = true) {

@@ -10,7 +10,7 @@ using Plisky.Diagnostics;
 using Plisky.Versioning;
 
 internal class Program {
-    public static VersonifyOptions options = new();
+    public static VersonifyOptions? opts;
     private const string ALL_DIGITS_WILDCARD = "*";
     private static Bilge b = new();
     private static string? passiveOutputValue;
@@ -18,15 +18,17 @@ internal class Program {
     private static CompleteVersion? versionerUsed;
 
     private static void ApplyDigitBehaviour() {
-        var newBehaviour = options.IncrementBehaviour;
-        var ver = new Versioning(storage!, options.DryRunOnly);
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        var newBehaviour = opts.IncrementBehaviour;
+        var ver = new Versioning(storage!, opts.DryRunOnly);
         versionerUsed = ver.Version;
 
-        if (!ver.Version.ValidateDigitOptions(options.DigitManipulations!)) {
+        if (!ver.Version.ValidateDigitOptions(opts.DigitManipulations!)) {
             return;
         }
 
-        string[] digitsToUpdate = options.GetDigits();
+        string[] digitsToUpdate = opts.GetDigits();
         if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
             Console.WriteLine($"Setting All Behaviours to {newBehaviour}");
         } else {
@@ -37,7 +39,7 @@ internal class Program {
             ver.UpdateBehaviour(digit, newBehaviour);
         }
 
-        if (!options.DryRunOnly) {
+        if (!opts.DryRunOnly) {
             Console.WriteLine("Saving Updated Behaviour");
             ver.SaveUpdatedVersion();
         } else {
@@ -46,11 +48,13 @@ internal class Program {
     }
 
     private static void ApplyDigitPrefixUpdate() {
-        var ver = new Versioning(storage!, options.DryRunOnly);
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        var ver = new Versioning(storage!, opts.DryRunOnly);
         versionerUsed = ver.Version;
 
-        string[] digitsToUpdate = options.GetDigits();
-        string? prefixToSet = options.QuickValue;
+        string[] digitsToUpdate = opts.GetDigits();
+        string? prefixToSet = opts.QuickValue;
 
         if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
             Console.WriteLine($"Setting prefix for all digits to: {prefixToSet}");
@@ -62,7 +66,7 @@ internal class Program {
             }
         }
 
-        if (!options.DryRunOnly) {
+        if (!opts.DryRunOnly) {
             Console.WriteLine("Saving updated digit prefixes");
             ver.SaveUpdatedVersion();
             Console.WriteLine($"[{ver.Version.GetVersionString()}]");
@@ -73,11 +77,13 @@ internal class Program {
     }
 
     private static void ApplyDigitValueUpdate() {
-        var ver = new Versioning(storage!, options.DryRunOnly);
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        var ver = new Versioning(storage!, opts.DryRunOnly);
         versionerUsed = ver.Version;
 
-        string[] digitsToUpdate = options.GetDigits();
-        string? valueToSet = options.QuickValue;
+        string[] digitsToUpdate = opts.GetDigits();
+        string? valueToSet = opts.QuickValue;
 
         if (ArgumentValidator.ShouldSetCompleteVersionFromString(digitsToUpdate, valueToSet)) {
             ver.Version.SetCompleteVersionFromString(valueToSet!);
@@ -126,7 +132,7 @@ internal class Program {
             }
         }
 
-        if (!options.DryRunOnly) {
+        if (!opts.DryRunOnly) {
             Console.WriteLine("Saving Updated Digit Values");
             ver.SaveUpdatedVersion();
             Console.WriteLine($"[{ver.Version.GetVersionString()}]");
@@ -137,12 +143,13 @@ internal class Program {
     }
 
     private static void ApplyReleaseNameUpdate() {
-        var ver = new Versioning(storage!, options.DryRunOnly);
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+        var ver = new Versioning(storage!, opts.DryRunOnly);
         versionerUsed = ver.Version;
-        string? newReleaseName = options.Release;
+        string? newReleaseName = opts.Release;
 
         ver.Version.SetReleaseName(newReleaseName!);
-        if (!options.DryRunOnly) {
+        if (!opts.DryRunOnly) {
             Console.WriteLine($"Saving new Release Name as: {newReleaseName}");
             ver.SaveUpdatedVersion();
         } else {
@@ -154,23 +161,25 @@ internal class Program {
     private static void ApplyVersionIncrement(ExecutionResult result) {
         b.Verbose.Flow();
 
-        var ver = new Versioning(storage!, options.DryRunOnly);
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        var ver = new Versioning(storage!, opts.DryRunOnly);
         versionerUsed = ver.Version;
 
         ver.Logger = Console.WriteLine;
         ver.FileUpdateDisplayGroups = ResolveDigitGroupsForDisplay();
 
-        if (options.NoOverride) {
+        if (opts.NoOverride) {
             Console.WriteLine("Version Increment Override, Disabled");
             foreach (var l in ver.Version.Digits) {
                 l.IncrementOverride = null;
             }
         }
-        if (options.PerformIncrement) {
+        if (opts.PerformIncrement) {
             Console.WriteLine("Version Increment Requested - Currently " + ver.GetVersion());
 
-            if ((!string.IsNullOrWhiteSpace(options.Release)) && (options.Release != ver.Version.ReleaseName)) {
-                ver.Version.ReleaseName = options.Release;
+            if ((!string.IsNullOrWhiteSpace(opts.Release)) && (opts.Release != ver.Version.ReleaseName)) {
+                ver.Version.ReleaseName = opts.Release;
             }
             ver.Version.IncrementByGroup(ResolveDigitGroupsForIncrement());
         } else {
@@ -180,13 +189,13 @@ internal class Program {
         Console.WriteLine("Version To Write: " + ver.GetVersion());
 
         // Increment done, now persist and then update the pages
-        ver.LoadMiniMatches(options.VersionTargetMinMatch!);
+        ver.LoadMiniMatches(opts.VersionTargetMinMatch!);
 
-        if (!string.IsNullOrEmpty(options.Root) && Directory.Exists(options.Root)) {
-            _ = ver.SearchForAllFiles(options.Root);
+        if (!string.IsNullOrEmpty(opts.Root) && Directory.Exists(opts.Root)) {
+            _ = ver.SearchForAllFiles(opts.Root);
         } else {
             result.WasProcessedSuccessfully = false;
-            result.AddError($"Invalid or Missing Root Path: {options.Root}.");
+            result.AddError($"Invalid or Missing Root Path: {opts.Root}.");
             // TODO: Consistant error code map
             result.ExitCode = 5;
         }
@@ -214,15 +223,17 @@ internal class Program {
     private static void CreateNewPendingIncrement() {
         b.Verbose.Flow();
 
-        var ver = new Versioning(storage!, options.DryRunOnly);
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        var ver = new Versioning(storage!, opts.DryRunOnly);
         versionerUsed = ver.Version;
 
-        string? verPendPattern = options.QuickValue;
+        string? verPendPattern = opts.QuickValue;
 
         Console.WriteLine($"Apply Delayed Increment. [{ver}] using [{verPendPattern}]");
         ver.Version.ApplyPendingVersion(verPendPattern!);
 
-        if (!options.DryRunOnly) {
+        if (!opts.DryRunOnly) {
             storage!.Persist(ver.Version);
             ver.Increment();
             Console.WriteLine($"Saving Overridden Version [{ver.GetVersion()}]");
@@ -233,18 +244,20 @@ internal class Program {
     }
 
     private static void CreateNewVersionStore() {
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
         string startVer = "0.0.0.0";
-        if (!string.IsNullOrEmpty(options.QuickValue)) {
-            Console.WriteLine($"Using Value From Command Line: {options.QuickValue}");
-            startVer = options.QuickValue;
+        if (!string.IsNullOrEmpty(opts.QuickValue)) {
+            Console.WriteLine($"Using Value From Command Line: {opts.QuickValue}");
+            startVer = opts.QuickValue;
         }
-        if (!string.IsNullOrEmpty(options.Release)) {
-            Console.WriteLine($"Setting Release From Command Line: {options.Release}");
+        if (!string.IsNullOrEmpty(opts.Release)) {
+            Console.WriteLine($"Setting Release From Command Line: {opts.Release}");
         }
         Console.WriteLine($"Creating New Version Store: {startVer}");
 
         var cv = new CompleteVersion(startVer) {
-            ReleaseName = options.Release
+            ReleaseName = opts.Release
         };
         versionerUsed = cv;
 
@@ -269,7 +282,10 @@ internal class Program {
     /// </summary>
     private static void GetVersionStorageFromCommandLine() {
         b.Info.Flow();
-        string vpv = Environment.ExpandEnvironmentVariables(options.VersionPersistanceValue ?? "");
+
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        string vpv = Environment.ExpandEnvironmentVariables(opts.VersionPersistanceValue ?? "");
         b.Verbose.Log($"Expanded versionstore :{vpv}");
         storage = VersionStorage.CreateFromInitialisation(vpv);
     }
@@ -279,13 +295,15 @@ internal class Program {
     }
 
     private static void LoadDigitBehaviour() {
-        var ver = new Versioning(storage!, options.DryRunOnly);
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        var ver = new Versioning(storage!, opts.DryRunOnly);
         versionerUsed = ver.Version;
-        if (!ver.Version.ValidateDigitOptions(options.DigitManipulations!)) {
+        if (!ver.Version.ValidateDigitOptions(opts.DigitManipulations!)) {
             return;
         }
 
-        string[] digitsToLoad = options.GetDigits();
+        string[] digitsToLoad = opts.GetDigits();
         if (digitsToLoad[0] == ALL_DIGITS_WILDCARD) {
             Console.WriteLine("Loading All Behaviours");
             Console.WriteLine(ver.GetBehaviour(digitsToLoad[0]));
@@ -299,7 +317,9 @@ internal class Program {
 
     private static void LoadReleaseName() {
         b.Verbose.Flow();
-        var ver = new Versioning(storage!, options.DryRunOnly);
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        var ver = new Versioning(storage!, opts.DryRunOnly);
         versionerUsed = ver.Version;
 
         if (string.IsNullOrEmpty(ver.Version.ReleaseName)) {
@@ -310,16 +330,17 @@ internal class Program {
     }
 
     private static void LoadVersionStore() {
-        var ver = new Versioning(storage!, options.DryRunOnly);
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+        var ver = new Versioning(storage!, opts.DryRunOnly);
         versionerUsed = ver.Version;
 
-        if (options.PerformIncrement) {
+        if (opts.PerformIncrement) {
             string v = ver.GetVersion();
             b.Verbose.Log($"Performing increment {v}");
             Console.WriteLine("Version Increment Requested - Currently " + v);
 
-            if ((!string.IsNullOrWhiteSpace(options.Release)) && (options.Release != ver.Version.ReleaseName)) {
-                ver.Version.ReleaseName = options.Release;
+            if ((!string.IsNullOrWhiteSpace(opts.Release)) && (opts.Release != ver.Version.ReleaseName)) {
+                ver.Version.ReleaseName = opts.Release;
             }
             ver.Version.IncrementByGroup(ResolveDigitGroupsForIncrement());
 
@@ -379,6 +400,7 @@ internal class Program {
                 DiagnosticsConfig.ConfigureTrace(options);
             }
 
+            opts = options;
             b = new Bilge("Versonify");
             Bilge.Alert.Online("Versonify");
             b.Verbose.Dump(options, "App Options");
@@ -388,14 +410,14 @@ internal class Program {
                 if (versionerUsed != null) {
                     b.Verbose.Log($"All Actions - Complete - Outputting.");
                     var vo = new VersioningOutputter(versionerUsed) {
-                        ConsoleTemplate = options.ConsoleTemplate,
-                        PverFileName = options.PverFileName,
-                        Digits = options.GetDigits(),
-                        ReleaseRequested = options.Release != null,
-                        PassiveOutputOverride = options.RequestedCommand == VersioningCommand.PassiveOutput ? passiveOutputValue : null,
+                        ConsoleTemplate = opts.ConsoleTemplate,
+                        PverFileName = opts.PverFileName,
+                        Digits = opts.GetDigits(),
+                        ReleaseRequested = opts.Release != null,
+                        PassiveOutputOverride = opts.RequestedCommand == VersioningCommand.PassiveOutput ? passiveOutputValue : null,
                     };
 
-                    vo.DoOutput(options.OutputsActive, options.RequestedCommand);
+                    vo.DoOutput(opts.OutputsActive, opts.RequestedCommand);
                 }
 
                 b.Info.Log("All Actions - Complete - Exiting.");
@@ -426,20 +448,22 @@ internal class Program {
     private static ExecutionResult PerformActionsFromCommandline() {
         var result = new ExecutionResult();
         b.Verbose.Flow();
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
         passiveOutputValue = null;
 
         Console.WriteLine("Performing Versioning Actions");
 
         GetVersionStorageFromCommandLine();
 
-        if (!ArgumentValidator.ValidateVersionStorage(storage, options)) {
+        if (!ArgumentValidator.ValidateVersionStorage(storage, opts)) {
             // Do not like this at all - LFY-68 created.
             result.WasProcessedSuccessfully = false;
             result.ExitCode = 1;
             return result;
         }
 
-        switch (options.RequestedCommand) {
+        switch (opts.RequestedCommand) {
             case VersioningCommand.CreateNewVersion:
                 CreateNewVersionStore();
                 result.WasProcessedSuccessfully = true;
@@ -451,7 +475,7 @@ internal class Program {
                 break;
 
             case VersioningCommand.UpdateFiles:
-                if (options.VersionTargetMinMatch == null || options.VersionTargetMinMatch.Length == 0) {
+                if (opts.VersionTargetMinMatch == null || opts.VersionTargetMinMatch.Length == 0) {
                     result.AddError("Error >> The Update command requires a minmatch file to be provided. Use -M=<path to minmatch file.>¦-M=Minmatch glob");
                     // TODO : Proper Exit Code Map
                     result.ExitCode = 7;
@@ -463,7 +487,7 @@ internal class Program {
                 break;
 
             case VersioningCommand.PassiveOutput:
-                if (options.Release != null) {
+                if (opts.Release != null) {
                     LoadReleaseName();
                 } else {
                     LoadVersionStore();
@@ -497,7 +521,7 @@ internal class Program {
                 break;
 
             default:
-                result.AddError("Error >> Unrecognised Command: " + options.Command);
+                result.AddError("Error >> Unrecognised Command: " + opts.Command);
                 result.ExitCode = 8;
                 // Todo: Proper exit code map
                 result.WasProcessedSuccessfully = false;
@@ -507,39 +531,45 @@ internal class Program {
     }
 
     private static string? ResolveDigitGroupForSet() {
-        if (options.PreRelease) {
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        if (opts.PreRelease) {
             return "pre-release";
         }
 
-        if (options.DigitGroup == null) {
+        if (opts.DigitGroup == null) {
             return null;
         }
 
-        return CompleteVersion.NormalizeDigitGroup(options.DigitGroup);
+        return CompleteVersion.NormalizeDigitGroup(opts.DigitGroup);
     }
 
     private static string ResolveDigitGroupsForDisplay() {
-        if (options.PreRelease) {
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        if (opts.PreRelease) {
             return "default,pre-release";
         }
 
-        if (string.IsNullOrWhiteSpace(options.DigitGroup)) {
+        if (string.IsNullOrWhiteSpace(opts.DigitGroup)) {
             return string.Empty;
         }
 
-        return options.DigitGroup;
+        return opts.DigitGroup;
     }
 
     private static string ResolveDigitGroupsForIncrement() {
-        if (options.PreRelease) {
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        if (opts.PreRelease) {
             return "pre-release";
         }
 
-        if (string.IsNullOrWhiteSpace(options.DigitGroup)) {
+        if (string.IsNullOrWhiteSpace(opts.DigitGroup)) {
             return string.Empty;
         }
 
-        return options.DigitGroup;
+        return opts.DigitGroup;
     }
 
     private static void WriteErrorConditions() {

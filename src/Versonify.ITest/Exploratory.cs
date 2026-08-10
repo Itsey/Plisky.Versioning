@@ -159,8 +159,10 @@ public class Exploratory {
         Directory.CreateDirectory(pth);
 
         string versionStore = Path.Combine(pth, "vstore.delme");
-        _ = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
-        var output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con");
+        var output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
+        output.Item2.ShouldBe(0, "Warning Test setup failed");
+
+        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con");
 
         output.Item1.ShouldContain("WARNING - No files found to update.");
         output.Item2.ShouldNotBe(0, "Failure to update files should return error.");
