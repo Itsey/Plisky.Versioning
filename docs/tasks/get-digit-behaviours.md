@@ -1,0 +1,76 @@
+---
+status: todo
+title: Add Get command line option to return individual and all digit behaviours
+created: 2026-08-11
+priority: medium
+reference: 6
+---
+
+# Reference
+6 — Add `-Command=Get` and top-level `-Get` command line options to Versonify to retrieve individual and all digit increment behaviors in plain English and JSON formats.
+
+# What
+Add a `Get` command option to `Versonify` (supported via `-Command=Get` or `-Get`) that queries and outputs digit increment behaviors for specified digits or all digits.
+
+The `Get` command supports two output modes:
+1. **Plain English Output (Default)**: Outputs human-readable sentence(s) describing each queried digit's status (e.g. `"Digit 0 has value 1 and  is set to Fixed behaviour."` This output is repeated for each digit queried.
+2. **JSON Output (`--json`)**: Outputs a JSON dictionary keyed by digit position, containing detailed properties for each digit: `digitPosition`, `digitValue`, `digitBehaviour`, `digitQueuedOverride`, and `digitPrefix`.
+
+When invoked with specific digit indices (e.g. `-Digits=0` or `-Digits=0,2`), only the specified digits are returned. If `-Digits` is omitted or specified as a wildcard (`*`), it defaults to returning all digits in the active version store.
+
+# Why
+There is no consistent way of reading the values from a version store currently without reading the file directly.
+
+Setting the digits requires quite a detailed knowledge of the expected behaviour that is hard to glean from the current output methods therefore its very difficult for an AI to manipulate the digits in the file accurately.  In order to determine what the approach would be for an update a read is required for all of the digits.
+
+For example, when combining a pre and a release version to use the new digit grouping capability.  You would need to add digits to the release one from the pre-release file.  There is no simple way of retrieving the information about what the values, behaviours and approach is for each digit.  Adding a dedicated `Get` option (`-Command=Get` / `-Get`) provides an explicit, intuitive read API that supports both human inspection in plain English and machine consumption via a structured JSON dictionary.
+
+# Acceptance
+
+- Given `Versonify` is executed with `-Command=Get` or `-Get` in plain text mode (default):
+  - When `-Digits=0` is specified, it writes a plain English sentence: `"Digit 0 is set to <BehaviourName> behavior."`.
+  - When `-Digits=*` or no `-Digits` parameter is specified, it writes sentences for all digits.
+- Given `Versonify` is executed with `-Command=Get` or `-Get` in JSON mode (`--json`):
+  - It writes a JSON object dictionary keyed by digit position containing:
+    - `digitPosition`: integer position index (0-based)
+    - `digitValue`: current string value of the digit
+    - `digitBehaviour`: `DigitIncrementBehaviour` enum string (e.g. `"Fixed"`, `"AutoIncrementWithReset"`)
+    - `digitQueuedOverride`: string or null representing pending/queued increment override
+    - `digitPrefix`: string prefix character (e.g. `"."` or `"-"`)
+    - `digitgroup`: the name of the digit group.
+  - Example structure:
+    ```json
+    {
+      "0": {
+        "digitPosition": 0,
+        "digitValue": "1",
+        "digitBehaviour": "Fixed",
+        "digitQueuedOverride": null,
+        "digitPrefix": "",
+        "digitgroup" : "default"
+      },
+      "1": {
+        "digitPosition": 1,
+        "digitValue": "0",
+        "digitBehaviour": "AutoIncrementWithReset",
+        "digitQueuedOverride": "+",
+        "digitPrefix": ".",
+        "digitgroup" : "default"
+      }
+    }
+    ```
+- Given multiple digit indices (e.g. `-Digits=0,2`), only the requested digit entries are included in the plain text sentences or JSON dictionary output.
+- Given an invalid or out-of-range digit index is provided (e.g. `-Digits=9`), `Versonify` outputs an error message and terminates with a non-zero exit code.
+- Existing commands and output options remain backwards-compatible.
+
+# Out of Scope
+
+- Modifying digit behaviours or values during a `Get` command execution.
+- Changing JSON output format for non-`Get` commands.
+
+# Assumptions & Constraints
+
+- **Prerequisite Dependency**: Task #2 (`docs/tasks/json-output.md`: "Add JSON console output mode for Versonify") MUST be completed and `--json` console output support implemented prior to building this task's JSON output capability.
+- `Get` command follows standard `Versonify` CLI parameter parsing rules (`-Command=Get` and `-Get` alias).
+- Defaults to querying all digits (`*`) if `-Digits` is omitted.
+- Respects active version storage initialized via `-v=` / `-version-source=`.
