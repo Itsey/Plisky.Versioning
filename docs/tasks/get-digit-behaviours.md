@@ -7,13 +7,13 @@ reference: 6
 ---
 
 # Reference
-6 — Add `-Command=Get` and top-level `Get` command line options to Versonify to retrieve individual and all digit increment behaviours in plain English and JSON formats.
+6 — Add `--Command=Get` and top-level `Get` command line options to Versonify to retrieve individual and all digit increment behaviours in plain English and JSON formats.
 
 # What
 Add a `Get` command option to `Versonify` (supported via `--command=get` or `get`) that queries and outputs digit increment behaviours for specified digits or all digits.
 
 The `Get` command supports two output modes:
-1. **Plain English Output (Default)**: Outputs human-readable sentence(s) describing each queried digit's status (e.g. `"Digit 0 has value 1 and  is set to Fixed behaviour."` This output is repeated for each digit queried.
+1. **Plain English Output (Default)**: Outputs human-readable sentence(s) describing each queried digit's status (e.g. `"Digit st position [0] has prefix "", value "1", and  is set to Fixed behaviour. It belongs to the digit-group default and its Queued Override value is null"` This output is repeated for each digit queried. If multiple digits are queried, they are separated by new lines.
 2. **JSON Output (`--json`)**: Outputs a JSON dictionary keyed by digit position, containing detailed properties for each digit: keyed on digit position with the values being `digitValue`, `digitBehaviour`, `digitQueuedOverride`, `digitgroup` and `digitPrefix`.
 
 When invoked with specific digit indices (e.g. `-Digits=0` or `-Digits=0,2`), only the specified digits are returned. If `-Digits` is omitted or specified as a wildcard (`*`), it defaults to returning all digits in the active version store.
@@ -34,7 +34,7 @@ For example, when combining a pre and a release version to use the new digit gro
 # Acceptance
 
 - Given `Versonify` is executed with `-Command=Get` or `-Get` in plain text mode (default):
-  - When `-Digits=0` is specified, it writes a plain English sentence: `"Digit 0 is set to <BehaviourName> behavior."`.
+  - When `-Digits=0` is specified, it writes a plain English sentence: `"Digit at position [0] has prefix "<prefix>", has value "<DigitValue>", and is set to <BehaviourName> behavior. It belongs to digit-group <DigitGroup>, and its Queued Override value is <QueuedOverrideValue>"`.
   - When `-Digits=*` or no `-Digits` parameter is specified, it writes sentences for all digits.
   
 - Given `Versonify` is executed with `-Command=Get` or `-Get` in JSON mode (`--json`):
