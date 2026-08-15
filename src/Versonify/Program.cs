@@ -7,12 +7,14 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Plisky.CodeCraft;
 using Plisky.Diagnostics;
+using Plisky.Plumbing;
 using Plisky.Versioning;
 
 internal class Program {
     public static VersonifyOptions? opts;
     private const string ALL_DIGITS_WILDCARD = "*";
     private static Bilge b = new();
+    private static Hub outputContent = new();
     private static string? passiveOutputValue;
     private static VersionStorage? storage;
     private static CompleteVersion? versionerUsed;
