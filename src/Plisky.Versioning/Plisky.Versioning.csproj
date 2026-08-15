@@ -16,6 +16,10 @@
     </PackageReference>
     <PackageReference Include="Plisky.Diagnostics" Version="3.2.5" />
     <PackageReference Include="Plisky.Plumbing" Version="1.8.14" />
+    <PackageReference Include="Roslynator.Analyzers" Version="4.16.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="System.Text.Json" Version="9.0.10" />
   </ItemGroup>
 </Project>

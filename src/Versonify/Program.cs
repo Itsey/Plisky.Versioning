@@ -1,4 +1,4 @@
-﻿namespace Versonify;
+namespace Versonify;
 
 using System;
 using System.IO;
@@ -10,7 +10,7 @@ using Plisky.Diagnostics;
 using Plisky.Plumbing;
 using Plisky.Versioning;
 
-internal class Program {
+internal static class Program {
     public static VersonifyOptions? opts;
     private const string ALL_DIGITS_WILDCARD = "*";
     private static Bilge b = new();
@@ -32,9 +32,9 @@ internal class Program {
 
         string[] digitsToUpdate = opts.GetDigits();
         if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
-            Console.WriteLine($"Setting All Behaviours to {newBehaviour}");
+            outputContent.Launch(new SimpleMessage($"Setting All Behaviours to {newBehaviour}"));
         } else {
-            Console.WriteLine($"Setting Behaviour for Digit[{string.Join(',', digitsToUpdate)}] to {newBehaviour}({(int)newBehaviour})");
+            outputContent.Launch(new SimpleMessage($"Setting Behaviour for Digit[{string.Join(',', digitsToUpdate)}] to {newBehaviour}({(int)newBehaviour})"));
         }
 
         foreach (string digit in digitsToUpdate) {
@@ -42,7 +42,7 @@ internal class Program {
         }
 
         if (!opts.DryRunOnly) {
-            Console.WriteLine("Saving Updated Behaviour");
+            outputContent.Launch(new SimpleMessage("Saving Updated Behaviour"));
             ver.SaveUpdatedVersion();
         } else {
             DisplayDryRunBehaviours(ver, digitsToUpdate);
@@ -59,22 +59,22 @@ internal class Program {
         string? prefixToSet = opts.QuickValue;
 
         if (digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
-            Console.WriteLine($"Setting prefix for all digits to: {prefixToSet}");
+            outputContent.Launch(new SimpleMessage($"Setting prefix for all digits to: {prefixToSet}"));
             ver.Version.SetPrefixForDigit(ALL_DIGITS_WILDCARD, prefixToSet!);
         } else {
-            Console.WriteLine($"Setting prefix for digit(s) [{string.Join(',', digitsToUpdate)}] to: {prefixToSet}");
+            outputContent.Launch(new SimpleMessage($"Setting prefix for digit(s) [{string.Join(',', digitsToUpdate)}] to: {prefixToSet}"));
             foreach (string digit in digitsToUpdate) {
                 ver.Version.SetPrefixForDigit(digit, prefixToSet!);
             }
         }
 
         if (!opts.DryRunOnly) {
-            Console.WriteLine("Saving updated digit prefixes");
+            outputContent.Launch(new SimpleMessage("Saving updated digit prefixes"));
             ver.SaveUpdatedVersion();
-            Console.WriteLine($"[{ver.Version.GetVersionString()}]");
+            outputContent.Launch(new SimpleMessage($"[{ver.Version.GetVersionString()}]"));
         } else {
-            Console.WriteLine("DryRun - Would Save:");
-            Console.WriteLine($"[{ver.Version.GetVersionString()}]");
+            outputContent.Launch(new SimpleMessage("DryRun - Would Save:"));
+            outputContent.Launch(new SimpleMessage($"[{ver.Version.GetVersionString()}]"));
         }
     }
 
@@ -89,28 +89,28 @@ internal class Program {
 
         if (ArgumentValidator.ShouldSetCompleteVersionFromString(digitsToUpdate, valueToSet)) {
             ver.Version.SetCompleteVersionFromString(valueToSet!);
-            Console.WriteLine($"Set version to: {ver.Version.GetVersionString()}");
+            outputContent.Launch(new SimpleMessage($"Set version to: {ver.Version.GetVersionString()}"));
         } else {
             if (!ver.Version.ValidateDigitOptions(digitsToUpdate)) {
-                Console.WriteLine("Error >> Invalid digit selection for value update.");
+                outputContent.Launch(new SimpleMessage("Error >> Invalid digit selection for value update."));
                 return;
             }
 
             string? requestedGroupName = ResolveDigitGroupForSet();
             if (string.IsNullOrWhiteSpace(valueToSet) && requestedGroupName == null) {
-                Console.WriteLine("Error >> No value or digit-group specified for set command.");
+                outputContent.Launch(new SimpleMessage("Error >> No value or digit-group specified for set command."));
                 return;
             }
 
             if (!string.IsNullOrWhiteSpace(valueToSet) && digitsToUpdate.Length > 0 && digitsToUpdate[0] == ALL_DIGITS_WILDCARD) {
-                Console.WriteLine($"Setting all digits to value: {valueToSet}");
+                outputContent.Launch(new SimpleMessage($"Setting all digits to value: {valueToSet}"));
                 if (requestedGroupName != null) {
-                    Console.WriteLine($"  with group assignment: {requestedGroupName}");
+                    outputContent.Launch(new SimpleMessage($"  with group assignment: {requestedGroupName}"));
                 }
             } else if (!string.IsNullOrWhiteSpace(valueToSet)) {
-                Console.WriteLine($"Setting digit(s) [{string.Join(',', digitsToUpdate)}] to value: {valueToSet}");
+                outputContent.Launch(new SimpleMessage($"Setting digit(s) [{string.Join(',', digitsToUpdate)}] to value: {valueToSet}"));
                 if (requestedGroupName != null) {
-                    Console.WriteLine($"  with group assignment: {requestedGroupName}");
+                    outputContent.Launch(new SimpleMessage($"  with group assignment: {requestedGroupName}"));
                 }
             }
 
@@ -120,7 +120,7 @@ internal class Program {
 
             if (requestedGroupName != null) {
                 if (string.IsNullOrWhiteSpace(valueToSet)) {
-                    Console.WriteLine($"Assigning digit(s) [{string.Join(',', digitsToUpdate)}] to group: {requestedGroupName}");
+                    outputContent.Launch(new SimpleMessage($"Assigning digit(s) [{string.Join(',', digitsToUpdate)}] to group: {requestedGroupName}"));
                 }
                 foreach (string digitStr in digitsToUpdate) {
                     if (digitStr != ALL_DIGITS_WILDCARD && int.TryParse(digitStr, out int digitIdx)) {
@@ -135,12 +135,12 @@ internal class Program {
         }
 
         if (!opts.DryRunOnly) {
-            Console.WriteLine("Saving Updated Digit Values");
+            outputContent.Launch(new SimpleMessage("Saving Updated Digit Values"));
             ver.SaveUpdatedVersion();
-            Console.WriteLine($"[{ver.Version.GetVersionString()}]");
+            outputContent.Launch(new SimpleMessage($"[{ver.Version.GetVersionString()}]"));
         } else {
-            Console.WriteLine("DryRun - Would Save:");
-            Console.WriteLine($"[{ver.Version.GetVersionString()}]");
+            outputContent.Launch(new SimpleMessage("DryRun - Would Save:"));
+            outputContent.Launch(new SimpleMessage($"[{ver.Version.GetVersionString()}]"));
         }
     }
 
@@ -152,11 +152,11 @@ internal class Program {
 
         ver.Version.SetReleaseName(newReleaseName!);
         if (!opts.DryRunOnly) {
-            Console.WriteLine($"Saving new Release Name as: {newReleaseName}");
+            outputContent.Launch(new SimpleMessage($"Saving new Release Name as: {newReleaseName}"));
             ver.SaveUpdatedVersion();
         } else {
-            Console.WriteLine("DryRun - Would Save:");
-            Console.WriteLine($"[{newReleaseName}]");
+            outputContent.Launch(new SimpleMessage("DryRun - Would Save:"));
+            outputContent.Launch(new SimpleMessage($"[{newReleaseName}]"));
         }
     }
 
@@ -168,27 +168,27 @@ internal class Program {
         var ver = new Versioning(storage!, opts.DryRunOnly);
         versionerUsed = ver.Version;
 
-        ver.Logger = Console.WriteLine;
+        ver.Logger = msg => outputContent.Launch(new SimpleMessage(msg));
         ver.FileUpdateDisplayGroups = ResolveDigitGroupsForDisplay();
 
         if (opts.NoOverride) {
-            Console.WriteLine("Version Increment Override, Disabled");
+            outputContent.Launch(new SimpleMessage("Version Increment Override, Disabled"));
             foreach (var l in ver.Version.Digits) {
                 l.IncrementOverride = null;
             }
         }
         if (opts.PerformIncrement) {
-            Console.WriteLine("Version Increment Requested - Currently " + ver.GetVersion());
+            outputContent.Launch(new SimpleMessage("Version Increment Requested - Currently " + ver.GetVersion()));
 
             if ((!string.IsNullOrWhiteSpace(opts.Release)) && (opts.Release != ver.Version.ReleaseName)) {
                 ver.Version.ReleaseName = opts.Release;
             }
             ver.Version.IncrementByGroup(ResolveDigitGroupsForIncrement());
         } else {
-            Console.WriteLine("No Version Increment Requested.");
+            outputContent.Launch(new SimpleMessage("No Version Increment Requested."));
         }
 
-        Console.WriteLine("Version To Write: " + ver.GetVersion());
+        outputContent.Launch(new SimpleMessage("Version To Write: " + ver.GetVersion()));
 
         // Increment done, now persist and then update the pages
         ver.LoadMiniMatches(opts.VersionTargetMinMatch!);
@@ -222,6 +222,12 @@ internal class Program {
         return 0;
     }
 
+    private static void ConfigureOutput(VersonifyOptions options) {
+        outputContent.LookFor<SimpleMessage>(msg => {
+            Console.WriteLine(msg.Content);
+        });
+    }
+
     private static void CreateNewPendingIncrement() {
         b.Verbose.Flow();
 
@@ -232,16 +238,16 @@ internal class Program {
 
         string? verPendPattern = opts.QuickValue;
 
-        Console.WriteLine($"Apply Delayed Increment. [{ver}] using [{verPendPattern}]");
+        outputContent.Launch(new SimpleMessage($"Apply Delayed Increment. [{ver}] using [{verPendPattern}]"));
         ver.Version.ApplyPendingVersion(verPendPattern!);
 
         if (!opts.DryRunOnly) {
             storage!.Persist(ver.Version);
             ver.Increment();
-            Console.WriteLine($"Saving Overridden Version [{ver.GetVersion()}]");
+            outputContent.Launch(new SimpleMessage($"Saving Overridden Version [{ver.GetVersion()}]"));
         } else {
             ver.Version.Increment();
-            Console.WriteLine($"DryRun - Would Save :" + ver.Version.ToString());
+            outputContent.Launch(new SimpleMessage($"DryRun - Would Save :" + ver.Version.ToString()));
         }
     }
 
@@ -250,27 +256,27 @@ internal class Program {
 
         string startVer = "0.0.0.0";
         if (!string.IsNullOrEmpty(opts.QuickValue)) {
-            Console.WriteLine($"Using Value From Command Line: {opts.QuickValue}");
+            outputContent.Launch(new SimpleMessage($"Using Value From Command Line: {opts.QuickValue}"));
             startVer = opts.QuickValue;
         }
         if (!string.IsNullOrEmpty(opts.Release)) {
-            Console.WriteLine($"Setting Release From Command Line: {opts.Release}");
+            outputContent.Launch(new SimpleMessage($"Setting Release From Command Line: {opts.Release}"));
         }
-        Console.WriteLine($"Creating New Version Store: {startVer}");
+        outputContent.Launch(new SimpleMessage($"Creating New Version Store: {startVer}"));
 
         var cv = new CompleteVersion(startVer) {
             ReleaseName = opts.Release
         };
         versionerUsed = cv;
 
-        Console.WriteLine($"Saving {cv.GetVersionString()}");
+        outputContent.Launch(new SimpleMessage($"Saving {cv.GetVersionString()}"));
         storage!.Persist(cv);
     }
 
     private static void DisplayDryRunBehaviours(Versioning ver, string[] digitsToUpdate) {
-        Console.WriteLine("DryRun - Would Save:");
+        outputContent.Launch(new SimpleMessage("DryRun - Would Save:"));
         foreach (string digit in digitsToUpdate) {
-            Console.WriteLine(ver.GetBehaviour(digit));
+            outputContent.Launch(new SimpleMessage(ver.GetBehaviour(digit)));
         }
     }
 
@@ -307,12 +313,12 @@ internal class Program {
 
         string[] digitsToLoad = opts.GetDigits();
         if (digitsToLoad[0] == ALL_DIGITS_WILDCARD) {
-            Console.WriteLine("Loading All Behaviours");
-            Console.WriteLine(ver.GetBehaviour(digitsToLoad[0]));
+            outputContent.Launch(new SimpleMessage("Loading All Behaviours"));
+            outputContent.Launch(new SimpleMessage(ver.GetBehaviour(digitsToLoad[0])));
         } else {
-            Console.WriteLine($"Loading Behaviour for Digits [{string.Join(',', digitsToLoad)}]");
+            outputContent.Launch(new SimpleMessage($"Loading Behaviour for Digits [{string.Join(',', digitsToLoad)}]"));
             foreach (string digit in digitsToLoad) {
-                Console.WriteLine(ver.GetBehaviour(digit));
+                outputContent.Launch(new SimpleMessage(ver.GetBehaviour(digit)));
             }
         }
     }
@@ -325,10 +331,10 @@ internal class Program {
         versionerUsed = ver.Version;
 
         if (string.IsNullOrEmpty(ver.Version.ReleaseName)) {
-            Console.WriteLine("Release Name in version store is null or empty.");
+            outputContent.Launch(new SimpleMessage("Release Name in version store is null or empty."));
             return;
         }
-        Console.WriteLine($"Loaded Release Name: {ver.Version.ReleaseName}");
+        outputContent.Launch(new SimpleMessage($"Loaded Release Name: {ver.Version.ReleaseName}"));
     }
 
     private static void LoadVersionStore() {
@@ -339,7 +345,7 @@ internal class Program {
         if (opts.PerformIncrement) {
             string v = ver.GetVersion();
             b.Verbose.Log($"Performing increment {v}");
-            Console.WriteLine("Version Increment Requested - Currently " + v);
+            outputContent.Launch(new SimpleMessage("Version Increment Requested - Currently " + v));
 
             if ((!string.IsNullOrWhiteSpace(opts.Release)) && (opts.Release != ver.Version.ReleaseName)) {
                 ver.Version.ReleaseName = opts.Release;
@@ -352,7 +358,7 @@ internal class Program {
 
         string outputVersion = ver.Version.GetVersionStringByGroup(ResolveDigitGroupsForDisplay());
         passiveOutputValue = outputVersion;
-        Console.WriteLine($"Loaded [{outputVersion}]");
+        outputContent.Launch(new SimpleMessage($"Loaded [{outputVersion}]"));
     }
 
     private static async Task<int> Main(string[] args) {
@@ -393,6 +399,8 @@ internal class Program {
                 return await WriteMarkdownHelpFileAsync();
             }
 
+            ConfigureOutput(options);
+
             if (!ArgumentValidator.ValidateArgumentSettings(options)) {
                 WriteErrorConditions();
                 return 1;
@@ -424,11 +432,11 @@ internal class Program {
 
                 b.Info.Log("All Actions - Complete - Exiting.");
             } else {
-                Console.WriteLine("Errors Occurred:");
+                outputContent.Launch(new SimpleMessage("Errors Occurred:"));
                 foreach (string e in result.Errors) {
-                    Console.WriteLine(e);
+                    outputContent.Launch(new SimpleMessage(e));
                 }
-                Console.WriteLine();
+                outputContent.Launch(new SimpleMessage(string.Empty));
                 CommandLineParser.DisplayHelp();
             }
 
@@ -436,13 +444,13 @@ internal class Program {
             await b.Flush();
 
             if (options.ReturnZero) {
-                Console.WriteLine($"ReturnZero option specified:  ExitCode: {result.ExitCode} suppressed.");
+                outputContent.Launch(new SimpleMessage($"ReturnZero option specified:  ExitCode: {result.ExitCode} suppressed."));
                 return 0;
             }
 
             return result.ExitCode;
         } catch (Exception ex) {
-            Console.WriteLine("Fatal: An unhandled exception was encountered. " + ex.Message);
+            outputContent.Launch(new SimpleMessage("Fatal: An unhandled exception was encountered. " + ex.Message));
             return 1;
         }
     }
@@ -454,7 +462,7 @@ internal class Program {
 
         passiveOutputValue = null;
 
-        Console.WriteLine("Performing Versioning Actions");
+        outputContent.Launch(new SimpleMessage("Performing Versioning Actions"));
 
         GetVersionStorageFromCommandLine();
 
