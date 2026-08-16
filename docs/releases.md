@@ -1,4 +1,4 @@
-# Plisky.Versioning
+﻿# Plisky.Versioning
 
 ## Why
 
@@ -10,7 +10,13 @@ This is a versioning library and corresponding command line tool to apply versio
 
 #### 1.0.4 - Internal structure release (May Be Bronte)
 
-➕ Attempted to get a pre-release out to experiment with the versioning interface to see whether or not the skill was ready.  The pre-release went out with the old release name  (Austen) as expected with the use case now being "Update to the next release" expecting the skill to identify that the old out of date and merge the two version store files and then update to "Bronte".  This has higlighted that there is no simple way to retrieve detailed information about the version digits.  Have /specced a new get feature.
+➕ Adding in the refined output format so that the ai skill can read the results much more simply. This has added jcon as an ouptut format which will allow json to the console. There is currently no equivalent for file, but the implementation approach will work for that too.  Note removed the help on a failed argument validation, it was making it really hard to see what the actual error was. 
+
+Note ongoing experimentation with a replacement to codemaid, this time have added stylecop analysers to the versionify exe and added a custom .editorconfig to turn off those that were throwing more warnings.  This is still an experiment so not updating the main .editorconfig.  It appears that this works with the code clean up in VS now but not on the command line so more work to do.
+
+➕ Added first move to hub based output, also added some Roslyn analysers trying to replace codemaid cleanup with a more automatable approach using dotnet format.
+
+➕ Attempted to get a pre-release out to experiment with the versioning interface to see whether or not the skill was ready.  The pre-release went out with the old release name  (Austen) as expected with the use case now being "Update to the next release" expecting the skill to identify that the old out of date and merge the two version store files and then update to "Bronte".  This has highlighted that there is no simple way to retrieve detailed information about the version digits.  Have /specced a new get feature.
 
 ➕ This is turning into a complex change.  Added the compatibility check to the skill, so have bumped the compatibility version and corresponding unit test to 201. Trying to ensure that the documentation as to how versonify works is in the generated doc.md while the options are in the skill.  Skill will need a single configuration file to make it less token heavy when working with versioning so updated the spec for that.  Stumbled across an edge case where you could be using multiple autoversion.txt files or mm settings, so have combined this with the digit group names so that you can specify a group name for the multi-match. This might end up being bad but as it is an edge case suspect it will take a while to find it.  Have noticed that codemaid clean up is not run - so have done that on the ITest folder but need to find a way to make sure that the agent does that too.
 

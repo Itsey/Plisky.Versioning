@@ -171,11 +171,12 @@ public class Exploratory {
     }
 
     [Fact]
-    public async Task No_arguments_presents_default_help() {
+    public async Task No_arguments_presents_help_hint_and_no_full_help() {
         b.Info.Flow();
         var output = await th.ExecuteVersonify("");
 
-        output.Item1.ShouldContain("Parameter help for Versonify.");
+        output.Item1.ShouldContain("Use '--help' to display available options");
+        output.Item1.ShouldNotContain("Parameter help for Versonify.");
         output.Item2.ShouldNotBe(0, "No Parameters is an error condition.");
     }
 

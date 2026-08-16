@@ -1,4 +1,4 @@
-namespace Plisky.CodeCraft;
+﻿namespace Plisky.CodeCraft;
 
 using System.IO;
 using System.Text.Json;
@@ -12,7 +12,7 @@ public class JsonVersionPersister : VersionStorage {
         };
 
         if (!IsValidFileName(InitValue.InitialisationString)) {
-            StorageFailureMessage = $"Error >> The storage value passed as -v could not be resolved as a valid network or disk path.";
+            StorageFailureMessage = "Error >> The storage value passed as -v could not be resolved as a valid network or disk path.";
         }
     }
 
@@ -21,11 +21,7 @@ public class JsonVersionPersister : VersionStorage {
 
         fileName = Path.GetFileName(fileName);
 
-        if (fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) {
-            return false;
-        }
-
-        return true;
+        return fileName.IndexOfAny(Path.GetInvalidFileNameChars()) < 0;
     }
 
     protected override bool ActualDoesVstoreExist(VersionStorageOptions? opts) {

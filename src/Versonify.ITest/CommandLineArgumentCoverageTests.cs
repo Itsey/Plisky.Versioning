@@ -1,4 +1,4 @@
-using Plisky.Diagnostics;
+﻿using Plisky.Diagnostics;
 using Plisky.Test;
 using Shouldly;
 
@@ -122,6 +122,8 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         b.Info.Flow();
         var output = await th.ExecuteVersonify("--totally-unknown-option");
         output.Item1.ShouldContain("Fatal:");
+        output.Item1.ShouldContain("Use '--help' to display available options");
+        output.Item1.ShouldNotContain("Parameter help for Versonify.");
         output.Item2.ShouldNotBe(0);
     }
 
@@ -142,10 +144,11 @@ public class CommandLineArgumentCoverageTests : IDisposable {
     }
 
     [Fact]
-    public async Task No_arguments_prints_help_and_exits_nonzero() {
+    public async Task No_arguments_prints_how_to_get_help_and_exits_nonzero() {
         b.Info.Flow();
         var output = await th.ExecuteVersonify("");
-        output.Item1.ShouldContain("Parameter help for Versonify.");
+        output.Item1.ShouldContain("Use '--help' to display available options");
+        output.Item1.ShouldNotContain("Parameter help for Versonify.");
         output.Item2.ShouldNotBe(0);
     }
 

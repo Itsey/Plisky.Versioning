@@ -111,7 +111,7 @@ public class VersionFileUpdater {
     /// </summary>
     /// <param name="fileName">The full path to the file to either update or create</param>
     /// <param name="targetAttribute">The name of the attribute to write the version number into</param>
-    /// <param name="vn">The version number to apply to the code</param>
+    /// <param name="versionValue">The version number to apply to the code</param>
     protected virtual void UpdateCSFileWithAttribute(string fileName, string targetAttribute, string versionValue) {
 
         #region entry code

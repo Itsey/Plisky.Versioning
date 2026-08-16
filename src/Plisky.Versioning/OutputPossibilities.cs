@@ -8,5 +8,7 @@ public enum OutputPossibilities {
     Environment = 0x00000001,
     File = 0x00000002,
     Console = 0x00000004,
-    NukeFusion = 0x00000008
+    NukeFusion = 0x00000008,
+    Json = 0x00000010,
+    JsonConsole = Json | Console,
 }

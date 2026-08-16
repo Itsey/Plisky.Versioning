@@ -11,7 +11,6 @@ public class CompleteVersion {
 
     private const string ALLDIGITSWILDCARD = "*";
     private const string DEFAULTDIGITGROUP = "default";
-    private string? actualReleaseName;
     private string? pendingReleaseName;
 
     public CompleteVersion() {
@@ -74,10 +73,7 @@ public class CompleteVersion {
 
     public bool IsDefault { get; set; }
 
-    public string? ReleaseName {
-        get => actualReleaseName;
-        set => actualReleaseName = value;
-    }
+    public string? ReleaseName { get; set; }
 
     /// <summary>
     /// Returns the default, empty, version instance which is four digits and all fixed except the
@@ -334,7 +330,7 @@ public class CompleteVersion {
 
         foreach (var un in Digits) {
             if (un.Value == null) {
-                b.Warning.Log($"Digit is null, skipping increment.");
+                b.Warning.Log("Digit is null, skipping increment.");
                 continue;
             }
             string tmp = un.Value;

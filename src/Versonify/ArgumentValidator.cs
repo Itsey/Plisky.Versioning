@@ -12,10 +12,7 @@ public static class ArgumentValidator {
         if (string.IsNullOrWhiteSpace(valueToSet)) {
             return false;
         }
-        if (digitsToUpdate.Length == 0 && valueToSet.Contains('.')) {
-            return true;
-        }
-        return false;
+        return digitsToUpdate.Length == 0 && valueToSet.Contains('.');
     }
 
     public static bool ValidateArgumentSettings(VersonifyOptions options) {
@@ -118,7 +115,7 @@ public static class ArgumentValidator {
 
             case VersioningCommand.SetDigitPrefix:
                 valid &= ValidateDigitsPresent(options.DigitManipulations, "Prefix");
-                if (options.QuickValue == null) {    // Allow empty string or whitespace as valid prefix
+                if (options.QuickValue == null) { // Allow empty string or whitespace as valid prefix
                     Console.WriteLine("Error >> The Prefix command requires a prefix value. Use -Q=<prefix> (can be empty string).");
                     valid = false;
                 }

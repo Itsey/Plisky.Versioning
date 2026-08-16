@@ -1,4 +1,4 @@
-# Versonify CLI arguments and Help
+﻿# Versonify CLI arguments and Help
 
 AI/automation: run `versonify --get-md-help` to save this file as `docs.md` in the current working directory. This document covers the supported commands and options in the current version.
 
@@ -28,7 +28,7 @@ AI/automation: run `versonify --get-md-help` to save this file as `docs.md` in t
 | `--digits` | `-d` | Selects digit indexes, or `*` for all digits. |
 | `--no-error` | `-z` | Forces a zero exit code on failure. |
 | `--no-override` |  | Ignores any saved pending override. |
-| `--output` | `-o` | Selects output mode. |
+| `--output` | `-o` | Selects output mode. <br />Valid output modes are: <br />env - writes only the final digit to an environment variable.<br />con - writes all output to the console in plain English<br />jcon - writes all output to the console in json (aimed at AI or automation)<br />azdo[:varname] - writes to an azure pipelines variable<br />file[:filename] - writes all output to a file in plain English<br />con-nf - writes specially formatted output to the console for nuke fusion. |
 | `--increment` | `-i` | Increments before other work. |
 | `--quick-value` | `-Q` | Supplies the quick value or pattern text.  For a quick value then a standard version number is supplied with the relevant number of digits.  E.g. `1.0`  or `1.0.0` or `5.345.233.1.1.1`.  If a pattern is to be used then this will indicate actions to take on existing digits and will use + or - symbols to perform the activities.  e.g.  `+.-..` will increment the first digit, decrement the second digit and leave all other digits unchanged whereas `..+.+` would leave the first and second digits unchanged and increment the third and fourth digits. |
 | `--release` | `-R` | Sets the release name. |

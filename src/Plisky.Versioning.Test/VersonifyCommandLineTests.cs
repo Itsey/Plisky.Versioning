@@ -114,4 +114,48 @@ public class VersonifyCommandLineTests {
         sut.OutputOptions = null!;
         Assert.Equal(OutputPossibilities.None, sut.OutputsActive);
     }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Output_json_console_selected_works() {
+        b.Info.Flow();
+
+        var sut = new VersonifyOptions {
+            OutputOptions = "jcon"
+        };
+
+        Assert.True((sut.OutputsActive & OutputPossibilities.Json) == OutputPossibilities.Json);
+        Assert.True((sut.OutputsActive & OutputPossibilities.Console) == OutputPossibilities.Console);
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void JsonOutputMessage_defaults_correctly() {
+        b.Info.Flow();
+
+        var msg = new JsonOutputMessage {
+            MessageContent = "Test message"
+        };
+
+        msg.MessageLevel.ShouldBe("information");
+        msg.MessageContent.ShouldBe("Test message");
+        msg.Meta.ShouldNotBeNull();
+        msg.Meta.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("--help", true)]
+    [InlineData("-h", true)]
+    [InlineData("-H", true)]
+    [InlineData("--HELP", true)]
+    [InlineData("--get-md-help", false)]
+    [InlineData("passive", false)]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void IsHelpRequested_identifies_help_flag_accurately(string argument, bool expected) {
+        b.Info.Flow();
+        CommandLineParser.IsHelpRequested([argument]).ShouldBe(expected);
+    }
 }

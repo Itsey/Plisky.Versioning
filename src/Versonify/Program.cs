@@ -1,9 +1,10 @@
-namespace Versonify;
+﻿namespace Versonify;
 
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Plisky.CodeCraft;
 using Plisky.Diagnostics;
@@ -13,8 +14,9 @@ using Plisky.Versioning;
 internal static class Program {
     public static VersonifyOptions? opts;
     private const string ALL_DIGITS_WILDCARD = "*";
+    private const string HELP_HINT_MESSAGE = "Use '--help' to display available options and commands, or '--get-md-help' to export documentation.";
     private static Bilge b = new();
-    private static Hub outputContent = new();
+    private static Hub outputContent = new(true);
     private static string? passiveOutputValue;
     private static VersionStorage? storage;
     private static CompleteVersion? versionerUsed;
@@ -223,9 +225,37 @@ internal static class Program {
     }
 
     private static void ConfigureOutput(VersonifyOptions options) {
-        outputContent.LookFor<SimpleMessage>(msg => {
-            Console.WriteLine(msg.Content);
-        });
+        ArgumentNullException.ThrowIfNull(options, nameof(options));
+
+        if (options.OutputsActive == OutputPossibilities.None) {
+            b.Warning.Log("No output is set, there will be nothing written from the session.");
+        }
+
+        bool isJson = options.OutputsActive.HasFlag(OutputPossibilities.Json);
+        bool isConsole = options.OutputsActive.HasFlag(OutputPossibilities.Console);
+
+        if (isConsole) {
+
+            outputContent.LookFor<SimpleMessage>(msg => {
+                string outputString = msg.Content;
+
+                if (isJson) {
+                    var jsonOutput = new JsonOutputMessage {
+                        MessageLevel = msg.MessageType switch {
+                            OutputMessageType.Warning => "warning",
+                            OutputMessageType.Error => "error",
+                            _ => "information"
+                        },
+                        MessageContent = msg.Content
+                    };
+                    outputString = JsonSerializer.Serialize(jsonOutput);
+
+                }
+
+                Console.WriteLine(outputString);
+
+            });
+        }
     }
 
     private static void CreateNewPendingIncrement() {
@@ -247,7 +277,7 @@ internal static class Program {
             outputContent.Launch(new SimpleMessage($"Saving Overridden Version [{ver.GetVersion()}]"));
         } else {
             ver.Version.Increment();
-            outputContent.Launch(new SimpleMessage($"DryRun - Would Save :" + ver.Version.ToString()));
+            outputContent.Launch(new SimpleMessage($"DryRun - Would Save : {ver.Version}"));
         }
     }
 
@@ -281,7 +311,7 @@ internal static class Program {
     }
 
     private static string GetAssemblyVersionString() {
-        return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "";
+        return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
     }
 
     /// <summary>
@@ -293,7 +323,7 @@ internal static class Program {
 
         ArgumentNullException.ThrowIfNull(opts, nameof(opts));
 
-        string vpv = Environment.ExpandEnvironmentVariables(opts.VersionPersistanceValue ?? "");
+        string vpv = Environment.ExpandEnvironmentVariables(opts.VersionPersistanceValue ?? string.Empty);
         b.Verbose.Log($"Expanded versionstore :{vpv}");
         storage = VersionStorage.CreateFromInitialisation(vpv);
     }
@@ -418,7 +448,7 @@ internal static class Program {
             var result = PerformActionsFromCommandline();
             if (result.WasProcessedSuccessfully) {
                 if (versionerUsed != null) {
-                    b.Verbose.Log($"All Actions - Complete - Outputting.");
+                    b.Verbose.Log("All Actions - Complete - Outputting.");
                     var vo = new VersioningOutputter(versionerUsed) {
                         ConsoleTemplate = opts.ConsoleTemplate,
                         PverFileName = opts.PverFileName,
@@ -436,8 +466,8 @@ internal static class Program {
                 foreach (string e in result.Errors) {
                     outputContent.Launch(new SimpleMessage(e));
                 }
-                outputContent.Launch(new SimpleMessage(string.Empty));
-                CommandLineParser.DisplayHelp();
+
+                outputContent.Launch(new SimpleMessage(HELP_HINT_MESSAGE));
             }
 
             b.Verbose.Log("Versonify - Exit.");
@@ -585,12 +615,12 @@ internal static class Program {
     private static void WriteErrorConditions() {
         Console.WriteLine("Fatal:  Argument Validation Failed.");
         Console.WriteLine();
-        CommandLineParser.DisplayHelp();
+        Console.WriteLine(HELP_HINT_MESSAGE);
     }
 
     private static void WriteGreetingMessage() {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
-        string verString = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "";
+        string verString = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
 #if DEBUG
         Console.WriteLine($"💖 Versioning -DEBUG- By Versonify 💖 ({verString}).");
 #else

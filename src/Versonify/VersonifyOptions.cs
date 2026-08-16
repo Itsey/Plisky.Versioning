@@ -32,7 +32,7 @@ public class VersonifyOptions {
     public string OutputOptions {
         get { return outOpts; }
         set {
-            value ??= "";
+            value ??= string.Empty;
             outOpts = value.Trim().ToLowerInvariant();
             ParseOutputOptions();
         }
@@ -157,6 +157,11 @@ public class VersonifyOptions {
             return;
         }
 
+        if (outOpts == "jcon") {
+            outcache = OutputPossibilities.Json | OutputPossibilities.Console;
+            return;
+        }
+
         if (outOpts == "env") {
             outcache |= OutputPossibilities.Environment;
             return;
@@ -173,7 +178,7 @@ public class VersonifyOptions {
             return;
         }
 
-        if (outOpts.StartsWith("vsts") || (outOpts.StartsWith("azdo"))) {
+        if (outOpts.StartsWith("vsts") || outOpts.StartsWith("azdo")) {
             b.Verbose.Log("VSTS/AzDo output options specified.");
 
             outcache |= OutputPossibilities.Console;

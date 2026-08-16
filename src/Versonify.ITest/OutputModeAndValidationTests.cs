@@ -1,4 +1,4 @@
-using Plisky.Diagnostics;
+﻿using Plisky.Diagnostics;
 using Plisky.Test;
 using Shouldly;
 
@@ -116,6 +116,17 @@ public class OutputModeAndValidationTests {
     }
 
     // Group A — Output mode ITests
+    [Fact]
+    public async Task Output_jcon_mode_writes_json_formatted_output() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+        var output = await th.ExecuteVersonify($"passive -V={store} -Output=jcon");
+        output.Item1.ShouldContain("\"MessageLevel\":\"information\"");
+        output.Item1.ShouldContain("\"MessageContent\":");
+        output.Item1.ShouldContain("\"Meta\":{}");
+        output.Item2.ShouldBe(0);
+    }
+
     [Fact]
     public async Task Output_vsts_alias_writes_default_vso_pipeline_variable() {
         b.Info.Flow();

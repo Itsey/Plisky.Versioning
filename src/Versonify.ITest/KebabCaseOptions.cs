@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Shouldly;
@@ -62,12 +62,15 @@ public class KebabCaseOptions : IDisposable {
         string projectFilePath = CopyResourceToDirectory(TestResourcesReferences.NetStdNone, workingDirectory, "Sample.csproj");
         string finalArgs = BuildArgsForAlias(deprecatedAlias, versionStorePath, workingDirectory, projectFilePath);
 
+        VersonifyExecutionResult result;
+
         if (deprecatedAlias.Equals("-NoOverride", StringComparison.Ordinal)) {
-            _ = await sut.ExecuteVersonify($"override --version-source={versionStorePath} --quick-value=9.9.9", appendDebug: false);
-            sut.LastExecutionExitCode.ShouldBe(0);
+            // The -NoOverride alias is a special case that requires a prior override command to be executed to avoid an error.
+            result = await sut.ExecuteVersonifyWithStreams($"override --version-source={versionStorePath} --quick-value=9.9.9", appendDebug: false);
+            result.ExitCode.ShouldBe(0);
         }
 
-        var result = await sut.ExecuteVersonifyWithStreams(finalArgs, workingDirectory, appendDebug: false);
+        result = await sut.ExecuteVersonifyWithStreams(finalArgs, workingDirectory, appendDebug: false);
         string expectedWarning = $"WARNING: '{deprecatedAlias}' is deprecated. Use '{canonicalAlias}' instead.";
 
         result.ExitCode.ShouldBe(0);

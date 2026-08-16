@@ -1,4 +1,4 @@
-namespace Versonify;
+﻿namespace Versonify;
 
 using System;
 using System.Collections.Generic;
@@ -103,7 +103,7 @@ public static class CommandLineParser {
         result.PreRelease = parseResult.GetValue(preReleaseOpt!);
 
         result.RawOutputOptions = parseResult.GetValue(outputOpt!);
-        result.OutputOptions = result.RawOutputOptions ?? "";
+        result.OutputOptions = result.RawOutputOptions ?? "con";
 
         return (true, result);
     }
@@ -144,7 +144,7 @@ public static class CommandLineParser {
         };
         rc.Add(digitsOpt);
 
-        string[] noErrorAliases = includeDeprecatedAliases ? ["-z", "-NoError"] : ["-z"];
+        string[] noErrorAliases = includeDeprecatedAliases ? ["-z", "-NoError"] : ["-z", "-Z"];
         var noErrorOpt = new Option<bool>(NO_ERROR_ARG, noErrorAliases) {
             Description = "Forces zero exit code on otherwise failing executions"
         };
@@ -163,7 +163,7 @@ public static class CommandLineParser {
 
         string[] outputAliases = includeDeprecatedAliases ? ["-O", "-o", "-Output", "-output"] : ["-O", "-o"];
         var outputOpt = new Option<string>(OUTPUT_ARG, outputAliases) {
-            Description = "Output mode: env|con|azdo[:VarName]|file[:FileName]|con-nf"
+            Description = "Output mode: env|con|jcon|azdo[:VarName]|file[:FileName]|con-nf"
         };
         rc.Add(outputOpt);
 
@@ -173,13 +173,13 @@ public static class CommandLineParser {
         };
         rc.Add(incrementOpt);
 
-        string[] quickValueAliases = includeDeprecatedAliases ? ["-Q", "-QuickValue"] : ["-Q"];
+        string[] quickValueAliases = includeDeprecatedAliases ? ["-Q", "-QuickValue", "-q"] : ["-Q", "-q"];
         var quickValueOpt = new Option<string>(QUICK_VALUE_ARG, quickValueAliases) {
             Description = "Quick value parameter used by set/override/behaviour/prefix commands"
         };
         rc.Add(quickValueOpt);
 
-        string[] releaseAliases = includeDeprecatedAliases ? ["-R", "-Release"] : ["-R"];
+        string[] releaseAliases = includeDeprecatedAliases ? ["-R", "-Release"] : ["-R", "-r"];
         var releaseOpt = new Option<string>(RELEASE_ARG, releaseAliases) {
             Description = "Release name associated with this version"
         };

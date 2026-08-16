@@ -19,7 +19,7 @@ public static class DiagnosticsConfig {
         Bilge.SetConfigurationResolver((name, inLevel) => {
             var returnLvl = SourceLevels.Verbose;
 
-            if ((options.Trace != null) && (options.Trace.ToLowerInvariant() == "info")) {
+            if ((options.Trace != null) && string.Equals(options.Trace, "info", StringComparison.InvariantCultureIgnoreCase)) {
                 returnLvl = SourceLevels.Information;
             }
 
