@@ -1,4 +1,4 @@
-﻿using Plisky.Diagnostics;
+using Plisky.Diagnostics;
 using Plisky.Test;
 using Shouldly;
 
@@ -121,7 +121,7 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"passive -V={store} -Output=jcon");
-        output.Item1.ShouldContain("\"MessageLevel\":\"information\"");
+        output.Item1.ShouldContain("\"MessageCategory\":\"information\"");
         output.Item1.ShouldContain("\"MessageContent\":");
         output.Item1.ShouldContain("\"Meta\":{}");
         output.Item2.ShouldBe(0);

@@ -1,12 +1,12 @@
-﻿namespace Plisky.CodeCraft.Test;
-
-using Plisky.CodeCraft;
-using Plisky.Diagnostics;
+﻿using Plisky.Diagnostics;
+using Plisky.Plumbing;
 using Plisky.Test;
 using Plisky.Versioning;
 using Shouldly;
 using Versonify;
 using Xunit;
+
+namespace Plisky.CodeCraft.Test;
 
 public class VersionOutputterTests {
     private readonly Bilge b = new();
@@ -77,7 +77,7 @@ public class VersionOutputterTests {
         b.Info.Flow();
 
         var sut = new CompleteVersion("99.89");
-        var op = new MockVersioningOutputter(sut);
+        var op = new MockVersioningOutputter(sut, Hub.Current);
 
         op.DoOutput(OutputPossibilities.File, VersioningCommand.BehaviourOutput);
 
@@ -93,7 +93,7 @@ public class VersionOutputterTests {
         b.Info.Flow();
 
         var sut = new CompleteVersion("1.2.3");
-        var op = new MockVersioningOutputter(sut);
+        var op = new MockVersioningOutputter(sut, Hub.Current);
 
         op.DoOutput(OutputPossibilities.Console, VersioningCommand.BehaviourOutput);
 
@@ -122,7 +122,7 @@ public class VersionOutputterTests {
 
         var sut = new CompleteVersion(value);
         sut.Digits[0].Behaviour = behaviour;
-        var op = new MockVersioningOutputter(sut);
+        var op = new MockVersioningOutputter(sut, Hub.Current);
         op.DoOutput(OutputPossibilities.File, VersioningCommand.BehaviourOutput);
 
         op.OutputLines.Length.ShouldBe(1, "There should be one line of output for the behaviour output command.");
@@ -144,7 +144,7 @@ public class VersionOutputterTests {
         var sut = new Versioning(mvs);
         var v = sut.Version;
 
-        var op = new MockVersioningOutputter(v);
+        var op = new MockVersioningOutputter(v, Hub.Current);
         op.DoOutput(OutputPossibilities.File, VersioningCommand.BehaviourOutput);
 
         op.OutputLines.Length.ShouldBe(digits, "Correct number of lines of output should follow behaviour output.");
@@ -160,7 +160,7 @@ public class VersionOutputterTests {
         version.Digits[2].GroupName = "pre-release";
         string groupedValue = version.GetVersionStringByGroup("pre-release");
 
-        var sut = new MockVersioningOutputter(version) {
+        var sut = new MockVersioningOutputter(version, Hub.Current) {
             PassiveOutputOverride = groupedValue
         };
 
@@ -180,7 +180,7 @@ public class VersionOutputterTests {
         var sut = new Versioning(mvs);
         var v = sut.Version;
 
-        var op = new MockVersioningOutputter(v);
+        var op = new MockVersioningOutputter(v, Hub.Current);
         op.DoOutput(OutputPossibilities.Environment, VersioningCommand.PassiveOutput);
 
         op.FileWasWritten.ShouldBeFalse("FileWasWritten should be false when writing to environment.");
@@ -197,7 +197,7 @@ public class VersionOutputterTests {
         var sut = new Versioning(mvs);
         var v = sut.Version;
 
-        var op = new MockVersioningOutputter(v);
+        var op = new MockVersioningOutputter(v, Hub.Current);
         op.DoOutput(OutputPossibilities.File, VersioningCommand.PassiveOutput);
 
         op.FileWasWritten.ShouldBeTrue("FileWasWritten should be true when writing to file.");
@@ -217,7 +217,7 @@ public class VersionOutputterTests {
         v.ReleaseName = release;
 
         v.ApplyPendingVersion("+...");
-        var op = new MockVersioningOutputter(v);
+        var op = new MockVersioningOutputter(v, Hub.Current);
         op.DoOutput(OutputPossibilities.NukeFusion, VersioningCommand.PassiveOutput);
         op.OutputLines.Length.ShouldBe(8, "There should be eight lines of output for the nuke fusion output.");
         op.OutputLines[0].ShouldBe($"PNFV]{version}");
@@ -240,7 +240,7 @@ public class VersionOutputterTests {
         var sut = new Versioning(mvs);
         var v = sut.Version;
 
-        var op = new MockVersioningOutputter(v);
+        var op = new MockVersioningOutputter(v, Hub.Current);
         op.DoOutput(OutputPossibilities.NukeFusion, VersioningCommand.UpdateFiles);
 
         op.OutputLines.Length.ShouldBe(8, "The versioning output should be written on file update as well as passive.");

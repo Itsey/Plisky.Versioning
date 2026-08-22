@@ -1,14 +1,14 @@
-﻿using Plisky.Versioning;
-
-namespace Plisky.CodeCraft.Test;
-
-using System;
+﻿using System;
 using System.Linq;
 using Plisky.Diagnostics;
+using Plisky.Plumbing;
 using Plisky.Test;
+using Plisky.Versioning;
 using Shouldly;
 using Versonify;
 using Xunit;
+
+namespace Plisky.CodeCraft.Test;
 
 public class ExploratoryTests {
     private readonly Bilge b = new();
@@ -74,7 +74,7 @@ public class ExploratoryTests {
     public void ApplyValueUpdate_InvalidIndex_Throws(int index) {
         CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"));
 
-        Action act = () => version.ApplyValueUpdate(index, "100");
+        var act = () => version.ApplyValueUpdate(index, "100");
 
         act.ShouldThrow<Exception>();
     }
@@ -85,7 +85,7 @@ public class ExploratoryTests {
     public void ApplyValueUpdate_NonIntegerValueForIntegerBehaviour_Throws(DigitIncrementBehaviour behaviour, string valueToSet) {
         CompleteVersion version = new(new VersionUnit("1", "", behaviour), new VersionUnit("2"));
 
-        Action act = () => version.ApplyValueUpdate(0, valueToSet);
+        var act = () => version.ApplyValueUpdate(0, valueToSet);
 
         act.ShouldThrow<Exception>();
     }
@@ -152,7 +152,9 @@ public class ExploratoryTests {
     [Trait(Traits.Age, Traits.Regression)]
     public void Commandline_digits_allows_multiple_digits() {
         VersonifyOptions sut = new();
-        sut.DigitManipulations = new[] { "1", "2", "3" };
+        sut.DigitManipulations = new[] {
+            "1", "2", "3"
+        };
 
         string[] gd = sut.GetDigits();
 
@@ -185,7 +187,7 @@ public class ExploratoryTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void IncrementAndUpdateThrowsIfNoDirectory() {
-        Action act = () => {
+        var act = () => {
             VersioningTask sut = new();
             sut.IncrementAndUpdateAll();
         };
@@ -197,7 +199,7 @@ public class ExploratoryTests {
     [Trait(Traits.Age, Traits.Fresh)]
     [InlineData("1.9.0.0", "1.9", DisplayType.Short)]
     [InlineData("1.9.0.0", "1.9.0.0", DisplayType.Full)]
-    [InlineData("1.9.0.0", "", DisplayType.Release)]  // Behaviour changed now to match actual expected output.
+    [InlineData("1.9.0.0", "", DisplayType.Release)] // Behaviour changed now to match actual expected output.
     [InlineData("1.9.0.0", "1.9.0", DisplayType.ThreeDigit)]
     [InlineData("1.9.0.0", "1.9.0", DisplayType.ThreeDigitNumeric)]
     [InlineData("1.9.0.0", "1.9.0.0", DisplayType.QueuedFull)]
@@ -228,7 +230,9 @@ public class ExploratoryTests {
         Versioning sut = new(mvs);
         var v = sut.Version;
         v.ReleaseName = releaseName;
-        MockVersioningOutputter op = new(v) { ReleaseRequested = releaseRequest };
+        MockVersioningOutputter op = new(v, Hub.Current) {
+            ReleaseRequested = releaseRequest
+        };
         string expectedOutput = releaseRequest ? releaseName : versionNumber;
 
         op.DoOutput(OutputPossibilities.File, VersioningCommand.PassiveOutput);
@@ -248,7 +252,9 @@ public class ExploratoryTests {
         Versioning sut = new(mvs);
         var v = sut.Version;
         v.ReleaseName = "testReleaseName";
-        MockVersioningOutputter op = new(v) { ReleaseRequested = true };
+        MockVersioningOutputter op = new(v, Hub.Current) {
+            ReleaseRequested = true
+        };
 
         op.DoOutput(OutputPossibilities.Environment, VersioningCommand.PassiveOutput);
 
@@ -274,7 +280,9 @@ public class ExploratoryTests {
         var v = sut.Version;
         v.ReleaseName = releaseName;
 
-        MockVersioningOutputter op = new(v) { ReleaseRequested = true };
+        MockVersioningOutputter op = new(v, Hub.Current) {
+            ReleaseRequested = true
+        };
 
         op.DoOutput(OutputPossibilities.File, VersioningCommand.PassiveOutput);
 
@@ -293,7 +301,9 @@ public class ExploratoryTests {
         string expectedReleaseName = "ReleaseX";
         version.ReleaseName = expectedReleaseName;
 
-        MockVersioningOutputter outputter = new(version) { ReleaseRequested = true };
+        MockVersioningOutputter outputter = new(version, Hub.Current) {
+            ReleaseRequested = true
+        };
 
         string valToWrite = outputter.GetTheValueRequestedToWrite();
 
@@ -443,8 +453,7 @@ public class ExploratoryTests {
     public void SetReleaseNameCommand_SetsCorrectly() {
         string releaseName = "QuantumBanana";
         VersonifyOptions cmd = new() {
-            Command = "set",
-            Release = releaseName
+            Command = "set", Release = releaseName
         };
 
         var requestedCommand = cmd.RequestedCommand;
@@ -458,7 +467,9 @@ public class ExploratoryTests {
     [InlineData("", "ImNoLongerEmpty")]
     [InlineData("releaseA", "release space123")]
     public void SetReleaseNameCommand_SetsReleaseNameInVersionStore(string? currentRelease, string newRelease) {
-        CompleteVersion cv = new("1.2.3.4") { ReleaseName = currentRelease };
+        CompleteVersion cv = new("1.2.3.4") {
+            ReleaseName = currentRelease
+        };
 
         cv.SetReleaseName(newRelease);
 
@@ -527,7 +538,7 @@ public class ExploratoryTests {
     public void Validate_digitoptions_throws_when_invalid_digit_passed(string invalidDigit) {
         var cv = CompleteVersion.GetDefault();
 
-        Action act = () => { _ = cv.ValidateDigitOptions([invalidDigit]); };
+        var act = () => { _ = cv.ValidateDigitOptions([invalidDigit]); };
 
         act.ShouldThrow<ArgumentOutOfRangeException>();
         var ex = act.ShouldThrow<ArgumentOutOfRangeException>();

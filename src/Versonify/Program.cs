@@ -1,5 +1,3 @@
-﻿namespace Versonify;
-
 using System;
 using System.IO;
 using System.Linq;
@@ -11,10 +9,12 @@ using Plisky.Diagnostics;
 using Plisky.Plumbing;
 using Plisky.Versioning;
 
+namespace Versonify;
+
 internal static class Program {
-    public static VersonifyOptions? opts;
     private const string ALL_DIGITS_WILDCARD = "*";
     private const string HELP_HINT_MESSAGE = "Use '--help' to display available options and commands, or '--get-md-help' to export documentation.";
+    private static VersonifyOptions? opts;
     private static Bilge b = new();
     private static Hub outputContent = new(true);
     private static string? passiveOutputValue;
@@ -235,25 +235,23 @@ internal static class Program {
         bool isConsole = options.OutputsActive.HasFlag(OutputPossibilities.Console);
 
         if (isConsole) {
-
             outputContent.LookFor<SimpleMessage>(msg => {
                 string outputString = msg.Content;
 
                 if (isJson) {
                     var jsonOutput = new JsonOutputMessage {
-                        MessageLevel = msg.MessageType switch {
+                        MessageCategory = msg.MessageType switch {
                             OutputMessageType.Warning => "warning",
                             OutputMessageType.Error => "error",
+                            OutputMessageType.Result => "result",
                             _ => "information"
                         },
                         MessageContent = msg.Content
                     };
                     outputString = JsonSerializer.Serialize(jsonOutput);
-
                 }
 
                 Console.WriteLine(outputString);
-
             });
         }
     }
@@ -410,7 +408,7 @@ internal static class Program {
                 return 0;
             }
 
-            var (success, options) = CommandLineParser.Parse(args);
+            (bool success, var options) = CommandLineParser.Parse(args);
 
             if (options.Debug) {
                 Console.WriteLine("Debug Mode, Command Line Arguments:");
@@ -422,7 +420,7 @@ internal static class Program {
 
             if (!success) {
                 WriteErrorConditions();
-                return 1;
+                return 11;
             }
 
             if (options.GetMdHelp) {
@@ -433,7 +431,7 @@ internal static class Program {
 
             if (!ArgumentValidator.ValidateArgumentSettings(options)) {
                 WriteErrorConditions();
-                return 1;
+                return 12;
             }
 
             if (options.Debug || (!string.IsNullOrEmpty(options.Trace))) {
@@ -449,7 +447,7 @@ internal static class Program {
             if (result.WasProcessedSuccessfully) {
                 if (versionerUsed != null) {
                     b.Verbose.Log("All Actions - Complete - Outputting.");
-                    var vo = new VersioningOutputter(versionerUsed) {
+                    var vo = new VersioningOutputter(versionerUsed, outputContent) {
                         ConsoleTemplate = opts.ConsoleTemplate,
                         PverFileName = opts.PverFileName,
                         Digits = opts.GetDigits(),

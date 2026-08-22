@@ -3,5 +3,6 @@
 public enum OutputMessageType {
     UserInfo,
     Warning,
-    Error
+    Error,
+    Result
 }

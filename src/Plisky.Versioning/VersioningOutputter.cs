@@ -1,31 +1,33 @@
-﻿namespace Plisky.CodeCraft;
-
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using Plisky.Diagnostics;
+using Plisky.Plumbing;
 using Plisky.Versioning;
+
+namespace Plisky.CodeCraft;
 
 public class VersioningOutputter {
     public const string ALLDIGITSWILDCARD = "*";
     public const string VERSION_MSG_SUBJECT = "version";
     public const string VERSION_REPLACE_TAG = "%VER%";
     public const string VERSIONING_PIPE_NAME = "plisky-versonify";
-    protected Bilge b = new Bilge("Plisky-Tool-Output");
+    protected Bilge b = new("Plisky-Tool-Output");
+    protected Hub outputRouter;
     protected CompleteVersion versionToLog;
 
-    public VersioningOutputter(CompleteVersion ver, DisplayType dt = DisplayType.Full) {
+    public VersioningOutputter(CompleteVersion ver, Hub outey, DisplayType dt = DisplayType.Full) {
         versionToLog = ver;
+        outputRouter = outey;
     }
 
     public string BehToWrite {
         get {
-            if (Digits == null || Digits.Length == 0) {
+            if (Digits.Length == 0) {
                 return string.Empty;
             }
             return string.Concat(Digits.Select(digit => versionToLog.GetBehaviourString(digit)));
         }
-        set { }
     }
 
     public string? ConsoleTemplate { get; set; }
@@ -40,8 +42,8 @@ public class VersioningOutputter {
     public bool ReleaseRequested { get; set; }
 
     protected string ValToWrite => ReleaseRequested
-                                   ? versionToLog.ReleaseName ?? ""
-       : PassiveOutputOverride ?? versionToLog.GetVersionString();
+        ? versionToLog.ReleaseName ?? ""
+        : PassiveOutputOverride ?? versionToLog.GetVersionString();
 
     public void DoOutput(OutputPossibilities oo, VersioningCommand command) {
         b.Verbose.Flow($"{oo}");
@@ -66,13 +68,21 @@ public class VersioningOutputter {
     protected virtual void SetFileValue(string outputString) {
         string fileName = !string.IsNullOrWhiteSpace(PverFileName)
             ? PverFileName
-            : ReleaseRequested ? "pver-release.txt" : "pver-latest.txt";
+            : ReleaseRequested
+                ? "pver-release.txt"
+                : "pver-latest.txt";
         string filePath = Path.Combine(Environment.CurrentDirectory, fileName);
         File.WriteAllText(filePath, outputString);
     }
 
     protected virtual void WriteToConsole(string outputString) {
-        Console.WriteLine(outputString);
+        outputRouter.Launch(new SimpleMessage(outputString));
+    }
+
+    protected virtual void WriteResult(string outputString) {
+        outputRouter.Launch(new SimpleMessage(outputString) {
+            MessageType = OutputMessageType.Result
+        });
     }
 
     private void WriteBehaviourOutput(OutputPossibilities oo) {
@@ -105,7 +115,7 @@ public class VersioningOutputter {
                 outputString = ValToWrite;
             }
 
-            WriteToConsole(outputString);
+            WriteResult(outputString);
         }
 
         if ((oo & OutputPossibilities.NukeFusion) == OutputPossibilities.NukeFusion) {

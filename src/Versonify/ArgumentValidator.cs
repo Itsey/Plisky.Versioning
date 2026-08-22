@@ -1,9 +1,9 @@
-namespace Versonify;
-
 using System;
 using System.IO;
 using Plisky.CodeCraft;
 using Plisky.Versioning;
+
+namespace Versonify;
 
 public static class ArgumentValidator {
     public const string TEST_VALID_ARGUMENT = "###VALID###";
@@ -20,7 +20,7 @@ public static class ArgumentValidator {
         bool checkNext = true;
 
 #if DEBUG
-        checkNext = !(options.Root == TEST_VALID_ARGUMENT);
+        checkNext = options.Root != TEST_VALID_ARGUMENT;
 #endif
 
         if (checkNext) {
@@ -31,7 +31,7 @@ public static class ArgumentValidator {
         }
 
 #if DEBUG
-        checkNext = !(options.VersionPersistanceValue == TEST_VALID_ARGUMENT);
+        checkNext = options.VersionPersistanceValue != TEST_VALID_ARGUMENT;
 #endif
 
         if (checkNext) {
@@ -42,7 +42,7 @@ public static class ArgumentValidator {
         }
 
 #if DEBUG
-        checkNext = !(options.PverFileName == TEST_VALID_ARGUMENT);
+        checkNext = options.PverFileName != TEST_VALID_ARGUMENT;
 #endif
         if (checkNext) {
             if (!string.IsNullOrWhiteSpace(options.PverFileName)) {
@@ -141,7 +141,7 @@ public static class ArgumentValidator {
     }
 
     public static bool ValidateVersionStorage(VersionStorage? storage, VersonifyOptions options) {
-        if (storage == null || !storage.IsValid) {
+        if (storage?.IsValid != true) {
             return false;
         }
 

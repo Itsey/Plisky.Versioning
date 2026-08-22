@@ -6,13 +6,21 @@ This is a versioning library and corresponding command line tool to apply versio
 
 
 
-## Release Notes
+## Release Context Content
 
 #### 1.0.4 - Internal structure release (May Be Bronte)
 
-➕ Adding in the refined output format so that the ai skill can read the results much more simply. This has added jcon as an ouptut format which will allow json to the console. There is currently no equivalent for file, but the implementation approach will work for that too.  Note removed the help on a failed argument validation, it was making it really hard to see what the actual error was. 
+➕ Updated the jcon formatted output to have a message type so that it was clear which was the "result" i.e. the end version number.  Other changes are as a result of the analysers and formatters.
 
-Note ongoing experimentation with a replacement to codemaid, this time have added stylecop analysers to the versionify exe and added a custom .editorconfig to turn off those that were throwing more warnings.  This is still an experiment so not updating the main .editorconfig.  It appears that this works with the code clean up in VS now but not on the command line so more work to do.
+🎵 Jetbrains code formatter now has desired CM format from command line.  /gld updated to include this.  dotsettings file and updated .editorconfig are required for it to work.  dotsettings needs to be solutionname.dotsettings which is irritating, but seems to work.    Moved back to 1 .editorconfig.
+
+🎵 Namespace positioning changes with this but on balance its a good change.
+
+➕ Adding in the refined output format so that the ai skill can read the results much more simply. This has added jcon as an ouptut format which will allow json to the console. There is currently no equivalent for file, but the implementation approach will work for that too.  
+
+🎵 Removed the help on a failed argument validation, it was making it really hard to see what the actual error was. 
+
+🎵 Ongoing experimentation with a replacement to codemaid.  This time have added stylecop analysers to the versionify exe and added a custom .editorconfig to turn off those that were throwing more warnings.  This is still an experiment so not updating the main .editorconfig.  It appears that this works with the code clean up in VS now but not on the command line so more work to do.
 
 ➕ Added first move to hub based output, also added some Roslyn analysers trying to replace codemaid cleanup with a more automatable approach using dotnet format.
 

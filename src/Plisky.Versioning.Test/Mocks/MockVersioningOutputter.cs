@@ -1,45 +1,48 @@
 ﻿using System.Collections.Generic;
+using Plisky.Plumbing;
 
-namespace Plisky.CodeCraft.Test {
+namespace Plisky.CodeCraft.Test;
 
-    public class MockVersioningOutputter : VersioningOutputter {
-        protected List<string> outputReceived = new List<string>();
+public class MockVersioningOutputter : VersioningOutputter {
+    protected List<string> outputReceived = new List<string>();
 
-        public MockVersioningOutputter(CompleteVersion v) : base(v) {
-            EnvWasSet = false;
-            FileWasWritten = false;
-            WrittenToConsole = null;
-        }
+    public MockVersioningOutputter(CompleteVersion v, Hub outey) : base(v, outey) {
+        EnvWasSet = false;
+        FileWasWritten = false;
+        WrittenToConsole = null;
+    }
 
-        public bool EnvWasSet { get; set; }
-        public bool FileWasWritten { get; set; }
+    public bool EnvWasSet { get; set; }
+    public bool FileWasWritten { get; set; }
 
-        public string[] OutputLines { get { return outputReceived.ToArray(); } }
-        public string? WrittenToConsole { get; set; }
+    public string[] OutputLines {
+        get { return outputReceived.ToArray(); }
+    }
 
-        public string GetTheValueRequestedToWrite() {
-            return ValToWrite;
-        }
+    public string? WrittenToConsole { get; set; }
 
-        protected override void SetEnvironmentWithValue() {
-            EnvWasSet = true;
-        }
+    public string GetTheValueRequestedToWrite() {
+        return ValToWrite;
+    }
 
-        protected override void SetFileValue(string outputString) {
-            FileWasWritten = true;
-            RecordOutputReceived(outputString);
-        }
+    protected override void SetEnvironmentWithValue() {
+        EnvWasSet = true;
+    }
 
-        protected override void WriteToConsole(string outputString) {
-            WrittenToConsole = outputString;
-            RecordOutputReceived(outputString);
-        }
+    protected override void SetFileValue(string outputString) {
+        FileWasWritten = true;
+        RecordOutputReceived(outputString);
+    }
 
-        private void RecordOutputReceived(string outputString) {
-            if (!string.IsNullOrEmpty(outputString)) {
-                string[] lines = outputString.Split("\r\n");
-                outputReceived.AddRange(lines);
-            }
+    protected override void WriteToConsole(string outputString) {
+        WrittenToConsole = outputString;
+        RecordOutputReceived(outputString);
+    }
+
+    private void RecordOutputReceived(string outputString) {
+        if (!string.IsNullOrEmpty(outputString)) {
+            string[] lines = outputString.Split("\r\n");
+            outputReceived.AddRange(lines);
         }
     }
 }

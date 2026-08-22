@@ -1,12 +1,12 @@
-﻿namespace Plisky.CodeCraft.Test;
-
-using System;
+﻿using System;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Plisky.Versioning;
 using Shouldly;
 using Versonify;
 using Xunit;
+
+namespace Plisky.CodeCraft.Test;
 
 public class VersonifyCommandLineTests {
     private readonly Bilge b = new();
@@ -43,7 +43,9 @@ public class VersonifyCommandLineTests {
     [Trait(Traits.Age, Traits.Regression)]
     public void CommandLine_will_only_allow_asterisk_once() {
         var sut = new VersonifyOptions();
-        sut.DigitManipulations = new[] { "1", "*", "2", "*" };
+        sut.DigitManipulations = new[] {
+            "1", "*", "2", "*"
+        };
 
         string[] gd = sut.GetDigits();
 
@@ -139,7 +141,7 @@ public class VersonifyCommandLineTests {
             MessageContent = "Test message"
         };
 
-        msg.MessageLevel.ShouldBe("information");
+        msg.MessageCategory.ShouldBe("information");
         msg.MessageContent.ShouldBe("Test message");
         msg.Meta.ShouldNotBeNull();
         msg.Meta.ShouldBeEmpty();
