@@ -3,10 +3,10 @@ status: todo
 title: Add --settings-file CLI option to Versonify
 created: 2026-05-18
 priority: medium
-reference: 4
+reference: LFY-76
 ---
 # Reference
-4 — Add --settings-file / -s CLI option to Versonify
+LFY-76 — Add --settings-file / -s CLI option to Versonify
 
 # What
 When the Versonify CLI is invoked with `--settings-file <path>` (or `-s <path>`), the tool reads a JSON settings file at that path and uses it to supply default values for the following configuration options if they are not explicitly provided on the command line:

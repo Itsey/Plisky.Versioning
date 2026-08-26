@@ -3,11 +3,11 @@ status: todo
 title: Add Get command line option to return individual and all digit behaviours
 created: 2026-08-11
 priority: medium
-reference: 6
+reference: LFY-74
 ---
 
 # Reference
-6 — Add `--Command=Get` and top-level `Get` command line options to Versonify to retrieve individual and all digit increment behaviours in plain English and JSON formats.
+LFY-74 — Add `--Command=Get` and top-level `Get` command line options to Versonify to retrieve individual and all digit increment behaviours in plain English and JSON formats.
 
 # What
 Add a `Get` command option to `Versonify` (supported via `--command=get` or `get`) that queries and outputs digit increment behaviours for specified digits or all digits.

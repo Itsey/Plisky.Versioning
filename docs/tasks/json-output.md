@@ -5,6 +5,8 @@ created: 2026-05-02
 priority: medium
 reference: 2
 ---
+# Latest update
+jcon output has been added need to consider whether this task is still required.
 
 # What
 Add a console output mode that lets `Versonify` emit either the current human-readable text stream or newline-delimited JSON events, selected by a new `--json` command-line option.
