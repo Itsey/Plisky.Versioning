@@ -30,7 +30,7 @@ public class BuildTaskTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Set_multiple_valid_ruletypes_works() {
-        var v = ts.GetDefaultVersion();
+        var v = TestSupport.GetDefaultVersion();
         var sut = new TestableVersioningTask();
         sut.SetVersionNumber(v);
         string verItemsSimple =
@@ -46,7 +46,7 @@ public class BuildTaskTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Set_valid_ruletype_works() {
-        var v = ts.GetDefaultVersion();
+        var v = TestSupport.GetDefaultVersion();
         var sut = new TestableVersioningTask();
         sut.SetVersionNumber(v);
         string verItemsSimple = "**/assemblyinfo.cs!ASSEMBLY";

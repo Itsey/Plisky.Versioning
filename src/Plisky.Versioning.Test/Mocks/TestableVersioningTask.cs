@@ -1,18 +1,17 @@
-﻿namespace Plisky.CodeCraft.Test {
+﻿namespace Plisky.CodeCraft.Test;
 
-    internal class TestableVersioningTask : VersioningTask {
+internal class TestableVersioningTask : VersioningTask {
 
-        public bool IsThisMinimatchIncluded(string mm) {
-            foreach (string v in pendingUpdates.Keys) {
-                if (v == mm) {
-                    return true;
-                }
+    public bool IsThisMinimatchIncluded(string mm) {
+        foreach (string v in pendingUpdates.Keys) {
+            if (v == mm) {
+                return true;
             }
-            return false;
         }
+        return false;
+    }
 
-        public void SetVersionNumber(CompleteVersion v) {
-            ver = v;
-        }
+    public void SetVersionNumber(CompleteVersion v) {
+        ver = v;
     }
 }

@@ -92,9 +92,9 @@ public class UseCaseTests {
         Assert.Equal("1.1.1.1", sut.VersionString);
         var jp = new JsonVersionPersister(tfn2);
         Assert.Equal(sut.VersionString, jp.GetVersion().GetVersionString());
-        Assert.True(ts.DoesFileContainThisText(tfn1, "AssemblyVersion(\"1.1"), "The target filename was not updated");
-        Assert.True(ts.DoesFileContainThisText(tfn1, "AssemblyInformationalVersion(\"1.1.1.1"), "The target filename was not updated");
-        Assert.True(ts.DoesFileContainThisText(tfn1, "AssemblyFileVersion(\"1.1.1.1"), "The target filename was not updated");
+        Assert.True(TestSupport.DoesFileContainThisText(tfn1, "AssemblyVersion(\"1.1"), "The target filename was not updated");
+        Assert.True(TestSupport.DoesFileContainThisText(tfn1, "AssemblyInformationalVersion(\"1.1.1.1"), "The target filename was not updated");
+        Assert.True(TestSupport.DoesFileContainThisText(tfn1, "AssemblyFileVersion(\"1.1.1.1"), "The target filename was not updated");
     }
 
     [Fact(DisplayName = nameof(Versioning_DefaultBehaviour_IsIncrementBuild))]

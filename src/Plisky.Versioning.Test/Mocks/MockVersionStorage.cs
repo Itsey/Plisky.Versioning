@@ -1,60 +1,55 @@
-namespace Plisky.CodeCraft.Test {
+namespace Plisky.CodeCraft.Test;
 
-    internal class MockVersionStorage : VersionStorage {
-        private string initialisationValue;
-        private CompleteVersion loadedVersion = null!;
+internal class MockVersionStorage : VersionStorage {
+    private readonly string initialisationValue;
+    private CompleteVersion loadedVersion = null!;
 
-        #region mocking implementation
+    #region mocking implementation
 
-        public Mocking mock;
+    public Mocking mock;
 
-        public class Mocking {
-            private MockVersionStorage parent;
+    public class Mocking(MockVersionStorage p) {
+        private readonly MockVersionStorage parent = p;
 
-            public Mocking(MockVersionStorage p) {
-                parent = p;
-            }
-
-            public void Mock_MockingBird() {
-            }
-
-            public void SetBehaviours(DigitIncrementBehaviour dig1, DigitIncrementBehaviour dig2, DigitIncrementBehaviour dig3, DigitIncrementBehaviour dig4) {
-                parent.loadedVersion.Digits[0].SetBehaviour(dig1);
-                parent.loadedVersion.Digits[1].SetBehaviour(dig2);
-                parent.loadedVersion.Digits[2].SetBehaviour(dig3);
-                parent.loadedVersion.Digits[3].SetBehaviour(dig4);
-            }
+        public void Mock_MockingBird() {
         }
 
-        #endregion mocking implementation
-
-        public MockVersionStorage(string initValue) {
-            InitValue = new VersionStorageOptions() {
-                InitialisationString = initValue
-            };
-
-            mock = new Mocking(this);
-
-            initialisationValue = initValue;
+        public void SetBehaviours(DigitIncrementBehaviour dig1, DigitIncrementBehaviour dig2, DigitIncrementBehaviour dig3, DigitIncrementBehaviour dig4) {
+            parent.loadedVersion.Digits[0].SetBehaviour(dig1);
+            parent.loadedVersion.Digits[1].SetBehaviour(dig2);
+            parent.loadedVersion.Digits[2].SetBehaviour(dig3);
+            parent.loadedVersion.Digits[3].SetBehaviour(dig4);
         }
+    }
 
-        public bool PersistWasCalled { get; private set; }
-        public string VersionStringPersisted { get; private set; } = string.Empty;
+    #endregion mocking implementation
 
-        protected override bool ActualDoesVstoreExist(VersionStorageOptions? opts) {
-            // For the mock, assume existence if the initialisation string is not null or empty and not 'invalid'.
-            return opts != null && !string.IsNullOrWhiteSpace(opts.InitialisationString) && opts.InitialisationString != "invalid";
-        }
+    public MockVersionStorage(string initValue) {
+        InitValue = new VersionStorageOptions() {
+            InitialisationString = initValue
+        };
 
-        protected override CompleteVersion ActualLoad() {
-            loadedVersion = initialisationValue == "default" ? null! : new CompleteVersion(initialisationValue);
+        mock = new Mocking(this);
 
-            return loadedVersion!;
-        }
+        initialisationValue = initValue;
+    }
 
-        protected override void ActualPersist(CompleteVersion cv) {
-            PersistWasCalled = true;
-            VersionStringPersisted = cv.GetVersionString();
-        }
+    public bool PersistWasCalled { get; private set; }
+    public string VersionStringPersisted { get; private set; } = string.Empty;
+
+    protected override bool ActualDoesVstoreExist(VersionStorageOptions? opts) {
+        // For the mock, assume existence if the initialisation string is not null or empty and not 'invalid'.
+        return opts != null && !string.IsNullOrWhiteSpace(opts.InitialisationString) && opts.InitialisationString != "invalid";
+    }
+
+    protected override CompleteVersion ActualLoad() {
+        loadedVersion = initialisationValue == "default" ? null! : new CompleteVersion(initialisationValue);
+
+        return loadedVersion!;
+    }
+
+    protected override void ActualPersist(CompleteVersion cv) {
+        PersistWasCalled = true;
+        VersionStringPersisted = cv.GetVersionString();
     }
 }

@@ -120,9 +120,9 @@ public class ExploratoryTests {
         _ = sut.PerformUpdate(fn, FileUpdateType.NetInformational);
         _ = sut.PerformUpdate(fn, FileUpdateType.NetFile);
 
-        bool fileVer = ts.DoesFileContainThisText(fn, "AssemblyFileVersion(\"2.0\"");
-        bool infoVer = ts.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"2.0-Unicorn.0\"");
-        bool asmVer = ts.DoesFileContainThisText(fn, "AssemblyVersion(\"2.0.0.0\")");
+        bool fileVer = TestSupport.DoesFileContainThisText(fn, "AssemblyFileVersion(\"2.0\"");
+        bool infoVer = TestSupport.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"2.0-Unicorn.0\"");
+        bool asmVer = TestSupport.DoesFileContainThisText(fn, "AssemblyVersion(\"2.0.0.0\")");
 
         fileVer.ShouldBeFalse();
         infoVer.ShouldBeTrue();
@@ -139,9 +139,10 @@ public class ExploratoryTests {
     [InlineData("ContinualIncrement", VersioningCommand.BehaviourUpdate)]
     [InlineData("Bannana", VersioningCommand.Invalid)]
     public void CommandLine_correctly_sets_behviourtypes(string? quickValue, VersioningCommand cmd) {
-        VersonifyOptions sut = new();
-        sut.Command = "behaviour";
-        sut.QuickValue = quickValue;
+        VersonifyOptions sut = new() {
+            Command = "behaviour",
+            QuickValue = quickValue
+        };
 
         var result = sut.RequestedCommand;
 
@@ -151,9 +152,10 @@ public class ExploratoryTests {
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     public void Commandline_digits_allows_multiple_digits() {
-        VersonifyOptions sut = new();
-        sut.DigitManipulations = new[] {
-            "1", "2", "3"
+        VersonifyOptions sut = new() {
+            DigitManipulations = [
+                "1", "2", "3"
+            ]
         };
 
         string[] gd = sut.GetDigits();
@@ -451,9 +453,10 @@ public class ExploratoryTests {
 
     [Fact]
     public void SetReleaseNameCommand_SetsCorrectly() {
-        string releaseName = "QuantumBanana";
+        const string RELEASENAME = "QuantumBanana";
         VersonifyOptions cmd = new() {
-            Command = "set", Release = releaseName
+            Command = "set",
+            Release = RELEASENAME
         };
 
         var requestedCommand = cmd.RequestedCommand;

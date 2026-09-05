@@ -190,7 +190,7 @@ public class Exploratory {
         output.Item2.ShouldNotBe(0, "Failure to update files should return error.");
     }
 
-    [Fact()] //Skip = "This looks like it could be a bug in current implementation while evidencing LFY-10")]
+    [Fact] //Skip = "This looks like it could be a bug in current implementation while evidencing LFY-10")]
     public async Task Pre_and_release_versioning_use_case_works() {
         // Usecase where pre-release is incremented, then a release version takes over, then pre-release is incremented again.
         b.Info.Flow();

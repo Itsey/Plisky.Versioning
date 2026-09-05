@@ -306,9 +306,9 @@ public class FileUpdateTests {
 
         string response = sut.PerformUpdate(fn, FileUpdateType.NetFile);
 
-        ts.DoesFileContainThisText(fn, "0.0.0.0").ShouldBeFalse("No update was made to the file at all");
-        ts.DoesFileContainThisText(fn, "1.1").ShouldBeTrue("The file does not appear to have been updated correctly.");
-        ts.DoesFileContainThisText(fn, "AssemblyFileVersion(\"1.1.1.1\")").ShouldBeTrue("The file does not have the full version in it");
+        TestSupport.DoesFileContainThisText(fn, "0.0.0.0").ShouldBeFalse("No update was made to the file at all");
+        TestSupport.DoesFileContainThisText(fn, "1.1").ShouldBeTrue("The file does not appear to have been updated correctly.");
+        TestSupport.DoesFileContainThisText(fn, "AssemblyFileVersion(\"1.1.1.1\")").ShouldBeTrue("The file does not have the full version in it");
         response.ShouldContain($"Updated AssemblyFileVersion");
     }
 
@@ -326,9 +326,9 @@ public class FileUpdateTests {
 
         _ = sut.PerformUpdate(fn, FileUpdateType.NetInformational);
 
-        ts.DoesFileContainThisText(fn, "0.0.0.0").ShouldBeFalse("No update was made to the file at all");
-        ts.DoesFileContainThisText(fn, "1.1").ShouldBeTrue("The file does not appear to have been updated correctly.");
-        ts.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"1.1.1.1\")").ShouldBeTrue("The file does not have the full version in it");
+        TestSupport.DoesFileContainThisText(fn, "0.0.0.0").ShouldBeFalse("No update was made to the file at all");
+        TestSupport.DoesFileContainThisText(fn, "1.1").ShouldBeTrue("The file does not appear to have been updated correctly.");
+        TestSupport.DoesFileContainThisText(fn, "AssemblyInformationalVersion(\"1.1.1.1\")").ShouldBeTrue("The file does not have the full version in it");
     }
 
     [Fact]
@@ -348,9 +348,9 @@ public class FileUpdateTests {
 
         _ = sut.PerformUpdate(fn, FileUpdateType.NetAssembly);
 
-        ts.DoesFileContainThisText(fn, "0.0").ShouldBeFalse("No update was made to the file at all");
-        ts.DoesFileContainThisText(fn, "1.1.1.1").ShouldBeTrue("The file does not appear to have been updated correctly.");
-        ts.DoesFileContainThisText(fn, "AssemblyVersion(\"1.1.1.1\")").ShouldBeTrue("The file does not have the full version in it");
+        TestSupport.DoesFileContainThisText(fn, "0.0").ShouldBeFalse("No update was made to the file at all");
+        TestSupport.DoesFileContainThisText(fn, "1.1.1.1").ShouldBeTrue("The file does not appear to have been updated correctly.");
+        TestSupport.DoesFileContainThisText(fn, "AssemblyVersion(\"1.1.1.1\")").ShouldBeTrue("The file does not have the full version in it");
     }
 
     [Fact]
@@ -369,12 +369,12 @@ public class FileUpdateTests {
 
         _ = sut.PerformUpdate(fn, FileUpdateType.NetAssembly);
 
-        ts.DoesFileContainThisText(fn, " AssemblyVersion(\"1.0.0.0\")").ShouldBeFalse("No update was made to the file at all");
-        ts.DoesFileContainThisText(fn, "[assembly: AssemblyFileVersion(\"1.0.0.0\")]").ShouldBeTrue("The file does not appear to have been updated correctly.");
-        ts.DoesFileContainThisText(fn, "[assembly: AssemblyCompany(\"\")]").ShouldBeTrue("Collatoral Damage - Another element in the file was updated - Company");
-        ts.DoesFileContainThisText(fn, "[assembly: Guid(\"557cc26f-fcb2-4d0e-a34e-447295115fc3\")]").ShouldBeTrue("Collatoral Damage - Another element in the file was updated - Guid");
-        ts.DoesFileContainThisText(fn, "// [assembly: AssemblyVersion(\"1.0.*\")]").ShouldBeTrue("Collatoral Damage - Another element in the file was updated - Comment");
-        ts.DoesFileContainThisText(fn, "using System.Reflection;").ShouldBeTrue("Collatoral Damage - Another element in the file was updated - Reflection First Line");
+        TestSupport.DoesFileContainThisText(fn, " AssemblyVersion(\"1.0.0.0\")").ShouldBeFalse("No update was made to the file at all");
+        TestSupport.DoesFileContainThisText(fn, "[assembly: AssemblyFileVersion(\"1.0.0.0\")]").ShouldBeTrue("The file does not appear to have been updated correctly.");
+        TestSupport.DoesFileContainThisText(fn, "[assembly: AssemblyCompany(\"\")]").ShouldBeTrue("Collatoral Damage - Another element in the file was updated - Company");
+        TestSupport.DoesFileContainThisText(fn, "[assembly: Guid(\"557cc26f-fcb2-4d0e-a34e-447295115fc3\")]").ShouldBeTrue("Collatoral Damage - Another element in the file was updated - Guid");
+        TestSupport.DoesFileContainThisText(fn, "// [assembly: AssemblyVersion(\"1.0.*\")]").ShouldBeTrue("Collatoral Damage - Another element in the file was updated - Comment");
+        TestSupport.DoesFileContainThisText(fn, "using System.Reflection;").ShouldBeTrue("Collatoral Damage - Another element in the file was updated - Reflection First Line");
     }
 
     [Fact(DisplayName = nameof(Update_Nuspec_BugNoUpdate))]
