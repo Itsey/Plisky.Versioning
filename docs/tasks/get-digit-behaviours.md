@@ -1,19 +1,19 @@
 ---
 status: todo
-title: Add Get command line option to return individual and all digit behaviours
+title: Add Get command line option to return individual and all digit informaton
 created: 2026-08-11
 priority: medium
 reference: LFY-74
 ---
 
 # Reference
-LFY-74 — Add `--Command=Get` and top-level `Get` command line options to Versonify to retrieve individual and all digit increment behaviours in plain English and JSON formats.
+LFY-74 — Add `--Command=Get` and top-level `Get` command line options to Versonify to retrieve individual and all digit increment information in plain English and JSON formats.
 
 # What
-Add a `Get` command option to `Versonify` (supported via `--command=get` or `get`) that queries and outputs digit increment behaviours for specified digits or all digits.
+Add a `Get` command option to `Versonify` (supported via `--command=get` or `get`) that queries and outputs digit information metadata for specified digits or all digits.
 
 The `Get` command supports two output modes:
-1. **Plain English Output (Default)**: Outputs human-readable sentence(s) describing each queried digit's status (e.g. `"Digit st position [0] has prefix "", value "1", and  is set to Fixed behaviour. It belongs to the digit-group default and its Queued Override value is null"` This output is repeated for each digit queried. If multiple digits are queried, they are separated by new lines.
+1. **Plain English Output (Default)**: Outputs human-readable sentence(s) describing each queried digit's status (e.g. `"Digit at position [0] has prefix "", value "1", and  is set to Fixed behaviour. It belongs to the digit-group default and its Queued Override value is null."` This output is repeated for each digit queried. If multiple digits are queried, they are separated by new lines.
 2. **JSON Output (`--json`)**: Outputs a JSON dictionary keyed by digit position, containing detailed properties for each digit: keyed on digit position with the values being `digitValue`, `digitBehaviour`, `digitQueuedOverride`, `digitgroup` and `digitPrefix`.
 
 When invoked with specific digit indices (e.g. `-Digits=0` or `-Digits=0,2`), only the specified digits are returned. If `-Digits` is omitted or specified as a wildcard (`*`), it defaults to returning all digits in the active version store.
@@ -37,7 +37,7 @@ For example, when combining a pre and a release version to use the new digit gro
   - When `-Digits=0` is specified, it writes a plain English sentence: `"Digit at position [0] has prefix "<prefix>", has value "<DigitValue>", and is set to <BehaviourName> behavior. It belongs to digit-group <DigitGroup>, and its Queued Override value is <QueuedOverrideValue>"`.
   - When `-Digits=*` or no `-Digits` parameter is specified, it writes sentences for all digits.
   
-- Given `Versonify` is executed with `-Command=Get` or `-Get` in JSON mode (`--json`):
+- Given `Versonify` is executed with `--command=Get` or `Get` in JSON mode (`--json`):
   - It writes a JSON object dictionary keyed by digit position containing:
     - `digitValue`: current string value of the digit
     - `digitBehaviour`: `DigitIncrementBehaviour` enum string (e.g. `"Fixed"`, `"AutoIncrementWithReset"`)
@@ -64,7 +64,7 @@ For example, when combining a pre and a release version to use the new digit gro
     }
     ```
   
-- Given multiple digit indices (e.g. `-Digits=0,2`), only the requested digit entries are included in the plain text sentences or JSON dictionary output.
+- Given multiple digit indices (e.g. `-Digits=0;2`), only the requested digit entries are included in the plain text sentences or JSON dictionary output.
 
 - Given an invalid or out-of-range digit index is provided (e.g. `-Digits=9`), `Versonify` outputs an error message and terminates with a non-zero exit code.
 
@@ -89,6 +89,6 @@ For example, when combining a pre and a release version to use the new digit gro
 # Assumptions & Constraints
 
 - **Prerequisite Dependency**: Task #2 (`docs/tasks/json-output.md`: "Add JSON console output mode for Versonify") MUST be completed and `--json` console output support implemented prior to building this task's JSON output capability.
-- `Get` command follows standard `Versonify` CLI parameter parsing rules (`-Command=Get` and `Get` alias).
+- `Get` command follows standard `Versonify` CLI parameter parsing rules (`--command=Get` and `Get` alias).
 - Defaults to querying all digits (`*`) if `-Digits` is omitted.
-- Respects active version storage initialized via `-v=` / `-version-source=`.
+- Respects active version storage initialized via `--version-source=` / `-v=`.

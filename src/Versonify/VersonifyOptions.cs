@@ -80,6 +80,9 @@ public class VersonifyOptions {
                     }
                     return VersioningCommand.Invalid;
 
+                case "get":
+                    return VersioningCommand.GetDigitInformation;
+
                 case "set":
                     if (Release != null) {
                         return VersioningCommand.SetReleaseName;

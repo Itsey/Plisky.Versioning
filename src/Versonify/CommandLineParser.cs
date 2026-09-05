@@ -114,7 +114,7 @@ public static class CommandLineParser {
         };
 
         var commandArg = new Argument<string>("command") {
-            Description = "Command to execute: createversion|override|updatefiles|passive|behaviour|set|prefix",
+            Description = "Command to execute: createversion|override|updatefiles|passive|behaviour|get|set|prefix",
             Arity = ArgumentArity.ZeroOrOne,
             DefaultValueFactory = _ => null!
         };

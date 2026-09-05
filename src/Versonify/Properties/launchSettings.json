@@ -2,11 +2,15 @@
   "profiles": {
     "Versonify": {
       "commandName": "Project",
-      "commandLineArgs": "-Command=CreateVersion -vs=c:\\temp\\Temp\\dummy1.vstore -Q=\"2.3.0.0\" -Release=Austen --debug --trace=Verbose"
+      "commandLineArgs": "--command=CreateVersion --version-source=c:\\Temp\\dummy1.vstore -Q=\"2.3.0.0\" --release=Bronte --debug --trace=Verbose"
     },
     "VersonifyHelp": {
       "commandName": "Project",
       "commandLineArgs": "--help"
+    },
+    "VersonifyPassive": {
+      "commandName": "Project",
+      "commandLineArgs": "--command=passive --version-source=c:\\Temp\\dummy1.vstore"
     }
   }
 }

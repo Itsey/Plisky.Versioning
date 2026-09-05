@@ -96,6 +96,21 @@ public class DigitGroupFeatureTests : IDisposable {
     }
 
     [Fact]
+    public async Task Get_command_honours_digit_group_filters() {
+        string tempDir = CreateTemporaryDirectory();
+        string store = await CreateVersionStore(tempDir, "1.2.3.4");
+        var output = await sut.ExecuteVersonify($"set -V={store} -D=2 -g=prerelease");
+        output.Item2.ShouldBe(0);
+
+        output = await sut.ExecuteVersonify($"get -V={store} -g=prerelease", appendDebug: false);
+        output.Item1.ShouldContain("digit-group prerelease");
+        output.Item1.ShouldContain("has value \"3\"");
+        output.Item1.ShouldNotContain("position [0]");
+        output.Item1.ShouldNotContain("position [1]");
+        output.Item2.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task Pre_release_flag_applies_expected_group_shortcuts() {
         string tempDir = CreateTemporaryDirectory();
         string store = await CreateVersionStore(tempDir, "1.2.3.4");

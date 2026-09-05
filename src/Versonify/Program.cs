@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -239,16 +240,19 @@ internal static class Program {
                 string outputString = msg.Content;
 
                 if (isJson) {
-                    var jsonOutput = new JsonOutputMessage {
-                        MessageCategory = msg.MessageType switch {
-                            OutputMessageType.Warning => "warning",
-                            OutputMessageType.Error => "error",
-                            OutputMessageType.Result => "result",
-                            _ => "information"
-                        },
-                        MessageContent = msg.Content
-                    };
-                    outputString = JsonSerializer.Serialize(jsonOutput);
+                    if (options.RequestedCommand != VersioningCommand.GetDigitInformation ||
+                        msg.MessageType != OutputMessageType.Result) {
+                        var jsonOutput = new JsonOutputMessage {
+                            MessageCategory = msg.MessageType switch {
+                                OutputMessageType.Warning => "warning",
+                                OutputMessageType.Error => "error",
+                                OutputMessageType.Result => "result",
+                                _ => "information"
+                            },
+                            MessageContent = msg.Content
+                        };
+                        outputString = JsonSerializer.Serialize(jsonOutput);
+                    }
                 }
 
                 Console.WriteLine(outputString);
@@ -351,6 +355,120 @@ internal static class Program {
         }
     }
 
+    private static bool LoadDigitInformation(ExecutionResult result) {
+        b.Verbose.Flow();
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        var ver = new Versioning(storage!, opts.DryRunOnly);
+        versionerUsed = ver.Version;
+
+        string groupName = opts.PreRelease ? "pre-release" : opts.DigitGroup ?? ALL_DIGITS_WILDCARD;
+        b.Verbose.Log($"Resolving digit-group [{groupName}] for Get command");
+        int[] groupDigitIndices = ver.Version.GetDigitsByGroup(groupName);
+        if (groupDigitIndices.Length == 0) {
+            b.Warning.Log($"Digit-group [{groupName}] contains no digits, cannot continue with Get command.");
+            result.AddError($"Error >> The digit-group '{groupName}' does not contain any digits.", 1);
+            return false;
+        }
+
+        int[]? selectedIndices = ResolveRequestedDigitIndices(ver.Version, groupDigitIndices, groupName, result);
+        if (selectedIndices == null) {
+            return false;
+        }
+
+        b.Verbose.Log($"Get command resolved digits [{string.Join(',', selectedIndices)}] for output");
+        WriteDigitInformation(ver.Version, selectedIndices);
+
+        return true;
+    }
+
+    private static int ValidateRequestedDigitIndex(string requestedDigit, int digitCount) {
+        if (!int.TryParse(requestedDigit, out int digitIndex) ||
+            digitIndex < 0 ||
+            digitIndex >= digitCount) {
+            b.Warning.Log($"Digit [{requestedDigit}] requested for Get command is not valid.");
+            throw new ArgumentOutOfRangeException(
+                nameof(requestedDigit),
+                $"The digit [{requestedDigit}] is not a valid digit.");
+        }
+
+        return digitIndex;
+    }
+
+    private static void ValidateNoWildcardCombination(string[] requestedDigits, bool allDigitsRequested) {
+        if (allDigitsRequested && requestedDigits.Length > 1) {
+            b.Warning.Log("Wildcard digit selection was combined with explicit digit indices, this is not supported.");
+            throw new ArgumentException(
+                "The wildcard digit selection cannot be combined with explicit digit indices.",
+                nameof(requestedDigits));
+        }
+    }
+
+    private static int[]? ResolveRequestedDigitIndices(CompleteVersion version, int[] groupDigitIndices, string groupName, ExecutionResult result) {
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        string[] requestedDigits = opts.DigitManipulations ?? [];
+        b.Verbose.Log($"Validating requested digits [{string.Join(',', requestedDigits)}] for Get command");
+        bool allDigitsRequested = requestedDigits.Contains(ALL_DIGITS_WILDCARD);
+        ValidateNoWildcardCombination(requestedDigits, allDigitsRequested);
+
+        if (requestedDigits.Length == 0 || allDigitsRequested) {
+            b.Verbose.Log("No specific digits requested, defaulting to all digits in group.");
+            return groupDigitIndices;
+        }
+
+        var selected = new List<int>(requestedDigits.Length);
+        foreach (string requestedDigit in requestedDigits) {
+            int digitIndex = ValidateRequestedDigitIndex(requestedDigit, version.Digits.Length);
+
+            if (!groupDigitIndices.Contains(digitIndex)) {
+                b.Warning.Log($"Digit [{digitIndex}] requested for Get command is not part of digit-group [{groupName}].");
+                result.AddError($"Error >> The digit [{requestedDigit}] is not in digit-group '{groupName}'.", 1);
+                return null;
+            }
+
+            if (!selected.Contains(digitIndex)) {
+                selected.Add(digitIndex);
+            }
+        }
+
+        return [.. selected];
+    }
+
+    private static void WriteDigitInformation(CompleteVersion version, int[] selectedIndices) {
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        if (opts.OutputsActive.HasFlag(OutputPossibilities.Json)) {
+            b.Verbose.Log("Building JSON digit information response");
+            var digitInformation = new Dictionary<int, object>();
+            foreach (int digitIndex in selectedIndices) {
+                var digit = version.Digits[digitIndex];
+                digitInformation.Add(digitIndex, new {
+                    digitValue = digit.Value,
+                    digitBehaviour = digit.Behaviour.ToString(),
+                    digitQueuedOverride = digit.IncrementOverride,
+                    digitPrefix = digit.PreFix,
+                    digitgroup = GetDisplayDigitGroupName(digit.GroupName)
+                });
+            }
+            outputContent.Launch(new SimpleMessage(JsonSerializer.Serialize(digitInformation)) {
+                MessageType = OutputMessageType.Result
+            });
+        } else {
+            b.Verbose.Log("Building plain-text digit information response");
+            foreach (int digitIndex in selectedIndices) {
+                var digit = version.Digits[digitIndex];
+                outputContent.Launch(new SimpleMessage(
+                    $"Digit at position [{digitIndex}] has prefix \"{digit.PreFix}\", has value \"{digit.Value}\", and is set to {digit.Behaviour} behavior. It belongs to digit-group {GetDisplayDigitGroupName(digit.GroupName)}, and its Queued Override value is {digit.IncrementOverride ?? "null"}."));
+            }
+        }
+    }
+
+    private static string GetDisplayDigitGroupName(string? groupName) {
+        string normalizedGroupName = CompleteVersion.NormalizeDigitGroup(groupName);
+        return string.IsNullOrEmpty(normalizedGroupName) ? "default" : normalizedGroupName;
+    }
+
     private static void LoadReleaseName() {
         b.Verbose.Flow();
         ArgumentNullException.ThrowIfNull(opts, nameof(opts));
@@ -401,14 +519,18 @@ internal static class Program {
                 return 0;
             }
 
-            WriteGreetingMessage();
-
             if (CommandLineParser.IsHelpRequested(args)) {
+                WriteGreetingMessage();
                 CommandLineParser.DisplayHelp();
                 return 0;
             }
 
             (bool success, var options) = CommandLineParser.Parse(args);
+
+            if (options.RequestedCommand != VersioningCommand.GetDigitInformation ||
+                !options.OutputsActive.HasFlag(OutputPossibilities.Json)) {
+                WriteGreetingMessage();
+            }
 
             if (options.Debug) {
                 Console.WriteLine("Debug Mode, Command Line Arguments:");
@@ -445,7 +567,7 @@ internal static class Program {
 
             var result = PerformActionsFromCommandline();
             if (result.WasProcessedSuccessfully) {
-                if (versionerUsed != null) {
+                if (versionerUsed != null && opts.RequestedCommand != VersioningCommand.GetDigitInformation) {
                     b.Verbose.Log("All Actions - Complete - Outputting.");
                     var vo = new VersioningOutputter(versionerUsed, outputContent) {
                         ConsoleTemplate = opts.ConsoleTemplate,
@@ -490,7 +612,9 @@ internal static class Program {
 
         passiveOutputValue = null;
 
-        outputContent.Launch(new SimpleMessage("Performing Versioning Actions"));
+        if (opts.RequestedCommand != VersioningCommand.GetDigitInformation) {
+            outputContent.Launch(new SimpleMessage("Performing Versioning Actions"));
+        }
 
         GetVersionStorageFromCommandLine();
 
@@ -536,6 +660,10 @@ internal static class Program {
             case VersioningCommand.BehaviourOutput:
                 LoadDigitBehaviour();
                 result.WasProcessedSuccessfully = true;
+                break;
+
+            case VersioningCommand.GetDigitInformation:
+                result.WasProcessedSuccessfully = LoadDigitInformation(result);
                 break;
 
             case VersioningCommand.BehaviourUpdate:

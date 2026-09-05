@@ -28,11 +28,13 @@ public class VersonifyCommandLineTests {
     [InlineData("UPDATEFILES", VersioningCommand.UpdateFiles)]
     [InlineData("PASSIVE", VersioningCommand.PassiveOutput)]
     [InlineData("BEHAVIOUR", VersioningCommand.BehaviourOutput)]
+    [InlineData("GET", VersioningCommand.GetDigitInformation)]
     [InlineData("CreateVersion", VersioningCommand.CreateNewVersion)]
     [InlineData("override", VersioningCommand.Override)]
     [InlineData("updateFiles", VersioningCommand.UpdateFiles)]
     [InlineData("passIVE", VersioningCommand.PassiveOutput)]
     [InlineData("behaviour", VersioningCommand.BehaviourOutput)]
+    [InlineData("get", VersioningCommand.GetDigitInformation)]
     public void CommandLine_correctly_sets_command_from_argument(string commandString, VersioningCommand cmd) {
         var sut = new VersonifyOptions();
         sut.Command = commandString;
@@ -51,6 +53,13 @@ public class VersonifyCommandLineTests {
 
         gd.Length.ShouldBe(1, "There should only be one digit returned from the command line, even though two were specified.");
         gd[0].ShouldBe("*", "The only digit returned should be an asterisk, as that is the only valid digit in this case.");
+    }
+
+    [Fact]
+    public void CommandLine_get_option_requires_double_dash() {
+        CommandLineParser.Parse(["get"]).Options.RequestedCommand.ShouldBe(VersioningCommand.GetDigitInformation);
+        CommandLineParser.Parse(["--command=get"]).Success.ShouldBeTrue();
+        CommandLineParser.Parse(["-get"]).Options.RequestedCommand.ShouldBe(VersioningCommand.Invalid);
     }
 
     [Fact]

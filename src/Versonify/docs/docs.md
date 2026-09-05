@@ -15,6 +15,7 @@ AI/automation: run `versonify --get-md-help` to save this file as `docs.md` in t
 | `updatefiles` | Increments the version and updates matched files. |
 | `passive` | Reads the current version without changing it. |
 | `behaviour` | Reads or updates digit behaviour. |
+| `get` | Returns information about selected digits, including value, behaviour, prefix, queued override, and digit group. |
 | `set` | Sets a digit value or release name. |
 | `prefix` | Sets a digit prefix. |
 

@@ -1,3 +1,4 @@
+﻿using System.Text.Json;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Shouldly;
@@ -26,6 +27,64 @@ public class OutputModeAndValidationTests {
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"behaviour -V={store}");
         output.Item1.ShouldContain("Error >>");
+        output.Item2.ShouldNotBe(0);
+    }
+
+    [Fact]
+    public async Task Get_command_returns_plain_text_for_single_digit() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+        var output = await th.ExecuteVersonify($"get -V={store} -D=0");
+        output.Item1.ShouldContain("Digit at position [0] has prefix");
+        output.Item1.ShouldContain("has value");
+        output.Item1.ShouldContain("is set to");
+        output.Item2.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Get_command_returns_json_dictionary_in_jcon_mode() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+        var output = await th.ExecuteVersonify($"get -V={store} -D=0 -O=jcon", appendDebug: false);
+        using var document = JsonDocument.Parse(output.Item1);
+        var digit = document.RootElement.GetProperty("0");
+        digit.GetProperty("digitValue").GetString().ShouldNotBeNull();
+        digit.GetProperty("digitBehaviour").GetString().ShouldNotBeNull();
+        digit.GetProperty("digitQueuedOverride").ValueKind.ShouldBeOneOf(JsonValueKind.String, JsonValueKind.Null);
+        digit.GetProperty("digitPrefix").GetString().ShouldNotBeNull();
+        digit.GetProperty("digitgroup").GetString().ShouldBe("default");
+        document.RootElement.EnumerateObject().Count().ShouldBe(1);
+        output.Item2.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Get_command_defaults_to_all_digits_and_treats_wildcard_the_same() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+
+        var defaultOutput = await th.ExecuteVersonify($"get -V={store} -O=jcon", appendDebug: false);
+        var wildcardOutput = await th.ExecuteVersonify($"get -V={store} -D=* -O=jcon", appendDebug: false);
+
+        defaultOutput.Item1.ShouldBe(wildcardOutput.Item1);
+        defaultOutput.Item2.ShouldBe(0);
+        wildcardOutput.Item2.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Get_command_rejects_out_of_range_digit_index() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+        var output = await th.ExecuteVersonify($"get -V={store} -D=9", appendDebug: false);
+        output.Item1.ShouldContain("Fatal:");
+        output.Item2.ShouldNotBe(0);
+    }
+
+    [Fact]
+    public async Task Get_command_rejects_wildcard_combined_with_invalid_digit_index() {
+        b.Info.Flow();
+        string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
+        var output = await th.ExecuteVersonify($"get -V={store} -D=*,9", appendDebug: false);
+        output.Item1.ShouldContain("Fatal:");
         output.Item2.ShouldNotBe(0);
     }
 

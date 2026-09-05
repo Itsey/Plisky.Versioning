@@ -1,15 +1,15 @@
-﻿namespace Plisky.Versioning {
+﻿namespace Plisky.Versioning;
 
-    public enum VersioningCommand {
-        Invalid,
-        CreateNewVersion,
-        UpdateFiles,
-        PassiveOutput,
-        BehaviourOutput,
-        BehaviourUpdate,
-        Override,
-        SetDigitValue,
-        SetReleaseName,
-        SetDigitPrefix
-    }
+public enum VersioningCommand {
+    Invalid,
+    CreateNewVersion,
+    UpdateFiles,
+    PassiveOutput,
+    BehaviourOutput,
+    BehaviourUpdate,
+    Override,
+    SetDigitValue,
+    SetReleaseName,
+    SetDigitPrefix,
+    GetDigitInformation
 }
