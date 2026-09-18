@@ -24,39 +24,23 @@ public class VersionNumber {
     }
 
     public int Build {
-        get {
-            return digits[(int)DigitName.Build].DigitValue;
-        }
-        set {
-            SetDigitValue(DigitName.Build, value);
-        }
+        get { return digits[(int)DigitName.Build].DigitValue; }
+        set { SetDigitValue(DigitName.Build, value); }
     }
 
     public int Major {
-        get {
-            return digits[(int)DigitName.Major].DigitValue;
-        }
-        set {
-            SetDigitValue(DigitName.Major, value);
-        }
+        get { return digits[(int)DigitName.Major].DigitValue; }
+        set { SetDigitValue(DigitName.Major, value); }
     }
 
     public int Minor {
-        get {
-            return digits[(int)DigitName.Minor].DigitValue;
-        }
-        set {
-            SetDigitValue(DigitName.Minor, value);
-        }
+        get { return digits[(int)DigitName.Minor].DigitValue; }
+        set { SetDigitValue(DigitName.Minor, value); }
     }
 
     public int Revision {
-        get {
-            return digits[(int)DigitName.Revision].DigitValue;
-        }
-        set {
-            SetDigitValue(DigitName.Revision, value);
-        }
+        get { return digits[(int)DigitName.Revision].DigitValue; }
+        set { SetDigitValue(DigitName.Revision, value); }
     }
 
     public static bool operator !=(VersionNumber v1, VersionNumber v2) {
@@ -64,23 +48,26 @@ public class VersionNumber {
     }
 
     public static bool operator <(VersionNumber v1, VersionNumber v2) {
-        if (ReferenceEquals(v1, null) || ReferenceEquals(v2, null)) {
+        if (v1 is null || v2 is null) {
             return false;
         }
 
         if (v1.Major < v2.Major) {
             return true;
+        } else if (v1.Major > v2.Major) {
+            return false;
         }
         if (v1.Minor < v2.Minor) {
             return true;
+        } else if (v1.Minor > v2.Minor) {
+            return false;
         }
         if (v1.Build < v2.Build) {
             return true;
+        } else if (v1.Build > v2.Build) {
+            return false;
         }
-        if (v1.Revision < v2.Revision) {
-            return true;
-        }
-        return false;
+        return v1.Revision < v2.Revision;
     }
 
     public static bool operator <=(VersionNumber v1, VersionNumber v2) {
@@ -97,7 +84,7 @@ public class VersionNumber {
         if (ReferenceEquals(v1, v2)) {
             return true;
         }
-        if (ReferenceEquals(v1, null) || ReferenceEquals(v2, null)) {
+        if (v1 is null || v2 is null) {
             return false;
         }
 
@@ -110,23 +97,26 @@ public class VersionNumber {
     }
 
     public static bool operator >(VersionNumber v1, VersionNumber v2) {
-        if (ReferenceEquals(v1, null) || ReferenceEquals(v2, null)) {
+        if (v1 is null || v2 is null) {
             return false;
         }
 
         if (v1.Major > v2.Major) {
             return true;
+        } else if (v1.Major < v2.Major) {
+            return false;
         }
         if (v1.Minor > v2.Minor) {
             return true;
+        } else if (v1.Minor < v2.Minor) {
+            return false;
         }
         if (v1.Build > v2.Build) {
             return true;
+        } else if (v1.Build < v2.Build) {
+            return false;
         }
-        if (v1.Revision > v2.Revision) {
-            return true;
-        }
-        return false;
+        return v1.Revision > v2.Revision;
     }
 
     public static bool operator >=(VersionNumber v1, VersionNumber v2) {
@@ -170,7 +160,7 @@ public class VersionNumber {
 
     public override bool Equals(object? obj) {
         var target = obj as VersionNumber;
-        if (!ReferenceEquals(target, null)) {
+        if (target is not null) {
             return this == target;
         }
         return false;
@@ -188,7 +178,7 @@ public class VersionNumber {
         if (value < 0) {
             throw new ArgumentOutOfRangeException(nameof(value), "The versioned digit can not be less than zero");
         }
-        if (digits[(int)digitPosition] == null) {
+        if (digits[(int)digitPosition] is null) {
             digits[(int)digitPosition] = new VersionableDigit(digitPosition, DigitIncrementBehaviour.Fixed, value);
         } else {
             digits[(int)digitPosition].DigitValue = value;
