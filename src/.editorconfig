@@ -1,4 +1,6 @@
-#V1.4 - Added Versioning.
+#V1.5 - 
+#Added that parameters must be on the same line SA1117. SA1616 documentation warning set to none.
+
 # top-most EditorConfig file
 root = true
 
@@ -182,6 +184,8 @@ dotnet_diagnostic.SA1413.severity = none
 dotnet_diagnostic.SA1200.severity = none 
 dotnet_diagnostic.SA0001.severity = none 
 dotnet_diagnostic.SA1000.severity = none 
+dotnet_diagnostic.SA1008.severity = none 
+dotnet_diagnostic.SA1009.severity = none 
 dotnet_diagnostic.SA1310.severity = none 
 dotnet_diagnostic.SA1307.severity = none 
 dotnet_diagnostic.SA1516.severity = none 
@@ -195,7 +199,17 @@ dotnet_diagnostic.SA1311.severity = none
 dotnet_diagnostic.SA1313.severity = none 
 dotnet_diagnostic.SA1515.severity = none 
 dotnet_diagnostic.SA1124.severity = none 
+dotnet_diagnostic.SA1206.severity = none 
+dotnet_diagnostic.SA1616.severity = none 
+dotnet_diagnostic.SA1614.severity = none 
+dotnet_diagnostic.SA1627.severity = none 
+dotnet_diagnostic.SA1629.severity = none 
+dotnet_diagnostic.SA1128.severity = none 
+dotnet_diagnostic.SA1501.severity = none 
+dotnet_diagnostic.SA1117.severity = error 
 dotnet_diagnostic.SA1507.severity = warning 
 dotnet_diagnostic.SA1025.severity = warning 
 dotnet_diagnostic.SA1122.severity = warning
 
+# Roslynator
+dotnet_diagnostic.RCS1163.severity = none 
