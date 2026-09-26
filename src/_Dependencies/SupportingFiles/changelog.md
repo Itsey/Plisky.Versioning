@@ -1,8 +1,16 @@
 ## Versonify Change Log.
 
-⬆️ XXX-VERSION3-XXX
+⬆️ **XXX-VERSION3-XXX** - Internal structure and CLI improvements.
 
-* ✅ Feature - 
+  - ✅ Feature - Added digit-group targeting and the `--pre-release` shortcut for passive reads, updates, and queued version changes.
+  - ✅ Feature - Added the `get` command to inspect digit values, behaviours, prefixes, queued overrides, and groups in plain text or `jcon` output.
+  - ✅ Feature - Added structured JSON console output with explicit message categories, including machine-readable results, warnings, validation failures, and errors.
+  - ✅ Feature - Added the built-in `--version` command and embedded Markdown help via `--get-md-help`.
+  - ✅ Feature - Improved command-line parsing and validation, including canonical long options and deprecation handling for legacy aliases.
+  - ✅ Feature - Added manual CLI prompt coverage and expanded integration tests for grouped digits, output modes, and validation scenarios.
+  - 🐞 Fix - Corrected version-number comparison so a higher leading digit is not outweighed by later digits.
+  - 💥 Breaking Change - Removed support for the legacy `-DG`, `-MM`, and `-NO` command-line aliases. Use `--digits`/`-D`, `--min-match`/`-M`, and `--no-override` instead. Other legacy aliases remain temporarily supported with deprecation warnings.
+  - 🔧 Maintenance - Refactored the CLI and versioning output flow for nullable reference types, C# 12, and clearer build/test automation.
 
 
 
@@ -11,7 +19,7 @@
   - ✅ Feature - Implemented -z to suppress non zero return exit codes.
   - ✅ Feature - 💥Breaking Change💥 File Updates that do not update any files now default to returning non zero exit code.  Add -z for old functionality.
 
-Note that the QQpnf feature is not really aimed at end users but purely at the Pliksy.Nuke.Fusion library to ensure that it understands what parameters are available to different versions of Versonify.  File updates that update no files now default to an error, this was because it was more common that it was a mistake rather than intentional.
+Note that the QQpnf feature is not really aimed at end users but purely at the Plisky.Nuke.Fusion library to ensure that it understands what parameters are available to different versions of Versonify.  File updates that update no files now default to an error, this was because it was more common that it was a mistake rather than intentional.
 
 Changes to command line support are coming, with a view to standardising the command line in the way that is now more common.  These warnings are added to this version:
 
@@ -39,4 +47,3 @@ Changes to command line support are coming, with a view to standardising the com
 ⬆️  0.1.1 - Initial.
   - Updated documentation to remove references to PliskyTool.
   - 🐞 Fix - DryRun no longer updates the files on disk.
-

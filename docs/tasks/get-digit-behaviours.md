@@ -1,7 +1,8 @@
 ---
-status: todo
+status: done
 title: Add Get command line option to return individual and all digit informaton
 created: 2026-08-11
+completed: 2026-09-05
 priority: medium
 reference: LFY-74
 ---
