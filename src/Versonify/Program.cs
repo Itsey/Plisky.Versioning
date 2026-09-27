@@ -15,8 +15,8 @@ namespace Versonify;
 internal static class Program {
     private const string ALL_DIGITS_WILDCARD = "*";
     private const string HELP_HINT_MESSAGE = "Use '--help' to display available options and commands, or '--get-md-help' to export documentation.";
-    private static VersonifyOptions? opts;
     private static Bilge b = new();
+    private static VersonifyOptions? opts;
     private static Hub outputContent = new(true);
     private static string? passiveOutputValue;
     private static VersionStorage? storage;
@@ -225,6 +225,26 @@ internal static class Program {
         return 0;
     }
 
+    private static (bool shouldExit, int returnCode) CheckQuickReturns(string[] args) {
+        int pnfShortCircuit = CheckPnfCompatibiliyRequest(args);
+        if (pnfShortCircuit >= 200) {
+            return (true, pnfShortCircuit);
+        }
+
+        if (IsVersionRequested(args)) {
+            Console.WriteLine(GetAssemblyVersionString());
+            return (true, 0);
+        }
+
+        if (CommandLineParser.IsHelpRequested(args)) {
+            WriteGreetingMessage();
+            CommandLineParser.DisplayHelp();
+            return (true, 0);
+        }
+
+        return (false, 0);
+    }
+
     private static void ConfigureOutput(VersonifyOptions options) {
         ArgumentNullException.ThrowIfNull(options, nameof(options));
 
@@ -316,6 +336,11 @@ internal static class Program {
         return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
     }
 
+    private static string GetDisplayDigitGroupName(string? groupName) {
+        string normalizedGroupName = CompleteVersion.NormalizeDigitGroup(groupName);
+        return string.IsNullOrEmpty(normalizedGroupName) ? "default" : normalizedGroupName;
+    }
+
     /// <summary>
     /// Most of the versioning approaches require a version store of some sort. This initialises the version store from the command line using the
     /// initialisation data that is passed in to determine which version store to load.
@@ -382,93 +407,6 @@ internal static class Program {
         return true;
     }
 
-    private static int ValidateRequestedDigitIndex(string requestedDigit, int digitCount) {
-        if (!int.TryParse(requestedDigit, out int digitIndex) ||
-            digitIndex < 0 ||
-            digitIndex >= digitCount) {
-            b.Warning.Log($"Digit [{requestedDigit}] requested for Get command is not valid.");
-            throw new ArgumentOutOfRangeException(
-                nameof(requestedDigit),
-                $"The digit [{requestedDigit}] is not a valid digit.");
-        }
-
-        return digitIndex;
-    }
-
-    private static void ValidateNoWildcardCombination(string[] requestedDigits, bool allDigitsRequested) {
-        if (allDigitsRequested && requestedDigits.Length > 1) {
-            b.Warning.Log("Wildcard digit selection was combined with explicit digit indices, this is not supported.");
-            throw new ArgumentException(
-                "The wildcard digit selection cannot be combined with explicit digit indices.",
-                nameof(requestedDigits));
-        }
-    }
-
-    private static int[]? ResolveRequestedDigitIndices(CompleteVersion version, int[] groupDigitIndices, string groupName, ExecutionResult result) {
-        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
-
-        string[] requestedDigits = opts.DigitManipulations ?? [];
-        b.Verbose.Log($"Validating requested digits [{string.Join(',', requestedDigits)}] for Get command");
-        bool allDigitsRequested = requestedDigits.Contains(ALL_DIGITS_WILDCARD);
-        ValidateNoWildcardCombination(requestedDigits, allDigitsRequested);
-
-        if (requestedDigits.Length == 0 || allDigitsRequested) {
-            b.Verbose.Log("No specific digits requested, defaulting to all digits in group.");
-            return groupDigitIndices;
-        }
-
-        var selected = new List<int>(requestedDigits.Length);
-        foreach (string requestedDigit in requestedDigits) {
-            int digitIndex = ValidateRequestedDigitIndex(requestedDigit, version.Digits.Length);
-
-            if (!groupDigitIndices.Contains(digitIndex)) {
-                b.Warning.Log($"Digit [{digitIndex}] requested for Get command is not part of digit-group [{groupName}].");
-                result.AddError($"Error >> The digit [{requestedDigit}] is not in digit-group '{groupName}'.", 1);
-                return null;
-            }
-
-            if (!selected.Contains(digitIndex)) {
-                selected.Add(digitIndex);
-            }
-        }
-
-        return [.. selected];
-    }
-
-    private static void WriteDigitInformation(CompleteVersion version, int[] selectedIndices) {
-        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
-
-        if (opts.OutputsActive.HasFlag(OutputPossibilities.Json)) {
-            b.Verbose.Log("Building JSON digit information response");
-            var digitInformation = new Dictionary<int, object>();
-            foreach (int digitIndex in selectedIndices) {
-                var digit = version.Digits[digitIndex];
-                digitInformation.Add(digitIndex, new {
-                    digitValue = digit.Value,
-                    digitBehaviour = digit.Behaviour.ToString(),
-                    digitQueuedOverride = digit.IncrementOverride,
-                    digitPrefix = digit.PreFix,
-                    digitgroup = GetDisplayDigitGroupName(digit.GroupName)
-                });
-            }
-            outputContent.Launch(new SimpleMessage(JsonSerializer.Serialize(digitInformation)) {
-                MessageType = OutputMessageType.Result
-            });
-        } else {
-            b.Verbose.Log("Building plain-text digit information response");
-            foreach (int digitIndex in selectedIndices) {
-                var digit = version.Digits[digitIndex];
-                outputContent.Launch(new SimpleMessage(
-                    $"Digit at position [{digitIndex}] has prefix \"{digit.PreFix}\", has value \"{digit.Value}\", and is set to {digit.Behaviour} behavior. It belongs to digit-group {GetDisplayDigitGroupName(digit.GroupName)}, and its Queued Override value is {digit.IncrementOverride ?? "null"}."));
-            }
-        }
-    }
-
-    private static string GetDisplayDigitGroupName(string? groupName) {
-        string normalizedGroupName = CompleteVersion.NormalizeDigitGroup(groupName);
-        return string.IsNullOrEmpty(normalizedGroupName) ? "default" : normalizedGroupName;
-    }
-
     private static void LoadReleaseName() {
         b.Verbose.Flow();
         ArgumentNullException.ThrowIfNull(opts, nameof(opts));
@@ -509,20 +447,9 @@ internal static class Program {
 
     private static async Task<int> Main(string[] args) {
         try {
-            int pnfShortCircuit = CheckPnfCompatibiliyRequest(args);
-            if (pnfShortCircuit >= 200) {
-                return pnfShortCircuit;
-            }
-
-            if (IsVersionRequested(args)) {
-                Console.WriteLine(GetAssemblyVersionString());
-                return 0;
-            }
-
-            if (CommandLineParser.IsHelpRequested(args)) {
-                WriteGreetingMessage();
-                CommandLineParser.DisplayHelp();
-                return 0;
+            (bool shouldexit, int returnCode) = CheckQuickReturns(args);
+            if (shouldexit) {
+                return returnCode;
             }
 
             (bool success, var options) = CommandLineParser.Parse(args);
@@ -736,6 +663,88 @@ internal static class Program {
         }
 
         return opts.DigitGroup;
+    }
+
+    private static int[]? ResolveRequestedDigitIndices(CompleteVersion version, int[] groupDigitIndices, string groupName, ExecutionResult result) {
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        string[] requestedDigits = opts.DigitManipulations ?? [];
+        b.Verbose.Log($"Validating requested digits [{string.Join(',', requestedDigits)}] for Get command");
+        bool allDigitsRequested = requestedDigits.Contains(ALL_DIGITS_WILDCARD);
+        ValidateNoWildcardCombination(requestedDigits, allDigitsRequested);
+
+        if (requestedDigits.Length == 0 || allDigitsRequested) {
+            b.Verbose.Log("No specific digits requested, defaulting to all digits in group.");
+            return groupDigitIndices;
+        }
+
+        var selected = new List<int>(requestedDigits.Length);
+        foreach (string requestedDigit in requestedDigits) {
+            int digitIndex = ValidateRequestedDigitIndex(requestedDigit, version.Digits.Length);
+
+            if (!groupDigitIndices.Contains(digitIndex)) {
+                b.Warning.Log($"Digit [{digitIndex}] requested for Get command is not part of digit-group [{groupName}].");
+                result.AddError($"Error >> The digit [{requestedDigit}] is not in digit-group '{groupName}'.", 1);
+                return null;
+            }
+
+            if (!selected.Contains(digitIndex)) {
+                selected.Add(digitIndex);
+            }
+        }
+
+        return [.. selected];
+    }
+
+    private static void ValidateNoWildcardCombination(string[] requestedDigits, bool allDigitsRequested) {
+        if (allDigitsRequested && requestedDigits.Length > 1) {
+            b.Warning.Log("Wildcard digit selection was combined with explicit digit indices, this is not supported.");
+            throw new ArgumentException(
+                "The wildcard digit selection cannot be combined with explicit digit indices.",
+                nameof(requestedDigits));
+        }
+    }
+
+    private static int ValidateRequestedDigitIndex(string requestedDigit, int digitCount) {
+        if (!int.TryParse(requestedDigit, out int digitIndex) ||
+            digitIndex < 0 ||
+            digitIndex >= digitCount) {
+            b.Warning.Log($"Digit [{requestedDigit}] requested for Get command is not valid.");
+            throw new ArgumentOutOfRangeException(
+                nameof(requestedDigit),
+                $"The digit [{requestedDigit}] is not a valid digit.");
+        }
+
+        return digitIndex;
+    }
+
+    private static void WriteDigitInformation(CompleteVersion version, int[] selectedIndices) {
+        ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+
+        if (opts.OutputsActive.HasFlag(OutputPossibilities.Json)) {
+            b.Verbose.Log("Building JSON digit information response");
+            var digitInformation = new Dictionary<int, object>();
+            foreach (int digitIndex in selectedIndices) {
+                var digit = version.Digits[digitIndex];
+                digitInformation.Add(digitIndex, new {
+                    digitValue = digit.Value,
+                    digitBehaviour = digit.Behaviour.ToString(),
+                    digitQueuedOverride = digit.IncrementOverride,
+                    digitPrefix = digit.PreFix,
+                    digitgroup = GetDisplayDigitGroupName(digit.GroupName)
+                });
+            }
+            outputContent.Launch(new SimpleMessage(JsonSerializer.Serialize(digitInformation)) {
+                MessageType = OutputMessageType.Result
+            });
+        } else {
+            b.Verbose.Log("Building plain-text digit information response");
+            foreach (int digitIndex in selectedIndices) {
+                var digit = version.Digits[digitIndex];
+                outputContent.Launch(new SimpleMessage(
+                    $"Digit at position [{digitIndex}] has prefix \"{digit.PreFix}\", has value \"{digit.Value}\", and is set to {digit.Behaviour} behavior. It belongs to digit-group {GetDisplayDigitGroupName(digit.GroupName)}, and its Queued Override value is {digit.IncrementOverride ?? "null"}."));
+            }
+        }
     }
 
     private static void WriteErrorConditions() {

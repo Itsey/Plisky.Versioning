@@ -21,6 +21,6 @@ public class RegressionTests {
         b.Info.Flow();
 
         var output = await th.ExecuteVersonify("--qqpnf", appendDebug: false);
-        output.Item2.ShouldBe(201, "Current compat version is 201.");
+        output.ReturnCode.ShouldBe(201, "Current compat version is 201.");
     }
 }

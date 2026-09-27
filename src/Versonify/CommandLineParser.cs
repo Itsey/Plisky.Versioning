@@ -48,6 +48,10 @@ public static class CommandLineParser {
     }
 
     public static bool IsHelpRequested(string[] args) {
+        if (args.Length == 0) {
+            return true;
+        }
+
         foreach (string arg in args) {
             if (arg.Equals(HELP_ARG, StringComparison.OrdinalIgnoreCase) ||
                 arg.Equals("-h", StringComparison.OrdinalIgnoreCase)) {
@@ -190,7 +194,7 @@ public static class CommandLineParser {
         };
         rc.Add(noErrorOpt);
 
-        string[] noOverrideAliases = includeDeprecatedAliases ? ["-NoOverride", "--NoOverride", "-NO"] : [];
+        string[] noOverrideAliases = includeDeprecatedAliases ? ["-NoOverride", "--NoOverride", "-NO", "-no"] : [];
         var noOverrideOpt = new Option<bool>(NO_OVERRIDE_ARG, noOverrideAliases) {
             Description = "Ignores any saved pending-increment override"
         };

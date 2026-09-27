@@ -26,8 +26,8 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"behaviour -V={store}");
-        output.Item1.ShouldContain("Error >>");
-        output.Item2.ShouldNotBe(0);
+        output.StdOut.ShouldContain("Error >>");
+        output.ReturnCode.ShouldNotBe(0);
     }
 
     [Fact]
@@ -35,10 +35,10 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"get -V={store} -D=0");
-        output.Item1.ShouldContain("Digit at position [0] has prefix");
-        output.Item1.ShouldContain("has value");
-        output.Item1.ShouldContain("is set to");
-        output.Item2.ShouldBe(0);
+        output.StdOut.ShouldContain("Digit at position [0] has prefix");
+        output.StdOut.ShouldContain("has value");
+        output.StdOut.ShouldContain("is set to");
+        output.ReturnCode.ShouldBe(0);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"get -V={store} -D=0 -O=jcon", appendDebug: false);
-        using var document = JsonDocument.Parse(output.Item1);
+        using var document = JsonDocument.Parse(output.StdOut);
         var digit = document.RootElement.GetProperty("0");
         digit.GetProperty("digitValue").GetString().ShouldNotBeNull();
         digit.GetProperty("digitBehaviour").GetString().ShouldNotBeNull();
@@ -54,7 +54,7 @@ public class OutputModeAndValidationTests {
         digit.GetProperty("digitPrefix").GetString().ShouldNotBeNull();
         digit.GetProperty("digitgroup").GetString().ShouldBe("default");
         document.RootElement.EnumerateObject().Count().ShouldBe(1);
-        output.Item2.ShouldBe(0);
+        output.ReturnCode.ShouldBe(0);
     }
 
     [Fact]
@@ -65,9 +65,9 @@ public class OutputModeAndValidationTests {
         var defaultOutput = await th.ExecuteVersonify($"get -V={store} -O=jcon", appendDebug: false);
         var wildcardOutput = await th.ExecuteVersonify($"get -V={store} -D=* -O=jcon", appendDebug: false);
 
-        defaultOutput.Item1.ShouldBe(wildcardOutput.Item1);
-        defaultOutput.Item2.ShouldBe(0);
-        wildcardOutput.Item2.ShouldBe(0);
+        defaultOutput.StdOut.ShouldBe(wildcardOutput.StdOut);
+        defaultOutput.ReturnCode.ShouldBe(0);
+        wildcardOutput.ReturnCode.ShouldBe(0);
     }
 
     [Fact]
@@ -75,8 +75,8 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"get -V={store} -D=9", appendDebug: false);
-        output.Item1.ShouldContain("Fatal:");
-        output.Item2.ShouldNotBe(0);
+        output.StdOut.ShouldContain("Fatal:");
+        output.ReturnCode.ShouldNotBe(0);
     }
 
     [Fact]
@@ -84,8 +84,8 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"get -V={store} -D=*,9", appendDebug: false);
-        output.Item1.ShouldContain("Fatal:");
-        output.Item2.ShouldNotBe(0);
+        output.StdOut.ShouldContain("Fatal:");
+        output.ReturnCode.ShouldNotBe(0);
     }
 
     [Fact]
@@ -93,9 +93,9 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.OneEachBehaviourStore)!);
         var output = await th.ExecuteVersonify($"behaviour -V={store} -D=0;1");
-        output.Item1.ShouldContain("[0]:");
-        output.Item1.ShouldContain("[1]:");
-        output.Item2.ShouldBe(0);
+        output.StdOut.ShouldContain("[0]:");
+        output.StdOut.ShouldContain("[1]:");
+        output.ReturnCode.ShouldBe(0);
     }
 
     [Fact]
@@ -104,8 +104,8 @@ public class OutputModeAndValidationTests {
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         string nonExistentPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
         var output = await th.ExecuteVersonify($"passive -V={store} -Root={nonExistentPath}");
-        output.Item1.ShouldContain("Error >> Invalid Directory");
-        output.Item2.ShouldNotBe(0);
+        output.StdOut.ShouldContain("Error >> Invalid Directory");
+        output.ReturnCode.ShouldNotBe(0);
     }
 
     [Fact]
@@ -113,8 +113,8 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"passive -v={store} --debug", appendDebug: false);
-        output.Item1.ShouldContain("Command Line Arguments:");
-        output.Item2.ShouldBe(0);
+        output.StdOut.ShouldContain("Command Line Arguments:");
+        output.ReturnCode.ShouldBe(0);
     }
 
     [Fact]
@@ -122,8 +122,8 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"passive -V={store} -Output=azdo:MyVar");
-        output.Item1.ShouldContain("##vso[task.setvariable variable=MyVar");
-        output.Item2.ShouldBe(0);
+        output.StdOut.ShouldContain("##vso[task.setvariable variable=MyVar");
+        output.ReturnCode.ShouldBe(0);
     }
 
     [Fact]
@@ -131,8 +131,8 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"passive -V={store} -Output=azdo");
-        output.Item1.ShouldContain("##vso[task.setvariable variable=CodeVersionNumber");
-        output.Item2.ShouldBe(0);
+        output.StdOut.ShouldContain("##vso[task.setvariable variable=CodeVersionNumber");
+        output.ReturnCode.ShouldBe(0);
     }
 
     [Fact]
@@ -144,7 +144,7 @@ public class OutputModeAndValidationTests {
         try {
             var output = await th.ExecuteVersonify($"passive -V={store} -Output=file", tempDir);
             File.Exists(Path.Combine(tempDir, "pver-latest.txt")).ShouldBeTrue();
-            output.Item2.ShouldBe(0);
+            output.ReturnCode.ShouldBe(0);
         } finally {
             Directory.Delete(tempDir, true);
         }
@@ -168,7 +168,7 @@ public class OutputModeAndValidationTests {
         try {
             var output = await th.ExecuteVersonify($"passive -V={store} -Output=file:{CUSTOMFILENAME}", tempDir);
             File.Exists(customFile).ShouldBeTrue();
-            output.Item2.ShouldBe(0);
+            output.ReturnCode.ShouldBe(0);
         } finally {
             Directory.Delete(tempDir, true);
         }
@@ -180,10 +180,10 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"passive -V={store} -Output=jcon");
-        output.Item1.ShouldContain("\"MessageCategory\":\"information\"");
-        output.Item1.ShouldContain("\"MessageContent\":");
-        output.Item1.ShouldContain("\"Meta\":{}");
-        output.Item2.ShouldBe(0);
+        output.StdOut.ShouldContain("\"MessageCategory\":\"information\"");
+        output.StdOut.ShouldContain("\"MessageContent\":");
+        output.StdOut.ShouldContain("\"Meta\":{}");
+        output.ReturnCode.ShouldBe(0);
     }
 
     [Fact]
@@ -191,8 +191,8 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"passive -V={store} -Output=vsts");
-        output.Item1.ShouldContain("##vso[task.setvariable variable=CodeVersionNumber");
-        output.Item2.ShouldBe(0);
+        output.StdOut.ShouldContain("##vso[task.setvariable variable=CodeVersionNumber");
+        output.ReturnCode.ShouldBe(0);
     }
 
     // Group E — Validation errors
@@ -201,8 +201,8 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"override -V={store}");
-        output.Item1.ShouldContain("Error >>");
-        output.Item2.ShouldNotBe(0);
+        output.StdOut.ShouldContain("Error >>");
+        output.ReturnCode.ShouldNotBe(0);
     }
 
     [Fact]
@@ -210,8 +210,8 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"prefix -V={store} -Q=-");
-        output.Item1.ShouldContain("Error >>");
-        output.Item2.ShouldNotBe(0);
+        output.StdOut.ShouldContain("Error >>");
+        output.ReturnCode.ShouldNotBe(0);
     }
 
     [Fact]
@@ -219,8 +219,8 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"prefix -V={store} -D=0");
-        output.Item1.ShouldContain("Error >>");
-        output.Item2.ShouldNotBe(0);
+        output.StdOut.ShouldContain("Error >>");
+        output.ReturnCode.ShouldNotBe(0);
     }
 
     [Fact]
@@ -231,10 +231,10 @@ public class OutputModeAndValidationTests {
 
         try {
             var output = await th.ExecuteVersonify($"prefix -V={store} -D=2 -Q=-");
-            output.Item2.ShouldBe(0);
+            output.ReturnCode.ShouldBe(0);
             output = await th.ExecuteVersonify($"passive -V={store}");
-            output.Item1.ShouldContain("-");
-            output.Item2.ShouldBe(0);
+            output.StdOut.ShouldContain("-");
+            output.ReturnCode.ShouldBe(0);
         } finally {
             Directory.Delete(tempDir, true);
         }
@@ -248,8 +248,8 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"set -V={store}");
-        output.Item1.ShouldContain("Error >>");
-        output.Item2.ShouldNotBe(0);
+        output.StdOut.ShouldContain("Error >>");
+        output.ReturnCode.ShouldNotBe(0);
     }
 
     [Fact]
@@ -257,8 +257,8 @@ public class OutputModeAndValidationTests {
         b.Info.Flow();
         string store = uth.GetTestDataFile(TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!);
         var output = await th.ExecuteVersonify($"set -V={store} -Q=9 -R=MyRelease");
-        output.Item1.ShouldContain("Error >>");
-        output.Item2.ShouldNotBe(0);
+        output.StdOut.ShouldContain("Error >>");
+        output.ReturnCode.ShouldNotBe(0);
     }
 
     private static string CreateTemporaryDirectory() {
@@ -270,8 +270,8 @@ public class OutputModeAndValidationTests {
     private async Task<string> CreateVersionStore(string workingDirectory, string versionValue) {
         string result = Path.Combine(workingDirectory, "versionstore.vstore");
         var output = await th.ExecuteVersonify($"createversion -V={result} -Q={versionValue}");
-        output.Item1.ShouldContain("Creating New Version Store:");
-        output.Item2.ShouldBe(0);
+        output.StdOut.ShouldContain("Creating New Version Store:");
+        output.ReturnCode.ShouldBe(0);
         return result;
     }
 }

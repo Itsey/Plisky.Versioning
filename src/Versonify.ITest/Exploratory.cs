@@ -30,8 +30,8 @@ public class Exploratory {
 
         var output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition} -Q={quickValue}");
 
-        output.Item1.ShouldContain(expectedOutput);
-        output.Item2.ShouldBe(0);
+        output.StdOut.ShouldContain(expectedOutput);
+        output.ReturnCode.ShouldBe(0);
     }
 
     [Fact]
@@ -42,15 +42,15 @@ public class Exploratory {
 
         var output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d=*");
 
-        output.Item1.ShouldContain("[0]:Fixed(0)");
-        output.Item1.ShouldContain("[1]:DaysSinceDate(2)");
-        output.Item1.ShouldContain("[2]:DailyAutoIncrement(3)");
-        output.Item1.ShouldContain("[3]:AutoIncrementWithReset(4)");
-        output.Item1.ShouldContain("[4]:AutoIncrementWithResetAny(5)");
-        output.Item1.ShouldContain("[5]:ContinualIncrement(6)");
-        output.Item1.ShouldContain("[6]:WeeksSinceDate(7)");
-        output.Item1.ShouldContain("[7]:ReleaseName(8)");
-        output.Item2.ShouldBe(0);
+        output.StdOut.ShouldContain("[0]:Fixed(0)");
+        output.StdOut.ShouldContain("[1]:DaysSinceDate(2)");
+        output.StdOut.ShouldContain("[2]:DailyAutoIncrement(3)");
+        output.StdOut.ShouldContain("[3]:AutoIncrementWithReset(4)");
+        output.StdOut.ShouldContain("[4]:AutoIncrementWithResetAny(5)");
+        output.StdOut.ShouldContain("[5]:ContinualIncrement(6)");
+        output.StdOut.ShouldContain("[6]:WeeksSinceDate(7)");
+        output.StdOut.ShouldContain("[7]:ReleaseName(8)");
+        output.ReturnCode.ShouldBe(0);
     }
 
     [Theory]
@@ -64,9 +64,9 @@ public class Exploratory {
 
         var output = await th.ExecuteVersonify($"behaviour -v={vStoreFilePath} -d={digitPosition}");
 
-        output.Item1.ShouldContain(outputData);
-        output.Item1.ShouldNotContain(noOutputData);
-        output.Item2.ShouldBe(0);
+        output.StdOut.ShouldContain(outputData);
+        output.StdOut.ShouldNotContain(noOutputData);
+        output.ReturnCode.ShouldBe(0);
     }
 
     [Fact]
@@ -79,8 +79,8 @@ public class Exploratory {
         string args = $"passive -v={vStoreFilePath} -O=con -Q=1.9.4.3";
         var output = await th.ExecuteVersonify(args);
 
-        output.Item1.ShouldNotContain("PNFV]");
-        output.Item2.ShouldBe(0);
+        output.StdOut.ShouldNotContain("PNFV]");
+        output.ReturnCode.ShouldBe(0);
     }
 
     [Fact]
@@ -147,8 +147,8 @@ public class Exploratory {
         _ = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
         var output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con -z");
 
-        output.Item1.ShouldContain("WARNING - No files found to update.");
-        output.Item2.ShouldBe(0, "Failure to update files should return error.");
+        output.StdOut.ShouldContain("WARNING - No files found to update.");
+        output.ReturnCode.ShouldBe(0, "Failure to update files should return error.");
     }
 
     [Fact(DisplayName = "No Files Updated, Returns Exit Code")]
@@ -160,24 +160,22 @@ public class Exploratory {
 
         string versionStore = Path.Combine(pth, "vstore.delme");
         var output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"2.0.0\" -Release=Austen");
-        output.Item2.ShouldBe(0, "Warning Test setup failed");
+        output.ReturnCode.ShouldBe(0, "Warning Test setup failed");
 
         output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -m=*.zzz -output=con");
 
-        output.Item1.ShouldContain("WARNING - No files found to update.");
-        output.Item2.ShouldNotBe(0, "Failure to update files should return error.");
+        output.StdOut.ShouldContain("WARNING - No files found to update.");
+        output.ReturnCode.ShouldNotBe(0, "Failure to update files should return error.");
 
         Directory.Delete(pth, true);
     }
 
     [Fact]
-    public async Task No_arguments_presents_help_hint_and_no_full_help() {
+    public async Task No_arguments_presents_help() {
         b.Info.Flow();
-        var output = await th.ExecuteVersonify("");
+        var output = await th.ExecuteVersonify("", null, false);
 
-        output.Item1.ShouldContain("Use '--help' to display available options");
-        output.Item1.ShouldNotContain("Parameter help for Versonify.");
-        output.Item2.ShouldNotBe(0, "No Parameters is an error condition.");
+        output.StdOut.ShouldContain("Parameter help for Versonify.");
     }
 
     [Fact(DisplayName = "No minmatch returns error code")]
@@ -186,8 +184,8 @@ public class Exploratory {
 
         var output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={ArgumentValidator.TEST_VALID_ARGUMENT} -Increment -v=z:\\t\\t.txt -output=con");
 
-        output.Item1.ShouldContain("Error >> The Update command requires a minmatch");
-        output.Item2.ShouldNotBe(0, "Failure to update files should return error.");
+        output.StdOut.ShouldContain("Error >> The Update command requires a minmatch");
+        output.ReturnCode.ShouldNotBe(0, "Failure to update files should return error.");
     }
 
     [Fact] //Skip = "This looks like it could be a bug in current implementation while evidencing LFY-10")]
@@ -280,6 +278,31 @@ public class Exploratory {
             output.ShouldNotContain("Error >>");
         }
     }
+
+
+    [Fact]
+    public async Task Regression_Test() {
+        b.Info.Flow();
+
+        string pth = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+        Directory.CreateDirectory(pth);
+
+        string versionStore = Path.Combine(pth, "vstore.delme");
+        string fileToUpdate = Path.Combine(pth, "test.txt");
+        File.WriteAllText(fileToUpdate, "This is a test file XXX-VERSION-XXX, XXX-VERSION2-XXX, XXX-VERSION3-XXX, XXX-VERSION4-XXX");
+
+        var output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"1.0.0.0\"");
+        output.ReturnCode.ShouldBe(0, "Warning Test setup failed");
+
+        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -mm=*.txt -output=con");
+        File.ReadAllText(fileToUpdate).ShouldContain("1.0.0.0");
+
+        output.StdOut.ShouldContain("WARNING - No files found to update.");
+        output.ReturnCode.ShouldNotBe(0, "Failure to update files should return error.");
+
+        //Directory.Delete(pth, true);
+    }
+
 
     private static void FileShouldContain(string preReleaseVersionStore, params string[] contains) {
         string currentFileContents = File.ReadAllText(preReleaseVersionStore);

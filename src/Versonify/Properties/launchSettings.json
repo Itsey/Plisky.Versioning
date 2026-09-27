@@ -4,6 +4,10 @@
       "commandName": "Project",
       "commandLineArgs": "--command=CreateVersion --version-source=c:\\Temp\\dummy1.vstore -Q=\"2.3.0.0\" --release=Bronte --debug --trace=Verbose"
     },
+    "VersonifyDebug": {
+      "commandName": "Project",
+      "commandLineArgs": "-Command=UpdateFiles -Root=C:\\\\temp\\\\Temp\\\\wylk5jvj -Increment -v=C:\\temp\\Temp\\wylk5jvj\\vstore.delme -mm=*.txt -output=con"
+    },
     "VersonifyHelp": {
       "commandName": "Project",
       "commandLineArgs": "--help"

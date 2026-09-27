@@ -6,11 +6,11 @@ using Shouldly;
 namespace Versonify.ITest;
 
 internal sealed class VersonifyExecutionOutput {
-    public string Item1 { get; init; } = string.Empty;
-    public int Item2 { get; init; }
+    public string StdOut { get; init; } = string.Empty;
+    public int ReturnCode { get; init; }
 
     public static implicit operator string(VersonifyExecutionOutput output) {
-        return output.Item1;
+        return output.StdOut;
     }
 }
 
@@ -52,8 +52,8 @@ public class TestHelper {
         var result = await ExecuteVersonifyWithStreams(v, workingDirectory, appendDebug);
 
         return new VersonifyExecutionOutput {
-            Item1 = result.StdOut,
-            Item2 = result.ExitCode,
+            StdOut = result.StdOut,
+            ReturnCode = result.ExitCode,
         };
     }
 
