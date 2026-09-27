@@ -23,7 +23,7 @@
     <PackageProjectUrl>https://itsey.github.io/</PackageProjectUrl>
     <PackageIcon>heart-icon.png</PackageIcon>
     <Description>Plisky Versonify, versioning command line tool.</Description>
-    <Copyright>Copyright 2025</Copyright>
+    <Copyright>Copyright 2026</Copyright>
     <PackageTags>versioning;cli;build</PackageTags>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

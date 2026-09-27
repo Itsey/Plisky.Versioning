@@ -25,9 +25,26 @@ public static class CommandLineParser {
         ["-minmatch"] = MIN_MATCH_ARG,
     };
 
+    private static readonly IReadOnlyDictionary<string, string> deprecatedAliasMapUpper = new Dictionary<string, string>(StringComparer.Ordinal) {
+        ["--Command"] = COMMAND_ARG,
+        ["--Debug"] = DEBUG_ARG,
+        ["--DryRun"] = DRY_RUN_ARG,
+        ["--Digits"] = DIGITS_ARG,
+        ["--NoError"] = NO_ERROR_ARG,
+        ["--NoOverride"] = NO_OVERRIDE_ARG,
+        ["--Output"] = OUTPUT_ARG,
+        ["--Increment"] = INCREMENT_ARG,
+        ["--QuickValue"] = QUICK_VALUE_ARG,
+        ["--Release"] = RELEASE_ARG,
+        ["--Root"] = ROOT_ARG,
+        ["--Trace"] = TRACE_ARG,
+        ["--VersionSource"] = VERSION_SOURCE_ARG,
+        ["--MinMatch"] = MIN_MATCH_ARG,
+    };
+
     public static void DisplayHelp() {
         var helpCommand = BuildRootCommand(false);
-        helpCommand.Parse([HELP_ARG]).Invoke(new System.CommandLine.InvocationConfiguration());
+        helpCommand.Parse([HELP_ARG]).Invoke(new InvocationConfiguration());
     }
 
     public static bool IsHelpRequested(string[] args) {
@@ -120,94 +137,17 @@ public static class CommandLineParser {
         };
         rc.Add(commandArg);
 
-        string[] commandAliases = includeDeprecatedAliases ? ["-Command"] : [];
+        string[] commandAliases = includeDeprecatedAliases ? ["-Command", "--Command"] : [];
         var commandOpt = new Option<string>(COMMAND_ARG, commandAliases) {
             Description = "Command name"
         };
         rc.Add(commandOpt);
 
-        string[] debugAliases = includeDeprecatedAliases ? ["-Debug"] : [];
+        string[] debugAliases = includeDeprecatedAliases ? ["-Debug", "--Debug"] : [];
         var debugOpt = new Option<bool>(DEBUG_ARG, debugAliases) {
             Description = "Enables debug logging and echoes command-line arguments"
         };
         rc.Add(debugOpt);
-
-        string[] dryRunAliases = includeDeprecatedAliases ? ["-DryRun"] : [];
-        var dryRunOpt = new Option<bool>(DRY_RUN_ARG, dryRunAliases) {
-            Description = "Runs in output-only mode; no changes are persisted"
-        };
-        rc.Add(dryRunOpt);
-
-        string[] digitsAliases = includeDeprecatedAliases ? ["-D", "-d", "-Digits"] : ["-D", "-d"];
-        var digitsOpt = new Option<string>(DIGITS_ARG, digitsAliases) {
-            Description = "Semicolon-separated digit indices or * for all"
-        };
-        rc.Add(digitsOpt);
-
-        string[] noErrorAliases = includeDeprecatedAliases ? ["-z", "-NoError"] : ["-z", "-Z"];
-        var noErrorOpt = new Option<bool>(NO_ERROR_ARG, noErrorAliases) {
-            Description = "Forces zero exit code on otherwise failing executions"
-        };
-        rc.Add(noErrorOpt);
-
-        var getMdHelpOpt = new Option<bool>(GET_MD_HELP_ARG) {
-            Description = "Writes the embedded docs.md file to the current working directory"
-        };
-        rc.Add(getMdHelpOpt);
-
-        string[] noOverrideAliases = includeDeprecatedAliases ? ["-NoOverride"] : [];
-        var noOverrideOpt = new Option<bool>(NO_OVERRIDE_ARG, noOverrideAliases) {
-            Description = "Ignores any saved pending-increment override"
-        };
-        rc.Add(noOverrideOpt);
-
-        string[] outputAliases = includeDeprecatedAliases ? ["-O", "-o", "-Output", "-output"] : ["-O", "-o"];
-        var outputOpt = new Option<string>(OUTPUT_ARG, outputAliases) {
-            Description = "Output mode: env|con|jcon|azdo[:VarName]|file[:FileName]|con-nf"
-        };
-        rc.Add(outputOpt);
-
-        string[] incrementAliases = includeDeprecatedAliases ? ["-I", "-i", "-Increment"] : ["-I", "-i"];
-        var incrementOpt = new Option<bool>(INCREMENT_ARG, incrementAliases) {
-            Description = "Performs a version increment before other operations"
-        };
-        rc.Add(incrementOpt);
-
-        string[] quickValueAliases = includeDeprecatedAliases ? ["-Q", "-QuickValue", "-q"] : ["-Q", "-q"];
-        var quickValueOpt = new Option<string>(QUICK_VALUE_ARG, quickValueAliases) {
-            Description = "Quick value parameter used by set/override/behaviour/prefix commands"
-        };
-        rc.Add(quickValueOpt);
-
-        string[] releaseAliases = includeDeprecatedAliases ? ["-R", "-Release"] : ["-R", "-r"];
-        var releaseOpt = new Option<string>(RELEASE_ARG, releaseAliases) {
-            Description = "Release name associated with this version"
-        };
-        rc.Add(releaseOpt);
-
-        string[] rootPathAliases = includeDeprecatedAliases ? ["-Root"] : [];
-        var rootPathOpt = new Option<string>(ROOT_ARG, rootPathAliases) {
-            Description = "Root directory from which to search for versionable files"
-        };
-        rc.Add(rootPathOpt);
-
-        string[] traceAliases = includeDeprecatedAliases ? ["-Trace"] : [];
-        var traceOpt = new Option<string>(TRACE_ARG, traceAliases) {
-            Description = "Trace level: info|verbose|off"
-        };
-        rc.Add(traceOpt);
-
-        string[] versionSourceAliases = includeDeprecatedAliases ? ["-V", "-v", "-VS", "-vs", "-VersionSource"] : ["-V", "-v"];
-        var versionSourceOpt = new Option<string>(VERSION_SOURCE_ARG, versionSourceAliases) {
-            Description = "Version store initialisation string"
-        };
-        rc.Add(versionSourceOpt);
-
-        string[] minMatchAliases = includeDeprecatedAliases ? ["-M", "-m", "-MinMatch"] : ["-M", "-m"];
-        var minMatchOpt = new Option<string>(MIN_MATCH_ARG, minMatchAliases) {
-            Description = "Semicolon-separated minmatch patterns for file update"
-        };
-        rc.Add(minMatchOpt);
 
         string[] digitGroupAliases = includeDeprecatedAliases ? ["-g"] : ["-g"];
         var digitGroupOpt = new Option<string>(DIGIT_GROUP_ARG, digitGroupAliases) {
@@ -215,11 +155,88 @@ public static class CommandLineParser {
         };
         rc.Add(digitGroupOpt);
 
+        string[] digitsAliases = includeDeprecatedAliases ? ["-D", "-d", "-Digits", "--Digits"] : ["-d"];
+        var digitsOpt = new Option<string>(DIGITS_ARG, digitsAliases) {
+            Description = "Semicolon-separated digit indices or * for all"
+        };
+        rc.Add(digitsOpt);
+
+        string[] dryRunAliases = includeDeprecatedAliases ? ["-DryRun", "--DryRun"] : [];
+        var dryRunOpt = new Option<bool>(DRY_RUN_ARG, dryRunAliases) {
+            Description = "Runs in output-only mode; no changes are persisted"
+        };
+        rc.Add(dryRunOpt);
+
+        var getMdHelpOpt = new Option<bool>(GET_MD_HELP_ARG) {
+            Description = "Writes the embedded docs.md file to the current working directory"
+        };
+        rc.Add(getMdHelpOpt);
+
+        string[] incrementAliases = includeDeprecatedAliases ? ["-I", "-i", "-Increment"] : ["-i"];
+        var incrementOpt = new Option<bool>(INCREMENT_ARG, incrementAliases) {
+            Description = "Performs a version increment before other operations"
+        };
+        rc.Add(incrementOpt);
+
+        string[] minMatchAliases = includeDeprecatedAliases ? ["-M", "-m", "-MinMatch", "--MinMatch"] : ["-m"];
+        var minMatchOpt = new Option<string>(MIN_MATCH_ARG, minMatchAliases) {
+            Description = "Semicolon-separated minmatch patterns for file update"
+        };
+        rc.Add(minMatchOpt);
+
+        string[] noErrorAliases = includeDeprecatedAliases ? ["-z", "-Z", "-NoError", "--NoError"] : ["-z"];
+        var noErrorOpt = new Option<bool>(NO_ERROR_ARG, noErrorAliases) {
+            Description = "Forces zero exit code on otherwise failing executions"
+        };
+        rc.Add(noErrorOpt);
+
+        string[] noOverrideAliases = includeDeprecatedAliases ? ["-NoOverride", "--NoOverride", "-NO"] : [];
+        var noOverrideOpt = new Option<bool>(NO_OVERRIDE_ARG, noOverrideAliases) {
+            Description = "Ignores any saved pending-increment override"
+        };
+        rc.Add(noOverrideOpt);
+
+        string[] outputAliases = includeDeprecatedAliases ? ["-O", "-o", "-Output", "-output"] : ["-o"];
+        var outputOpt = new Option<string>(OUTPUT_ARG, outputAliases) {
+            Description = "Output mode: env|con|jcon|azdo[:VarName]|file[:FileName]|con-nf"
+        };
+        rc.Add(outputOpt);
+
         string[] preReleaseAliases = includeDeprecatedAliases ? ["-p"] : ["-p"];
         var preReleaseOpt = new Option<bool>(PRE_RELEASE_ARG, preReleaseAliases) {
             Description = "Shortcut for pre-release workflows (targets pre-release digit group)"
         };
         rc.Add(preReleaseOpt);
+
+        string[] quickValueAliases = includeDeprecatedAliases ? ["-Q", "-QuickValue", "-q"] : ["-q"];
+        var quickValueOpt = new Option<string>(QUICK_VALUE_ARG, quickValueAliases) {
+            Description = "Quick value parameter used by set/override/behaviour/prefix commands"
+        };
+        rc.Add(quickValueOpt);
+
+        string[] releaseAliases = includeDeprecatedAliases ? ["-R", "-r", "-Release", "--Release"] : ["-r"];
+        var releaseOpt = new Option<string>(RELEASE_ARG, releaseAliases) {
+            Description = "Release name associated with this version"
+        };
+        rc.Add(releaseOpt);
+
+        string[] rootPathAliases = includeDeprecatedAliases ? ["-Root", "--Root"] : [];
+        var rootPathOpt = new Option<string>(ROOT_ARG, rootPathAliases) {
+            Description = "Root directory from which to search for versionable files"
+        };
+        rc.Add(rootPathOpt);
+
+        string[] traceAliases = includeDeprecatedAliases ? ["-Trace", "--Trace"] : [];
+        var traceOpt = new Option<string>(TRACE_ARG, traceAliases) {
+            Description = "Trace level: info|verbose|off"
+        };
+        rc.Add(traceOpt);
+
+        string[] versionSourceAliases = includeDeprecatedAliases ? ["-V", "-v", "-VS", "-vs", "-VersionSource", "--VersionSource"] : ["-v"];
+        var versionSourceOpt = new Option<string>(VERSION_SOURCE_ARG, versionSourceAliases) {
+            Description = "Version store initialisation string"
+        };
+        rc.Add(versionSourceOpt);
 
         return rc;
     }
@@ -227,9 +244,10 @@ public static class CommandLineParser {
     private static void EmitDeprecatedAliasWarnings(string[] args) {
         var seenAliases = new HashSet<string>(StringComparer.Ordinal);
         foreach (string arg in args) {
-            string extractedToken = ExtractOptionToken(arg).ToLowerInvariant();
+            string extractedToken = ExtractOptionToken(arg);
 
-            if (!deprecatedAliasMapLower.TryGetValue(extractedToken, out string? canonicalAlias)) {
+            if (!deprecatedAliasMapUpper.TryGetValue(extractedToken, out string? canonicalAlias) &&
+                !deprecatedAliasMapLower.TryGetValue(extractedToken.ToLowerInvariant(), out canonicalAlias)) {
                 continue;
             }
 
