@@ -1,12 +1,12 @@
-﻿namespace Versonify;
-
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+
+namespace Versonify;
+
 using static Versonify.Clargs;
 
 public static class CommandLineParser {
-
     private static readonly IReadOnlyDictionary<string, string> deprecatedAliasMapLower = new Dictionary<string, string>(StringComparer.Ordinal) {
         ["-command"] = COMMAND_ARG,
         ["-debug"] = DEBUG_ARG,
@@ -23,6 +23,7 @@ public static class CommandLineParser {
         ["-versionsource"] = VERSION_SOURCE_ARG,
         ["-vs"] = VERSION_SOURCE_ARG,
         ["-minmatch"] = MIN_MATCH_ARG,
+        ["-mm"] = MIN_MATCH_ARG,
     };
 
     private static readonly IReadOnlyDictionary<string, string> deprecatedAliasMapUpper = new Dictionary<string, string>(StringComparer.Ordinal) {
@@ -40,6 +41,8 @@ public static class CommandLineParser {
         ["--Trace"] = TRACE_ARG,
         ["--VersionSource"] = VERSION_SOURCE_ARG,
         ["--MinMatch"] = MIN_MATCH_ARG,
+        ["-MM"] = MIN_MATCH_ARG,
+        ["--MM"] = MIN_MATCH_ARG,
     };
 
     public static void DisplayHelp() {
@@ -97,6 +100,7 @@ public static class CommandLineParser {
         var minMatchOpt = FindOption<string>(rootCommand, MIN_MATCH_ARG);
         var digitGroupOpt = FindOption<string>(rootCommand, DIGIT_GROUP_ARG);
         var preReleaseOpt = FindOption<bool>(rootCommand, PRE_RELEASE_ARG);
+        var flushOpt = FindOption<bool>(rootCommand, FLUSH_ARG);
 
         string? cmdFromPositional = parseResult.GetValue(commandArg!);
         string? cmdFromOption = parseResult.GetValue(commandOpt!);
@@ -104,6 +108,7 @@ public static class CommandLineParser {
 
         result.Debug = parseResult.GetValue(debugOpt!);
         result.DryRunOnly = parseResult.GetValue(dryRunOpt!);
+        result.Flush = parseResult.GetValue(flushOpt!);
         result.ReturnZero = parseResult.GetValue(noErrorOpt!);
         result.GetMdHelp = parseResult.GetValue(getMdHelpOpt!);
         result.NoOverride = parseResult.GetValue(noOverrideOpt!);
@@ -171,6 +176,11 @@ public static class CommandLineParser {
         };
         rc.Add(dryRunOpt);
 
+        var flushOpt = new Option<bool>(FLUSH_ARG) {
+            Description = "Forces a flush of trace listeners before exit. Do not use unless diagnosing faults."
+        };
+        rc.Add(flushOpt);
+
         var getMdHelpOpt = new Option<bool>(GET_MD_HELP_ARG) {
             Description = "Writes the embedded docs.md file to the current working directory"
         };
@@ -182,7 +192,7 @@ public static class CommandLineParser {
         };
         rc.Add(incrementOpt);
 
-        string[] minMatchAliases = includeDeprecatedAliases ? ["-M", "-m", "-MinMatch", "--MinMatch"] : ["-m"];
+        string[] minMatchAliases = includeDeprecatedAliases ? ["-M", "-m", "-MinMatch", "--MinMatch", "-MM", "-mm"] : ["-m"];
         var minMatchOpt = new Option<string>(MIN_MATCH_ARG, minMatchAliases) {
             Description = "Semicolon-separated minmatch patterns for file update"
         };

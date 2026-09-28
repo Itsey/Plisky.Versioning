@@ -1,17 +1,15 @@
-﻿namespace Versonify;
-
 using System;
 using System.IO;
-using System.Linq;
 using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Versioning;
 
+namespace Versonify;
+
 public class VersonifyOptions {
     protected Bilge b = new Bilge("Options");
-
-    private OutputPossibilities outcache = OutputPossibilities.None;
     private string outOpts = string.Empty;
+
     private string? pathPassed;
 
     public VersonifyOptions() {
@@ -25,6 +23,7 @@ public class VersonifyOptions {
     public string? DigitGroup { get; set; }
     public string[]? DigitManipulations { get; set; }
     public bool DryRunOnly { get; set; }
+    public bool Flush { get; set; }
     public bool GetMdHelp { get; set; }
     public DigitIncrementBehaviour IncrementBehaviour { get; set; }
     public bool NoOverride { get; set; }
@@ -38,11 +37,7 @@ public class VersonifyOptions {
         }
     }
 
-    public OutputPossibilities OutputsActive {
-        get {
-            return outcache;
-        }
-    }
+    public OutputPossibilities OutputsActive { get; private set; } = OutputPossibilities.None;
 
     public bool PerformIncrement { get; set; }
     public bool PreRelease { get; set; }
@@ -112,9 +107,7 @@ public class VersonifyOptions {
 #endif
             return Path.GetFullPath(pathPassed);
         }
-        set {
-            pathPassed = value;
-        }
+        set { pathPassed = value; }
     }
 
     public string? Trace { get; set; }
@@ -149,29 +142,29 @@ public class VersonifyOptions {
         outOpts = outOpts.Trim().ToLowerInvariant();
         if (outOpts.EndsWith("-nf")) {
             outOpts = outOpts.Substring(0, outOpts.Length - 3);
-            outcache = OutputPossibilities.NukeFusion;
+            OutputsActive = OutputPossibilities.NukeFusion;
         } else {
-            outcache = OutputPossibilities.None;
+            OutputsActive = OutputPossibilities.None;
         }
 
         if (string.IsNullOrEmpty(outOpts)) {
             b.Verbose.Log("No output options specified, defaulting to none.");
-            outcache |= OutputPossibilities.None;
+            OutputsActive |= OutputPossibilities.None;
             return;
         }
 
         if (outOpts == "jcon") {
-            outcache = OutputPossibilities.Json | OutputPossibilities.Console;
+            OutputsActive = OutputPossibilities.Json | OutputPossibilities.Console;
             return;
         }
 
         if (outOpts == "env") {
-            outcache |= OutputPossibilities.Environment;
+            OutputsActive |= OutputPossibilities.Environment;
             return;
         }
 
         if (outOpts.StartsWith("file")) {
-            outcache |= OutputPossibilities.File;
+            OutputsActive |= OutputPossibilities.File;
             if (outOpts.Contains(':')) {
                 int markerPos = outOpts.IndexOf(':') + 1;
                 if (markerPos < outOpts.Length) {
@@ -184,7 +177,7 @@ public class VersonifyOptions {
         if (outOpts.StartsWith("vsts") || outOpts.StartsWith("azdo")) {
             b.Verbose.Log("VSTS/AzDo output options specified.");
 
-            outcache |= OutputPossibilities.Console;
+            OutputsActive |= OutputPossibilities.Console;
 
             string varToReplace = "CodeVersionNumber";
             string outputTemplate = "##vso[task.setvariable variable=XXVARIABLENAMEXX;isOutput=true]%VER%";
@@ -203,7 +196,7 @@ public class VersonifyOptions {
         }
 
         if (outOpts.StartsWith("con")) {
-            outcache |= OutputPossibilities.Console;
+            OutputsActive |= OutputPossibilities.Console;
             ConsoleTemplate = "%VER%";
             return;
         }

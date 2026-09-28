@@ -518,7 +518,9 @@ internal static class Program {
             }
 
             b.Verbose.Log("Versonify - Exit.");
-            await b.Flush();
+            if (options.Flush) {
+                await b.Flush();
+            }
 
             if (options.ReturnZero) {
                 outputContent.Launch(new SimpleMessage($"ReturnZero option specified:  ExitCode: {result.ExitCode} suppressed."));

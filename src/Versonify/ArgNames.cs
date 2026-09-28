@@ -1,7 +1,7 @@
-namespace Versonify;
-
 using System;
 using System.Collections.Generic;
+
+namespace Versonify;
 
 public enum ArgNames {
     Unknown,
@@ -22,6 +22,7 @@ public enum ArgNames {
     MinMatch,
     DigitGroup,
     PreRelease,
+    Flush,
     Help
 }
 
@@ -36,6 +37,7 @@ public static class Clargs {
     public const string DIGIT_GROUP_ARG = "--digit-group";
     public const string DIGITS_ARG = "--digits";
     public const string DRY_RUN_ARG = "--dry-run";
+    public const string FLUSH_ARG = "--flush";
     public const string GET_MD_HELP_ARG = "--get-md-help";
     public const string HELP_ARG = "--help";
     public const string INCREMENT_ARG = "--increment";
@@ -99,6 +101,7 @@ public static class Clargs {
         ArgNames.MinMatch => MIN_MATCH_ARG,
         ArgNames.DigitGroup => DIGIT_GROUP_ARG,
         ArgNames.PreRelease => PRE_RELEASE_ARG,
+        ArgNames.Flush => FLUSH_ARG,
         ArgNames.Help => HELP_ARG,
         ArgNames.Unknown => string.Empty,
         _ => throw new ArgumentOutOfRangeException(nameof(argName), argName, null)

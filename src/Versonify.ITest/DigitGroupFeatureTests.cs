@@ -6,15 +6,24 @@ using Shouldly;
 namespace Versonify.ITest;
 
 public class DigitGroupFeatureTests : IDisposable {
+    private readonly List<string> tempDirectories = [];
     protected Bilge b = new("Versonify-ITest");
     protected TestHelper sut;
     protected UnitTestHelper uth;
-    private readonly List<string> tempDirectories = [];
 
     public DigitGroupFeatureTests() {
         b.Info.Flow();
         uth = new UnitTestHelper();
         sut = new TestHelper(uth);
+    }
+
+    public void Dispose() {
+        foreach (string tempDirectory in tempDirectories) {
+            if (Directory.Exists(tempDirectory)) {
+                Directory.Delete(tempDirectory, true);
+            }
+        }
+        uth.ClearUpTestFiles();
     }
 
     [Fact]
@@ -25,15 +34,6 @@ public class DigitGroupFeatureTests : IDisposable {
         var output = await sut.ExecuteVersonify($"passive -V={store} -g=prerelease --pre-release");
         output.StdOut.ShouldContain("Error >> Both --digit-group and --pre-release cannot be specified together.");
         output.ReturnCode.ShouldNotBe(0);
-    }
-
-    public void Dispose() {
-        foreach (string tempDirectory in tempDirectories) {
-            if (Directory.Exists(tempDirectory)) {
-                Directory.Delete(tempDirectory, true);
-            }
-        }
-        uth.ClearUpTestFiles();
     }
 
     [Fact]

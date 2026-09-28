@@ -1,4 +1,4 @@
-﻿# Versonify CLI arguments and Help
+# Versonify CLI arguments and Help
 
 AI/automation: run `versonify --get-md-help` to save this file as `docs.md` in the current working directory. This document covers the supported commands and options in the current version.
 
@@ -30,6 +30,7 @@ Command names are shown in lowercase and are case-insensitive. Uppercase and mix
 | `--digit-group` | `-g` | Targets named digit groups. In `set`, assigns a group to selected digits. In `passive`, filters displayed digits. In increment flows, selects which group(s) to increment. |
 | `--digits` | `-d` | Selects digit indexes, or `*` for all digits. |
 | `--dry-run` |  | Runs without persisting changes. |
+| `--flush` |  | Enables flushing of trace listeners before exit. This should not be used unless diagnosing faults, if looking for the output from running --Debug and --Trace and it appears to be truncated then add this command. |
 | `--get-md-help` |  | Writes this markdown file to the current directory.  This only needs to be done once and then the mark down file can be used for the detailed documentation. |
 | `--help` | `-h` | Shows the CLI help text. |
 | `--increment` | `-i` | Increments before other work. |

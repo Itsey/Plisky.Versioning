@@ -5,7 +5,9 @@
   - ✅ Feature - Added digit-group targeting and the `--pre-release` shortcut for passive reads, updates, and queued version changes.
   - ✅ Feature - Added the `get` command to inspect digit values, behaviours, prefixes, queued overrides, and groups in plain text or `jcon` output.
   - ✅ Feature - Added structured JSON console output with explicit message categories, including machine-readable results, warnings, validation failures, and errors.
-  - ✅ Feature - Added the built-in `--version` command and embedded Markdown help via `--get-md-help`.
+  - ✅ Feature - Added the built-in `--version` command.
+  - ✅ Feature - Added embedded Markdown help via `--get-md-help` designed to support AI Agents.
+  - ✅ Feature - Added --flush command, an edge case switch if trace and debug output is getting truncated, not expected to be needed.
   - ✅ Feature - Improved command-line parsing and validation, including canonical long options and deprecation handling for legacy aliases.
   - ✅ Feature - Added manual CLI prompt coverage and expanded integration tests for grouped digits, output modes, and validation scenarios.
   - 🐞 Fix - Corrected version-number comparison so a higher leading digit is not outweighed by later digits.

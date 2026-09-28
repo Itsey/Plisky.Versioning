@@ -1,4 +1,4 @@
-﻿using Plisky.Diagnostics;
+using Plisky.Diagnostics;
 using Plisky.Test;
 using Shouldly;
 
@@ -14,6 +14,10 @@ public class CommandLineArgumentCoverageTests : IDisposable {
 
         uth = new UnitTestHelper();
         th = new TestHelper(uth);
+    }
+
+    public void Dispose() {
+        uth.ClearUpTestFiles();
     }
 
     [Fact(Skip = "Deprecated alias support kept till vnext - LFY-70.")]
@@ -73,10 +77,6 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         output.StdOut.ShouldContain("[0]:Fixed(0)");
         output.StdOut.ShouldContain("[7]:ReleaseName(8)");
         output.ReturnCode.ShouldBe(0);
-    }
-
-    public void Dispose() {
-        uth.ClearUpTestFiles();
     }
 
     [Fact]
@@ -287,6 +287,18 @@ public class CommandLineArgumentCoverageTests : IDisposable {
         var output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath}");
         output.StdOut.ShouldContain("Loaded [");
         output.ReturnCode.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Flush_argument_when_specified_works() {
+        b.Info.Flow();
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
+        string versionStorePath = uth.GetTestDataFile(resourceName);
+
+        var output = await th.ExecuteVersonify($"passive -VersionSource={versionStorePath} --flush", appendDebug: false);
+
+        output.ReturnCode.ShouldBe(0);
+        output.StdOut.ShouldContain("Loaded [");
     }
 
     private static string CreateTemporaryDirectory() {

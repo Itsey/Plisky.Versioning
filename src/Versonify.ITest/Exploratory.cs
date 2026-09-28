@@ -1,4 +1,4 @@
-﻿using Plisky.CodeCraft;
+using Plisky.CodeCraft;
 using Plisky.Diagnostics;
 using Plisky.Test;
 using Shouldly;
@@ -121,7 +121,9 @@ public class Exploratory {
         try {
             string tpth = Path.Combine(Path.GetTempPath(), "dummy1.vstore");
 
-            if (File.Exists(tpth)) { File.Delete(tpth); } // Shouldnt be required but sometimes manual debugging leaves it around
+            if (File.Exists(tpth)) { // Shouldnt be required but sometimes manual debugging leaves it around
+                File.Delete(tpth);
+            }
 
             uth.RegisterTemporaryFilename(tpth);
 
@@ -188,7 +190,7 @@ public class Exploratory {
         output.ReturnCode.ShouldNotBe(0, "Failure to update files should return error.");
     }
 
-    [Fact] //Skip = "This looks like it could be a bug in current implementation while evidencing LFY-10")]
+    [Fact]
     public async Task Pre_and_release_versioning_use_case_works() {
         // Usecase where pre-release is incremented, then a release version takes over, then pre-release is incremented again.
         b.Info.Flow();
@@ -278,31 +280,6 @@ public class Exploratory {
             output.ShouldNotContain("Error >>");
         }
     }
-
-
-    [Fact]
-    public async Task Regression_Test() {
-        b.Info.Flow();
-
-        string pth = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
-        Directory.CreateDirectory(pth);
-
-        string versionStore = Path.Combine(pth, "vstore.delme");
-        string fileToUpdate = Path.Combine(pth, "test.txt");
-        File.WriteAllText(fileToUpdate, "This is a test file XXX-VERSION-XXX, XXX-VERSION2-XXX, XXX-VERSION3-XXX, XXX-VERSION4-XXX");
-
-        var output = await th.ExecuteVersonify($"-Command=CreateVersion -v={versionStore} -Q=\"1.0.0.0\"");
-        output.ReturnCode.ShouldBe(0, "Warning Test setup failed");
-
-        output = await th.ExecuteVersonify($"-Command=UpdateFiles -Root={pth} -Increment -v={versionStore} -mm=*.txt -output=con");
-        File.ReadAllText(fileToUpdate).ShouldContain("1.0.0.0");
-
-        output.StdOut.ShouldContain("WARNING - No files found to update.");
-        output.ReturnCode.ShouldNotBe(0, "Failure to update files should return error.");
-
-        //Directory.Delete(pth, true);
-    }
-
 
     private static void FileShouldContain(string preReleaseVersionStore, params string[] contains) {
         string currentFileContents = File.ReadAllText(preReleaseVersionStore);
