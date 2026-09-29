@@ -140,7 +140,16 @@ public static class CommandLineParser {
         };
 
         var commandArg = new Argument<string>("command") {
-            Description = "Command to execute: createversion|override|updatefiles|passive|behaviour|get|set|prefix",
+            Description =
+                "Command to execute: createversion|override|updatefiles|passive|behaviour|get|set|prefix:\n" +
+                "  createversion  Creates a version store at the specified version source (local, UNC, or Nexus path).\n" +
+                "  override       Queues a version value or pattern to use on the next increment.\n" +
+                "  updatefiles    Increments the version and updates files matching the configured patterns.\n" +
+                "  passive        Displays the current version without changing it.\n" +
+                "  behaviour      Reads or changes how version digits behave.\n" +
+                "  get            Displays selected digit values and related settings.\n" +
+                "  set            Sets a digit value or release name.\n" +
+                "  prefix         Sets a prefix for selected version digits.",
             Arity = ArgumentArity.ZeroOrOne,
             DefaultValueFactory = _ => null!
         };

@@ -28,6 +28,20 @@ public class DisplayHelpTests {
     }
 
     [Fact]
+    public void DisplayHelp_explains_what_each_command_does() {
+        string output = CaptureDisplayHelp();
+
+        output.ShouldContain("createversion  Creates a version store");
+        output.ShouldContain("override       Queues a version value or pattern");
+        output.ShouldContain("updatefiles    Increments the version and updates files");
+        output.ShouldContain("passive        Displays the current version without changing it");
+        output.ShouldContain("behaviour      Reads or changes how version digits behave");
+        output.ShouldContain("get            Displays selected digit values");
+        output.ShouldContain("set            Sets a digit value or release name");
+        output.ShouldContain("prefix         Sets a prefix for selected version digits");
+    }
+
+    [Fact]
     public void DisplayHelp_lists_supported_short_aliases() {
         string output = CaptureDisplayHelp();
 
