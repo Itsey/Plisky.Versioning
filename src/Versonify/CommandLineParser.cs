@@ -10,10 +10,14 @@ public static class CommandLineParser {
     private static readonly IReadOnlyDictionary<string, string> deprecatedAliasMapLower = new Dictionary<string, string>(StringComparer.Ordinal) {
         ["-command"] = COMMAND_ARG,
         ["-debug"] = DEBUG_ARG,
-        ["-dryrun"] = DRY_RUN_ARG,
         ["-digits"] = DIGITS_ARG,
+        ["-dg"] = DIGITS_ARG,
+        ["-dryrun"] = DRY_RUN_ARG,
+        ["-minmatch"] = MIN_MATCH_ARG,
+        ["-mm"] = MIN_MATCH_ARG,
         ["-noerror"] = NO_ERROR_ARG,
         ["-nooverride"] = NO_OVERRIDE_ARG,
+        ["-no"] = NO_OVERRIDE_ARG,
         ["-output"] = OUTPUT_ARG,
         ["-increment"] = INCREMENT_ARG,
         ["-quickvalue"] = QUICK_VALUE_ARG,
@@ -22,8 +26,6 @@ public static class CommandLineParser {
         ["-trace"] = TRACE_ARG,
         ["-versionsource"] = VERSION_SOURCE_ARG,
         ["-vs"] = VERSION_SOURCE_ARG,
-        ["-minmatch"] = MIN_MATCH_ARG,
-        ["-mm"] = MIN_MATCH_ARG,
     };
 
     private static readonly IReadOnlyDictionary<string, string> deprecatedAliasMapUpper = new Dictionary<string, string>(StringComparer.Ordinal) {
@@ -40,9 +42,7 @@ public static class CommandLineParser {
         ["--Root"] = ROOT_ARG,
         ["--Trace"] = TRACE_ARG,
         ["--VersionSource"] = VERSION_SOURCE_ARG,
-        ["--MinMatch"] = MIN_MATCH_ARG,
-        ["-MM"] = MIN_MATCH_ARG,
-        ["--MM"] = MIN_MATCH_ARG,
+        ["--MinMatch"] = MIN_MATCH_ARG
     };
 
     public static void DisplayHelp() {
@@ -164,7 +164,7 @@ public static class CommandLineParser {
         };
         rc.Add(digitGroupOpt);
 
-        string[] digitsAliases = includeDeprecatedAliases ? ["-D", "-d", "-Digits", "--Digits"] : ["-d"];
+        string[] digitsAliases = includeDeprecatedAliases ? ["-D", "-d", "-Digits", "--Digits", "-DG"] : ["-d"];
         var digitsOpt = new Option<string>(DIGITS_ARG, digitsAliases) {
             Description = "Semicolon-separated digit indices or * for all"
         };
@@ -186,13 +186,13 @@ public static class CommandLineParser {
         };
         rc.Add(getMdHelpOpt);
 
-        string[] incrementAliases = includeDeprecatedAliases ? ["-I", "-i", "-Increment"] : ["-i"];
+        string[] incrementAliases = includeDeprecatedAliases ? ["-I", "-i", "-Increment", "--Increment"] : ["-i"];
         var incrementOpt = new Option<bool>(INCREMENT_ARG, incrementAliases) {
             Description = "Performs a version increment before other operations"
         };
         rc.Add(incrementOpt);
 
-        string[] minMatchAliases = includeDeprecatedAliases ? ["-M", "-m", "-MinMatch", "--MinMatch", "-MM", "-mm"] : ["-m"];
+        string[] minMatchAliases = includeDeprecatedAliases ? ["-M", "-m", "-MM", "-mm", "-MinMatch", "--MinMatch"] : ["-m"];
         var minMatchOpt = new Option<string>(MIN_MATCH_ARG, minMatchAliases) {
             Description = "Semicolon-separated minmatch patterns for file update"
         };
@@ -210,7 +210,7 @@ public static class CommandLineParser {
         };
         rc.Add(noOverrideOpt);
 
-        string[] outputAliases = includeDeprecatedAliases ? ["-O", "-o", "-Output", "-output"] : ["-o"];
+        string[] outputAliases = includeDeprecatedAliases ? ["-O", "-o", "-Output", "-output", "--Output"] : ["-o"];
         var outputOpt = new Option<string>(OUTPUT_ARG, outputAliases) {
             Description = "Output mode: env|con|jcon|azdo[:VarName]|file[:FileName]|con-nf"
         };
@@ -222,7 +222,7 @@ public static class CommandLineParser {
         };
         rc.Add(preReleaseOpt);
 
-        string[] quickValueAliases = includeDeprecatedAliases ? ["-Q", "-QuickValue", "-q"] : ["-q"];
+        string[] quickValueAliases = includeDeprecatedAliases ? ["-Q", "-q", "-QuickValue", "--QuickValue"] : ["-q"];
         var quickValueOpt = new Option<string>(QUICK_VALUE_ARG, quickValueAliases) {
             Description = "Quick value parameter used by set/override/behaviour/prefix commands"
         };

@@ -11,7 +11,6 @@
   - ✅ Feature - Improved command-line parsing and validation, including canonical long options and deprecation handling for legacy aliases.
   - ✅ Feature - Added manual CLI prompt coverage and expanded integration tests for grouped digits, output modes, and validation scenarios.
   - 🐞 Fix - Corrected version-number comparison so a higher leading digit is not outweighed by later digits.
-  - 💥 Breaking Change - Removed support for the legacy `-DG`, `-MM`, and `-NO` command-line aliases. Use `--digits`/`-D`, `--min-match`/`-M`, and `--no-override` instead. Other legacy aliases remain temporarily supported with deprecation warnings.
   - 🔧 Maintenance - Refactored the CLI and versioning output flow for nullable reference types, C# 12, and clearer build/test automation.
 
 

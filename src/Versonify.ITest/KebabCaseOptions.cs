@@ -56,6 +56,20 @@ public class KebabCaseOptions : IDisposable {
     [InlineData("-VersionSource", Clargs.VERSION_SOURCE_ARG)]
     [InlineData("-MinMatch", Clargs.MIN_MATCH_ARG)]
     [InlineData("-output", Clargs.OUTPUT_ARG)]
+    [InlineData("--Command", Clargs.COMMAND_ARG)]
+    [InlineData("--Debug", Clargs.DEBUG_ARG)]
+    [InlineData("--DryRun", Clargs.DRY_RUN_ARG)]
+    [InlineData("--Digits", Clargs.DIGITS_ARG)]
+    [InlineData("--NoError", Clargs.NO_ERROR_ARG)]
+    [InlineData("--NoOverride", Clargs.NO_OVERRIDE_ARG)]
+    [InlineData("--Output", Clargs.OUTPUT_ARG)]
+    [InlineData("--Increment", Clargs.INCREMENT_ARG)]
+    [InlineData("--QuickValue", Clargs.QUICK_VALUE_ARG)]
+    [InlineData("--Release", Clargs.RELEASE_ARG)]
+    [InlineData("--Root", Clargs.ROOT_ARG)]
+    [InlineData("--Trace", Clargs.TRACE_ARG)]
+    [InlineData("--VersionSource", Clargs.VERSION_SOURCE_ARG)]
+    [InlineData("--MinMatch", Clargs.MIN_MATCH_ARG)]
     public async Task Deprecated_long_aliases_emit_warning_and_remain_functional(string deprecatedAlias, string canonicalAlias) {
         string workingDirectory = CreateTemporaryDirectory();
         string versionStorePath = await CreateVersionStore(workingDirectory, "1.0.0");
@@ -64,7 +78,7 @@ public class KebabCaseOptions : IDisposable {
 
         VersonifyExecutionResult result;
 
-        if (deprecatedAlias.Equals("-NoOverride", StringComparison.Ordinal)) {
+        if (deprecatedAlias.Equals("-NoOverride", StringComparison.Ordinal) || deprecatedAlias.Equals("--NoOverride", StringComparison.Ordinal)) {
             // The -NoOverride alias is a special case that requires a prior override command to be executed to avoid an error.
             result = await sut.ExecuteVersonifyWithStreams($"override --version-source={versionStorePath} --quick-value=9.9.9", appendDebug: false);
             result.ExitCode.ShouldBe(0);
@@ -193,8 +207,10 @@ public class KebabCaseOptions : IDisposable {
         return result;
     }
 
-    private string BuildArgsForAlias(string alias, string versionStorePath, string workingDirectory, string projectFilePath) {
-        return alias switch {
+    private static string BuildArgsForAlias(string alias, string versionStorePath, string workingDirectory, string projectFilePath) {
+        string lookupKey = alias.StartsWith("--", StringComparison.Ordinal) ? alias[1..] : alias;
+
+        return lookupKey switch {
             "-Command" => $"{alias}=passive --version-source={versionStorePath}",
             "-Debug" => $"passive --version-source={versionStorePath} {alias}",
             "-DryRun" => $"set --version-source={versionStorePath} --digits=0 --quick-value=9 {alias}",
