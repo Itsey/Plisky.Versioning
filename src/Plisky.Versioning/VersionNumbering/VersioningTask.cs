@@ -1,39 +1,38 @@
-﻿namespace Plisky.CodeCraft;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using GlobExpressions;
 using Plisky.Diagnostics;
 
+namespace Plisky.CodeCraft;
+
 public class VersioningTask {
+    public delegate void LogEventHandler(object sender, LogEventArgs e);
+
+    private readonly Bilge b = new();
     protected List<string> messageLog = new();
     protected Dictionary<string, List<FileUpdateType>> pendingUpdates = new();
+    private string? persistanceValue;
     protected VersionStorage? storage;
     protected CompleteVersion? ver;
-    private readonly Bilge b = new();
-    private string? persistanceValue;
 
     public VersioningTask() {
     }
 
-    public delegate void LogEventHandler(object sender, LogEventArgs e);
+    public string? BaseSearchDir { get; set; }
+
+    public string[] LogMessages {
+        get { return messageLog.ToArray(); }
+    }
+
+    public string? VersionString { get; set; }
 
 #pragma warning disable CS0067 // Event is never used
 
     public event LogEventHandler? Logger;
 
 #pragma warning restore CS0067
-    public string? BaseSearchDir { get; set; }
-
-    public string[] LogMessages {
-        get {
-            return messageLog.ToArray();
-        }
-    }
-
-    public string? VersionString { get; set; }
 
     public void AddUpdateType(string minmatchPattern, FileUpdateType updateToPerform) {
         b.Verbose.Log("Adding Update Type " + minmatchPattern);
@@ -86,37 +85,9 @@ public class VersioningTask {
         VersionString = ver.GetVersionString();
     }
 
-    public void SetAllVersioningItems(string verItemsSimple) {
-        b.Info.Log("SetAllVersioningItems");
-        if (verItemsSimple.Contains(Environment.NewLine)) {
-            // The TFS build agent uses \n not Environment.Newline for its line separator, however unit tests use Environment.Newline
-            // so replacing them with \n to make the two consistent.
-            verItemsSimple = verItemsSimple.Replace(Environment.NewLine, "\n");
-        }
-        string[] allLines = verItemsSimple.Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
-        foreach (string ln in allLines) {
-            string[] parts = ln.Split('!');
-            if (parts.Length != 2) {
-                throw new InvalidOperationException($"The versioning item string was in the wrong format [{ln}] ");
-            }
-            var ft = GetFileTypeFromString(parts[1]);
-            AddUpdateType(parts[0], ft);
-        }
-    }
-
     public void SetPersistanceValue(string pv) {
         persistanceValue = pv;
         storage = VersionStorage.CreateFromInitialisation(pv);
-    }
-
-    private FileUpdateType GetFileTypeFromString(string v) {
-        return v switch {
-            "ASSEMBLY" => FileUpdateType.NetAssembly,
-            "INFO" => FileUpdateType.NetInformational,
-            "FILE" => FileUpdateType.NetFile,
-            "WIX" => FileUpdateType.Wix,
-            _ => throw new InvalidOperationException($"The versioning string {v} is not valid."),
-        };
     }
 
     private void LoadVersioningComponent() {
