@@ -134,6 +134,14 @@
           "type": "string",
           "description": "Full version number"
         },
+        "IsMajor": {
+          "type": "boolean",
+          "description": "Increment the major version digit instead of patch"
+        },
+        "IsMinor": {
+          "type": "boolean",
+          "description": "Increment the minor version digit instead of patch"
+        },
         "PreRelease": {
           "type": "boolean",
           "description": "PreRelease will only release a pre-release version of the package.  Uses pre-release versioning"

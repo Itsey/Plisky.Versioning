@@ -38,6 +38,12 @@ public partial class Build : NukeBuild {
     [Parameter("PreRelease will only release a pre-release version of the package.  Uses pre-release versioning.")]
     private readonly bool PreRelease = true;
 
+    [Parameter("Increment the major version digit instead of patch.")]
+    private readonly bool IsMajor = false;
+
+    [Parameter("Increment the minor version digit instead of patch.")]
+    private readonly bool IsMinor = false;
+
     [Parameter("Specifies a quick version command for the versioning quick step", Name = "QuickVersion")]
     private readonly string QuickVersion = "";
 
@@ -49,7 +55,7 @@ public partial class Build : NukeBuild {
 
     private AnalysisMode analysisMode;
 
-    private AbsolutePath? ArtifactsDirectory;
+    private readonly AbsolutePath? ArtifactsDirectory;
 
     [Parameter("Full version number")]
     private string FullVersionNumber = string.Empty;
@@ -81,8 +87,10 @@ public partial class Build : NukeBuild {
                Bilge.Alert.Online("Versonify-Build");
                b.Info.Log("Versonify Build Process Initialised, preparing Initialisation section.");
 
+               string versioningFileBase = @"%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.yellowwater-365987e0.uksouth.azurecontainerapps.io/repository/plisky/vstore/";
                string versioningFilePre = "versonify-pre.vstore";
                string versioningFileRelease = "versonify.vstore";
+
 #if false
                // Debugging vstores used to debug versioning issues without messing with the main sequence.
                versioningFilePre = "versonify-version-pre.store";
@@ -95,8 +103,8 @@ public partial class Build : NukeBuild {
                    MollyPrimaryToken = "%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.yellowwater-365987e0.uksouth.azurecontainerapps.io/repository/plisky/primaryfiles/XXVERSIONNAMEXX/",
                    MollyRulesToken = "%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.yellowwater-365987e0.uksouth.azurecontainerapps.io/repository/plisky/molly/XXVERSIONNAMEXX/defaultrules.mollyset",
                    MollyRulesVersion = "latest",
-                   VersioningPersistanceToken = @"%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.yellowwater-365987e0.uksouth.azurecontainerapps.io/repository/plisky/vstore/" + versioningFilePre,
-                   VersioningPersistanceTokenRelease = @"%NEXUSCONFIG%[R::plisky[L::https://pliskynexus.yellowwater-365987e0.uksouth.azurecontainerapps.io/repository/plisky/vstore/" + versioningFileRelease,
+                   VersioningPersistanceToken = versioningFileBase + versioningFilePre,
+                   VersioningPersistanceTokenRelease = versioningFileBase + versioningFileRelease,
                    ArtifactsDirectory = Path.Combine(Path.GetTempPath(), "_build\\vsfbld\\"),
                    DependenciesDirectory = Solution.Projects.First(x => x.Name == "_Dependencies").Directory,
                    ActiveVersionNumber = "Not Set"
@@ -144,8 +152,6 @@ public partial class Build : NukeBuild {
             b.Flush().Wait();
             System.Threading.Thread.Sleep(10);
         });
-
-    private AbsolutePath SourceDirectory => RootDirectory / "src";
 
     public static int Main() => Execute<Build>(x => x.Compile);
 

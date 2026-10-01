@@ -1,12 +1,15 @@
 ﻿using System;
-using System.Linq;
 using Nuke.Common;
+using Nuke.Common.IO;
 using Nuke.Common.Tools.DotNet;
-using Plisky.CodeCraft;
 using Plisky.Nuke.Fusion;
 using Serilog;
 
 public partial class Build : NukeBuild {
+    private const string MAJOR_QUICK_VALUE = "+.0.0";
+    private const string MINOR_QUICK_VALUE = ".+.0";
+    private const string PATCH_QUICK_VALUE = "..+";
+
     // Standard entrypoint for compiling the app.  Arrange [Construct] Examine Package Release Test
 
     public Target ApplyVersion => _ => _
@@ -49,8 +52,28 @@ public partial class Build : NukeBuild {
               .SetRoot(Solution.Directory)
           );
 
-          var mmPath = settings.DependenciesDirectory / "automation";
-          mmPath /= "autoversion.txt";
+          var mmPathBase = settings.DependenciesDirectory / "automation";
+          var mmPath = mmPathBase / "autoversion.txt";
+
+          if (IsMajor) {
+              Log.Information("[Versioning] Major version increment requested.");
+              vc.OverrideCommand(s => s
+                  .SetVersionPersistanceValue(vtFile)
+                  .SetOutputStyle("console-nf")
+                  .AsDryRun(dryRunMode)
+                  .SetRoot(Solution.Directory)
+                  .SetQuickValue(MAJOR_QUICK_VALUE)
+              );
+          } else if (IsMinor) {
+              Log.Information("[Versioning] Minor version increment requested.");
+              vc.OverrideCommand(s => s
+                  .SetVersionPersistanceValue(vtFile)
+                  .SetOutputStyle("console-nf")
+                  .AsDryRun(dryRunMode)
+                  .SetRoot(Solution.Directory)
+                  .SetQuickValue(MINOR_QUICK_VALUE)
+              );
+          }
 
           b.Info.Log($"PRE File Update >> {vc.VersionLiteral}");
           vc.FileUpdateCommand(s => s
@@ -64,66 +87,52 @@ public partial class Build : NukeBuild {
 
           Log.Information($"[Versioning]{versioningType} Increment and Update Existing Files.({vc.VersionLiteral})");
 
+          // Capture the version stamped into the files now; the pre-release store update below changes vc.VersionLiteral.
+          string appliedVersion = vc.VersionLiteral;
+
           if (!PreRelease) {
-              // Hack.  Curently the return from versonify is not set to be different display types, we need 3 digit for semver so hacking the last digit off.
-
-              int periodCount = 0;
-              string verNumberToUse = string.Empty;
-              foreach (char c in vc.VersionLiteral) {
-                  if (c == '.') {
-                      if (periodCount == 2) {
-                          break;
-                      }
-                      periodCount++;
-                  }
-
-                  verNumberToUse += c;
-              }
-
-              while (periodCount < 2) {
-                  verNumberToUse += ".0";
-                  periodCount++;
-              }
-
-              b.Assert.True(verNumberToUse.Count(x => x == '.') == 2, $"The version number ({verNumberToUse}) should be in the format N.N.N.");
-              Log.Information($"[Versioning]{versioningType} Applying release version number to pre-release data. ({vc.VersionLiteral} > {verNumberToUse})");
-
-              // NOTE - This is a project reference, this approach will not currently work anywhere except in this build project, if this is required then we need to make
-              // versioning tasks a nuget package.  Its possible this is achievable via a quick value update to versonify.
-              var cv = new CompleteVersion(verNumberToUse);
-              cv.Digits[0].Behaviour = DigitIncrementBehaviour.Fixed;
-              cv.Digits[1].Behaviour = DigitIncrementBehaviour.Fixed;
-              cv.Digits[2].Behaviour = DigitIncrementBehaviour.ContinualIncrement;
-              cv.Increment();
-              verNumberToUse = cv.ToString();
-
-              b.Info.Log($"POST Passive QUEUED >> {verNumberToUse}");
-              vc.OverrideCommand(s => s
-                  .SetVersionPersistanceValue(settings.VersioningPersistanceToken)
-                  .SetOutputStyle("console-nf")
-                  .AsDryRun(dryRunMode)
-                  .SetRoot(Solution.Directory)
-                  .SetQuickValue(verNumberToUse)
-              );
-
-              vc.OverrideCommand(s => s
-                  .SetVersionPersistanceValue(settings.VersioningPersistanceTokenRelease)
-                  .SetOutputStyle("console-nf")
-                  .AsDryRun(dryRunMode)
-                  .SetRoot(Solution.Directory)
-                  .SetQuickValue(verNumberToUse)
-              );
-
-              b.Info.Log($"END >> {vc.VersionLiteral}");
+              UpdatePreReleaseVersionNumber(dryRunMode, versioningType, vc, mmPathBase);
           }
 
-          settings.ActiveVersionNumber = vc.VersionLiteral;
-          FullVersionNumber = vc.VersionLiteral;
-          Log.Information($"[Versioning]Version applied:{vc.VersionLiteral}");
+          settings.ActiveVersionNumber = appliedVersion;
+          FullVersionNumber = appliedVersion;
+          Log.Information($"[Versioning]Version applied:{appliedVersion}");
 
           // Set Azure DevOps variable for use in pipeline/release steps
           Console.WriteLine($"##vso[task.setvariable variable=FullVersionNumber;isOutput=true]{FullVersionNumber}");
       });
+
+    private void UpdatePreReleaseVersionNumber(bool dryRunMode, string versioningType, VersonifyTasks vc, AbsolutePath mmPathBase) {
+        Log.Information($"[Versioning]{versioningType} Applying release version number to pre-release data. ({vc.VersionLiteral})");
+
+        // Once the release version changes the pre-release version numbers must move to match, otherwise they stay on the old version base.  The file
+        // update targets a non existent file so that only the version store is updated.
+        string quickVal = PATCH_QUICK_VALUE;
+        if (IsMajor) {
+            quickVal = MAJOR_QUICK_VALUE;
+        } else if (IsMinor) {
+            quickVal = MINOR_QUICK_VALUE;
+        }
+
+        vc.OverrideCommand(s => s
+            .SetVersionPersistanceValue(settings!.VersioningPersistanceToken)
+            .SetOutputStyle("console-nf")
+            .AsDryRun(dryRunMode)
+            .SetRoot(Solution!.Directory)
+            .SetQuickValue(quickVal)
+        );
+
+        var nmPath = mmPathBase / "noversion.txt";
+        vc.FileUpdateCommand(s => s
+            .SetVersionPersistanceValue(settings!.VersioningPersistanceToken)
+            .SetOutputStyle("console-nf")
+            .AddMultimatchFile(nmPath)
+            .PerformIncrement(true)
+            .AsDryRun(dryRunMode)
+            .SetZeroReturnCode(true)
+            .SetRoot(mmPathBase)
+        );
+    }
 
     public Target ConstructStep => _ => _
             .Before(ExamineStep, Wrapup)

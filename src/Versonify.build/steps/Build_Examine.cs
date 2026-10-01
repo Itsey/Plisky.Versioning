@@ -52,6 +52,12 @@ public partial class Build : NukeBuild {
                 Log.Error("Build>MutationAnalysis>Solution is null.");
                 throw new InvalidOperationException("The solution must be set");
             }
+
+            if (StrykerNet == null) {
+                Log.Error("Build>MutationAnalysis>StrykerNet Nuget Package not found.");
+                throw new InvalidOperationException("StrykerNet must be set");
+            }
+
             var testProjects = Solution.GetAllProjects("*.Test");
             if (testProjects.Any()) {
                 string potentialStrykerConfig = Path.Combine(testProjects.First().Directory, "stryker-config.json");
@@ -65,7 +71,7 @@ public partial class Build : NukeBuild {
                         if (reporting != null) {
                             string scoreMarker = "The final mutation score is ";
                             if (message.Contains(scoreMarker)) {
-                                string score = message.Substring(message.IndexOf(scoreMarker) + scoreMarker.Length);
+                                string score = message[(message.IndexOf(scoreMarker) + scoreMarker.Length)..];
                                 reporting.MutationScore = score.Trim();
                             }
                         }

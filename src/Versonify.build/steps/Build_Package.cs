@@ -22,9 +22,7 @@ public partial class Build : NukeBuild {
                 throw new InvalidOperationException("The settings must be set");
             }
 
-            var project = Solution.GetProject("Versonify");
-            if (project == null) { throw new InvalidOperationException("Project not found"); }
-
+            var project = Solution.GetProject("Versonify") ?? throw new InvalidOperationException("Project not found");
             var publishDirectory = settings.ArtifactsDirectory + "\\publish\\";
             var nugetStructure = settings.ArtifactsDirectory + "\\nuget";
 
