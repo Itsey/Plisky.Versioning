@@ -1,11 +1,86 @@
 namespace Plisky.CodeCraft.Test;
 
+using System;
+using System.IO;
 using Plisky.Test;
 using Shouldly;
 using Versonify;
 using Xunit;
 
 public class CommandLineParserTests {
+
+    [Theory]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("-VS", "WARNING: '-VS' is deprecated. Use '--version-source' instead.")]
+    [InlineData("--VersionSource", "WARNING: '--VersionSource' is deprecated. Use '--version-source' instead.")]
+    public void Parse_when_deprecated_alias_is_used_emits_warning_to_standard_error(string alias, string expectedWarning) {
+        var (success, options, standardError) = ParseAndCaptureStandardError(["passive", $"{alias}=store.vstore"]);
+
+        success.ShouldBeTrue();
+        options.VersionPersistanceValue.ShouldBe("store.vstore");
+        standardError.ShouldBe(expectedWarning + Environment.NewLine);
+    }
+
+    [Fact]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    public void Parse_when_canonical_option_is_used_does_not_emit_deprecation_warning() {
+        var (success, options, standardError) = ParseAndCaptureStandardError(["passive", "--version-source=store.vstore"]);
+
+        success.ShouldBeTrue();
+        options.VersionPersistanceValue.ShouldBe("store.vstore");
+        standardError.ShouldBeEmpty();
+    }
+
+    [Theory]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("-v")]
+    [InlineData("-V")]
+    public void Parse_when_version_source_short_alias_is_used_sets_version_source(string alias) {
+        var (success, options) = CommandLineParser.Parse(["passive", $"{alias}=store.vstore"]);
+
+        success.ShouldBeTrue();
+        options.VersionPersistanceValue.ShouldBe("store.vstore");
+    }
+
+    [Theory]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("-d")]
+    [InlineData("-D")]
+    public void Parse_when_digits_short_alias_is_used_sets_digit_manipulations(string alias) {
+        var (success, options) = CommandLineParser.Parse(["passive", $"{alias}=2;3"]);
+
+        success.ShouldBeTrue();
+        options.DigitManipulations.ShouldBe(["2", "3"]);
+    }
+
+    [Theory]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("-q")]
+    [InlineData("-Q")]
+    public void Parse_when_quick_value_short_alias_is_used_sets_quick_value(string alias) {
+        var (success, options) = CommandLineParser.Parse(["set", $"{alias}=1.2.3"]);
+
+        success.ShouldBeTrue();
+        options.QuickValue.ShouldBe("1.2.3");
+    }
+
+    [Theory]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("-o")]
+    [InlineData("-O")]
+    public void Parse_when_output_short_alias_is_used_sets_output_options(string alias) {
+        var (success, options) = CommandLineParser.Parse(["passive", $"{alias}=env"]);
+
+        success.ShouldBeTrue();
+        options.RawOutputOptions.ShouldBe("env");
+        options.OutputsActive.ShouldBe(OutputPossibilities.Environment);
+    }
 
     [Theory]
     [Trait(Traits.Age, Traits.Regression)]
@@ -137,5 +212,17 @@ public class CommandLineParserTests {
 
         success.ShouldBeTrue();
         options.PreRelease.ShouldBeTrue();
+    }
+
+    private static (bool Success, VersonifyOptions Options, string StandardError) ParseAndCaptureStandardError(string[] args) {
+        var originalStandardError = Console.Error;
+        using var capturedStandardError = new StringWriter();
+        try {
+            Console.SetError(capturedStandardError);
+            var (success, options) = CommandLineParser.Parse(args);
+            return (success, options, capturedStandardError.ToString());
+        } finally {
+            Console.SetError(originalStandardError);
+        }
     }
 }

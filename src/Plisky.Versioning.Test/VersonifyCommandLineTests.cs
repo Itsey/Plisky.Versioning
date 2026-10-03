@@ -51,10 +51,21 @@ public class VersonifyCommandLineTests {
             ]
         };
 
-        string[] gd = sut.GetDigits();
+        string[] result = sut.GetDigits();
 
-        gd.Length.ShouldBe(1, "There should only be one digit returned from the command line, even though two were specified.");
-        gd[0].ShouldBe("*", "The only digit returned should be an asterisk, as that is the only valid digit in this case.");
+        result.Length.ShouldBe(1, "There should only be one digit returned from the command line, even though two were specified.");
+        result[0].ShouldBe("*", "The only digit returned should be an asterisk, as that is the only valid digit in this case.");
+    }
+
+    [Fact]
+    public void CommandLine_will_return_empty_array_when_no_digits_are_specified() {
+        var sut = new VersonifyOptions {
+            DigitManipulations = []
+        };
+
+        string[] result = sut.GetDigits();
+
+        result.Length.ShouldBe(0, "There should be no digits returned from the command line, as none were specified.");
     }
 
     [Fact]
@@ -170,5 +181,11 @@ public class VersonifyCommandLineTests {
     public void IsHelpRequested_identifies_help_flag_accurately(string argument, bool expected) {
         b.Info.Flow();
         CommandLineParser.IsHelpRequested([argument]).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void IsHelpRequested_identifies_help_flag_accurately_with_no_arguments() {
+        b.Info.Flow();
+        CommandLineParser.IsHelpRequested([]).ShouldBeTrue();
     }
 }
