@@ -36,17 +36,19 @@ public class VersonifyCommandLineTests {
     [InlineData("behaviour", VersioningCommand.BehaviourOutput)]
     [InlineData("get", VersioningCommand.GetDigitInformation)]
     public void CommandLine_correctly_sets_command_from_argument(string commandString, VersioningCommand cmd) {
-        var sut = new VersonifyOptions();
-        sut.Command = commandString;
+        var sut = new VersonifyOptions {
+            Command = commandString
+        };
         sut.RequestedCommand.ShouldBe(cmd, "The command should be set correctly from the command line argument.");
     }
 
     [Fact]
     [Trait(Traits.Age, Traits.Regression)]
     public void CommandLine_will_only_allow_asterisk_once() {
-        var sut = new VersonifyOptions();
-        sut.DigitManipulations = new[] {
-            "1", "*", "2", "*"
+        var sut = new VersonifyOptions {
+            DigitManipulations = [
+                "1", "*", "2", "*"
+            ]
         };
 
         string[] gd = sut.GetDigits();
@@ -82,7 +84,7 @@ public class VersonifyCommandLineTests {
             OutputOptions = "env"
         };
 
-        Assert.True((sut.OutputsActive & OutputPossibilities.Environment) == OutputPossibilities.Environment);
+        Assert.Equal(OutputPossibilities.Environment, sut.OutputsActive & OutputPossibilities.Environment);
     }
 
     [Fact]
@@ -95,7 +97,7 @@ public class VersonifyCommandLineTests {
             OutputOptions = "file"
         };
 
-        Assert.True((sut.OutputsActive & OutputPossibilities.File) == OutputPossibilities.File);
+        Assert.Equal(OutputPossibilities.File, sut.OutputsActive & OutputPossibilities.File);
     }
 
     [Fact]
@@ -136,8 +138,8 @@ public class VersonifyCommandLineTests {
             OutputOptions = "jcon"
         };
 
-        Assert.True((sut.OutputsActive & OutputPossibilities.Json) == OutputPossibilities.Json);
-        Assert.True((sut.OutputsActive & OutputPossibilities.Console) == OutputPossibilities.Console);
+        Assert.Equal(OutputPossibilities.Json, sut.OutputsActive & OutputPossibilities.Json);
+        Assert.Equal(OutputPossibilities.Console, sut.OutputsActive & OutputPossibilities.Console);
     }
 
     [Fact]

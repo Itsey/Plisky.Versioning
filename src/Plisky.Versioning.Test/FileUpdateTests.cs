@@ -9,8 +9,8 @@ using Shouldly;
 using Xunit;
 
 public class FileUpdateTests {
-    protected static Bilge b = null!;
-    protected static InMemoryHandler imh = new(100000);
+    private static Bilge b = null!;
+    private readonly static InMemoryHandler imh = new(100000);
     private readonly TestSupport ts;
     private readonly UnitTestHelper uth;
 
@@ -237,9 +237,7 @@ public class FileUpdateTests {
         var sut = new VersionFileUpdater(cv);
         string nonExistentFile = Path.Combine(Path.GetTempPath(), "ThisFileDoesNotExist12345.txt");
 
-        var ex = Should.Throw<FileNotFoundException>(() => {
-            _ = sut.PerformUpdate(nonExistentFile, FileUpdateType.TextFile);
-        });
+        var ex = Should.Throw<FileNotFoundException>(() => _ = sut.PerformUpdate(nonExistentFile, FileUpdateType.TextFile));
 
         ex.Message.ShouldContain("Filename must be present");
     }
@@ -309,7 +307,7 @@ public class FileUpdateTests {
         TestSupport.DoesFileContainThisText(fn, "0.0.0.0").ShouldBeFalse("No update was made to the file at all");
         TestSupport.DoesFileContainThisText(fn, "1.1").ShouldBeTrue("The file does not appear to have been updated correctly.");
         TestSupport.DoesFileContainThisText(fn, "AssemblyFileVersion(\"1.1.1.1\")").ShouldBeTrue("The file does not have the full version in it");
-        response.ShouldContain($"Updated AssemblyFileVersion");
+        response.ShouldContain("Updated AssemblyFileVersion");
     }
 
     [Fact]
@@ -390,17 +388,17 @@ public class FileUpdateTests {
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
 
-        string knownStartPoint = "<version>1.7.2.0</version>";
-        string destinationPoint = "<version>1.1.1.1</version>";
+        const string KNOWNSTARTPOINT = "<version>1.7.2.0</version>";
+        const string DESTINATIONPOINT = "<version>1.1.1.1</version>";
         string txt = File.ReadAllText(srcFile);
 
         _ = sut.PerformUpdate(srcFile, FileUpdateType.Nuspec, DisplayType.Full);
         string txt2 = File.ReadAllText(srcFile);
 
-        (txt.IndexOf(knownStartPoint) > 0).ShouldBeTrue();
-        (txt.IndexOf(destinationPoint) > 0).ShouldBeFalse();
-        (txt2.IndexOf(knownStartPoint) > 0).ShouldBeFalse();
-        (txt2.IndexOf(destinationPoint) > 0).ShouldBeTrue();
+        (txt.IndexOf(KNOWNSTARTPOINT) > 0).ShouldBeTrue();
+        (txt.IndexOf(DESTINATIONPOINT) > 0).ShouldBeFalse();
+        (txt2.IndexOf(KNOWNSTARTPOINT) > 0).ShouldBeFalse();
+        (txt2.IndexOf(DESTINATIONPOINT) > 0).ShouldBeTrue();
     }
 
     [Fact(DisplayName = nameof(Update_Nuspec_Works))]
@@ -411,12 +409,12 @@ public class FileUpdateTests {
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
-        string before = ts.GetVersion(FileUpdateType.Nuspec, srcFile);
+        string before = TestSupport.GetVersion(FileUpdateType.Nuspec, srcFile);
         before.ShouldNotBeNullOrEmpty();
 
         string response = sut.PerformUpdate(srcFile, FileUpdateType.Nuspec);
 
-        string after = ts.GetVersion(FileUpdateType.Nuspec, srcFile);
+        string after = TestSupport.GetVersion(FileUpdateType.Nuspec, srcFile);
         after.ShouldNotBe(before);
         response.ShouldContain("Updated Nuspec");
     }
@@ -429,12 +427,12 @@ public class FileUpdateTests {
         string srcFile = uth.GetTestDataFile(reid); // Value is zero
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
-        string before = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
+        string before = TestSupport.GetVersion(FileUpdateType.StdAssembly, srcFile);
         before.ShouldNotBeNullOrEmpty();
 
         string response = sut.PerformUpdate(srcFile, FileUpdateType.StdAssembly);
 
-        string after = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
+        string after = TestSupport.GetVersion(FileUpdateType.StdAssembly, srcFile);
         after.ShouldNotBe(before);
         response.ShouldContain("Updated Std Assembly");
     }
@@ -447,12 +445,12 @@ public class FileUpdateTests {
         string srcFile = uth.GetTestDataFile(reid); // Value is zero
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
-        string before = ts.GetVersion(FileUpdateType.StdFile, srcFile);
+        string before = TestSupport.GetVersion(FileUpdateType.StdFile, srcFile);
         before.ShouldNotBeNullOrEmpty();
 
         string response = sut.PerformUpdate(srcFile, FileUpdateType.StdFile);
 
-        string after = ts.GetVersion(FileUpdateType.StdFile, srcFile);
+        string after = TestSupport.GetVersion(FileUpdateType.StdFile, srcFile);
         after.ShouldNotBe(before);
         response.ShouldContain("Updated Std File");
     }
@@ -465,12 +463,12 @@ public class FileUpdateTests {
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
-        string before = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
+        string before = TestSupport.GetVersion(FileUpdateType.StdInformational, srcFile);
         before.ShouldNotBeNullOrEmpty();
 
         string response = sut.PerformUpdate(srcFile, FileUpdateType.StdInformational);
 
-        string after = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
+        string after = TestSupport.GetVersion(FileUpdateType.StdInformational, srcFile);
         after.ShouldNotBe(before);
         response.ShouldContain("Updated Std Informational");
     }
@@ -483,12 +481,12 @@ public class FileUpdateTests {
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
-        string before = ts.GetVersion(FileUpdateType.Wix, srcFile);
+        string before = TestSupport.GetVersion(FileUpdateType.Wix, srcFile);
         before.ShouldNotBeNullOrEmpty();
 
         string response = sut.PerformUpdate(srcFile, FileUpdateType.Wix);
 
-        string after = ts.GetVersion(FileUpdateType.Wix, srcFile);
+        string after = TestSupport.GetVersion(FileUpdateType.Wix, srcFile);
         after.ShouldNotBe(before);
         response.ShouldContain("Updated Wix");
     }
@@ -501,11 +499,11 @@ public class FileUpdateTests {
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
-        string before = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
+        string before = TestSupport.GetVersion(FileUpdateType.StdAssembly, srcFile);
 
         _ = sut.PerformUpdate(srcFile, FileUpdateType.StdAssembly);
 
-        string after = ts.GetVersion(FileUpdateType.StdAssembly, srcFile);
+        string after = TestSupport.GetVersion(FileUpdateType.StdAssembly, srcFile);
 
         before.ShouldBeNullOrEmpty();
         after.ShouldNotBeNullOrEmpty();
@@ -519,11 +517,11 @@ public class FileUpdateTests {
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
-        string before = ts.GetVersion(FileUpdateType.StdFile, srcFile);
+        string before = TestSupport.GetVersion(FileUpdateType.StdFile, srcFile);
 
         _ = sut.PerformUpdate(srcFile, FileUpdateType.StdFile);
 
-        string after = ts.GetVersion(FileUpdateType.StdFile, srcFile);
+        string after = TestSupport.GetVersion(FileUpdateType.StdFile, srcFile);
         before.ShouldBeNullOrEmpty();
         after.ShouldNotBeNullOrEmpty();
     }
@@ -536,11 +534,11 @@ public class FileUpdateTests {
         string srcFile = uth.GetTestDataFile(reid);
         var cv = new CompleteVersion(new VersionUnit("1"), new VersionUnit("1", "."), new VersionUnit("1", "."), new VersionUnit("1", "."));
         var sut = new VersionFileUpdater(cv);
-        string before = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
+        string before = TestSupport.GetVersion(FileUpdateType.StdInformational, srcFile);
 
         _ = sut.PerformUpdate(srcFile, FileUpdateType.StdInformational);
 
-        string after = ts.GetVersion(FileUpdateType.StdInformational, srcFile);
+        string after = TestSupport.GetVersion(FileUpdateType.StdInformational, srcFile);
 
         before.ShouldBeNullOrEmpty();
         after.ShouldNotBeNullOrEmpty();

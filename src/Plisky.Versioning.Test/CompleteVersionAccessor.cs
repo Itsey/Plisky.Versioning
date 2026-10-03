@@ -6,12 +6,8 @@ public class CompleteVersionMock : CompleteVersion {
 
     public Mocking Mock { get; set; }
 
-    public class Mocking {
-        private CompleteVersionMock parent;
-
-        public Mocking(CompleteVersionMock p) {
-            parent = p;
-        }
+    public class Mocking(CompleteVersionMock p) {
+        private readonly CompleteVersionMock parent = p;
 
         public string? ManipulateVersionBasedOnPattern(string pattern, string currentValue) {
             return parent.ManipulateValueBasedOnPattern(pattern, currentValue);

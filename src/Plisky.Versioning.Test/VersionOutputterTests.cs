@@ -32,7 +32,7 @@ public class VersionOutputterTests {
             OutputOptions = "con"
         };
 
-        Assert.True((cla.OutputsActive & OutputPossibilities.Console) == OutputPossibilities.Console);
+        (cla.OutputsActive & OutputPossibilities.Console).ShouldBe(OutputPossibilities.Console);
     }
 
     [Theory(DisplayName = nameof(Args_OutputterParseSetsConsoleString))]
@@ -51,7 +51,8 @@ public class VersionOutputterTests {
             OutputOptions = argument
         };
 
-        Assert.Contains(contains, cla.ConsoleTemplate);
+        cla.ConsoleTemplate.ShouldNotBeNull();
+        cla.ConsoleTemplate.ShouldContain(contains);
     }
 
     [Fact(DisplayName = nameof(Args_OutputterParseSetsFileName))]
@@ -60,14 +61,14 @@ public class VersionOutputterTests {
     public void Args_OutputterParseSetsFileName() {
         b.Info.Flow();
 
-        string argument = "file:myfile.txt";
-        string expectedFilename = "myfile.txt";
+        const string ARGUMENT = "file:myfile.txt";
+        const string EXPECTEDFILENAME = "myfile.txt";
 
         var cla = new VersonifyOptions {
-            OutputOptions = argument
+            OutputOptions = ARGUMENT
         };
 
-        cla.PverFileName.ShouldBe(expectedFilename);
+        cla.PverFileName.ShouldBe(EXPECTEDFILENAME);
     }
 
     [Fact]
@@ -209,25 +210,25 @@ public class VersionOutputterTests {
     [Trait(Traits.Style, Traits.Unit)]
     public void Outputter_PNF_WritesPNFToConsole() {
         b.Info.Flow();
-        string version = "1.1.oranges.0.0";
-        string release = "Fruit";
-        var mvs = new MockVersionStorage(version);
+        const string VERSION = "1.1.oranges.0.0";
+        const string RELEASE = "Fruit";
+        var mvs = new MockVersionStorage(VERSION);
         var sut = new Versioning(mvs);
         var v = sut.Version;
-        v.ReleaseName = release;
+        v.ReleaseName = RELEASE;
 
         v.ApplyPendingVersion("+...");
         var op = new MockVersioningOutputter(v, Hub.Current);
         op.DoOutput(OutputPossibilities.NukeFusion, VersioningCommand.PassiveOutput);
         op.OutputLines.Length.ShouldBe(8, "There should be eight lines of output for the nuke fusion output.");
-        op.OutputLines[0].ShouldBe($"PNFV]{version}");
-        op.OutputLines[1].ShouldBe($"PNF2]1.1");
-        op.OutputLines[2].ShouldBe($"PNF3]1.1.oranges");
-        op.OutputLines[3].ShouldBe($"PN3D]1.1.0");
-        op.OutputLines[4].ShouldBe($"PNF4]1.1.oranges.0");
-        op.OutputLines[5].ShouldBe($"PNQF]2.1.oranges.0.0");
-        op.OutputLines[6].ShouldBe($"PN4D]1.1.0.0");
-        op.OutputLines[7].ShouldBe($"PNFN]{release}");
+        op.OutputLines[0].ShouldBe($"PNFV]{VERSION}");
+        op.OutputLines[1].ShouldBe("PNF2]1.1");
+        op.OutputLines[2].ShouldBe("PNF3]1.1.oranges");
+        op.OutputLines[3].ShouldBe("PN3D]1.1.0");
+        op.OutputLines[4].ShouldBe("PNF4]1.1.oranges.0");
+        op.OutputLines[5].ShouldBe("PNQF]2.1.oranges.0.0");
+        op.OutputLines[6].ShouldBe("PN4D]1.1.0.0");
+        op.OutputLines[7].ShouldBe($"PNFN]{RELEASE}");
     }
 
     [Fact]
@@ -235,8 +236,8 @@ public class VersionOutputterTests {
     [Trait(Traits.LiveBug, "LFY-30")]
     public void Version_output_information_written_after_file_update() {
         b.Info.Flow();
-        string version = "1.0";
-        var mvs = new MockVersionStorage(version);
+        const string VERSION = "1.0";
+        var mvs = new MockVersionStorage(VERSION);
         var sut = new Versioning(mvs);
         var v = sut.Version;
 

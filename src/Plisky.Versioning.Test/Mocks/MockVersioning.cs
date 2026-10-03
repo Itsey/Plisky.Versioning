@@ -4,7 +4,7 @@ using System.Linq;
 namespace Plisky.CodeCraft.Test;
 
 public class MockVersioning : Versioning {
-    private readonly List<string> filenamesToFind = new List<string>();
+    private readonly List<string> filenamesToFind = [];
 
     public MockVersioning(VersionStorage vs) : base(vs) {
         mock = new Mocking(this);

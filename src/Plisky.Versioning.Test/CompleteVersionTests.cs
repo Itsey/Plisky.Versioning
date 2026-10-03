@@ -7,9 +7,9 @@ using Shouldly;
 using Xunit;
 
 public class CompleteVersionTests {
-    private Bilge b = new Bilge();
-    private TestSupport ts;
-    private UnitTestHelper uth;
+    private readonly Bilge b = new();
+    private readonly TestSupport ts;
+    private readonly UnitTestHelper uth;
 
     public CompleteVersionTests() {
         uth = new UnitTestHelper();
@@ -144,7 +144,7 @@ public class CompleteVersionTests {
         output.ShouldBe(endVer);
     }
 
-    [Theory(DisplayName = (nameof(DisplayTypes_WorkCorrectly)))]
+    [Theory(DisplayName = nameof(DisplayTypes_WorkCorrectly))]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     [InlineData("1.1.1.1", "1.1.1.1", DisplayType.Full)]
@@ -199,11 +199,11 @@ public class CompleteVersionTests {
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
     public void GetBehaviourString_ReturnsCorrectBehaviourForSingleDigit() {
-        var behaviour = DigitIncrementBehaviour.ContinualIncrement;
-        int behaviourValue = (int)behaviour;
-        string expectedResult = $"[0]:{behaviour}({behaviourValue})";
+        const DigitIncrementBehaviour BEHAVIOUR = DigitIncrementBehaviour.ContinualIncrement;
+        const int BEHAVIOURVALUE = (int)BEHAVIOUR;
+        string expectedResult = $"[0]:{BEHAVIOUR}({BEHAVIOURVALUE})";
 
-        var vu = new VersionUnit("1", "", behaviour);
+        var vu = new VersionUnit("1", "", BEHAVIOUR);
         var sut = new CompleteVersion(vu);
 
         string result = sut.GetBehaviourString("0");
@@ -215,18 +215,18 @@ public class CompleteVersionTests {
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
     public void GetBehaviourString_ReturnsCorrectBehaviourForStar() {
-        var behaviourFixed = DigitIncrementBehaviour.Fixed;
-        int behaviourFixedValue = (int)behaviourFixed;
-        var behaviourInc = DigitIncrementBehaviour.ContinualIncrement;
-        int behaviourIncValue = (int)behaviourInc;
+        const DigitIncrementBehaviour BEHAVIOURFIXED = DigitIncrementBehaviour.Fixed;
+        const int BEHAVIOURFIXEDVALUE = (int)BEHAVIOURFIXED;
+        const DigitIncrementBehaviour BEHAVIOURINC = DigitIncrementBehaviour.ContinualIncrement;
+        const int BEHAVIOURINCVALUE = (int)BEHAVIOURINC;
         string expectedResult =
-            $"[0]:{behaviourFixed}({behaviourFixedValue})\r\n" +
-            $"[1]:{behaviourInc}({behaviourIncValue})\r\n" +
-            $"[2]:{behaviourInc}({behaviourIncValue})";
+            $"[0]:{BEHAVIOURFIXED}({BEHAVIOURFIXEDVALUE})\r\n" +
+            $"[1]:{BEHAVIOURINC}({BEHAVIOURINCVALUE})\r\n" +
+            $"[2]:{BEHAVIOURINC}({BEHAVIOURINCVALUE})";
 
         var vu1 = new VersionUnit("1", "");
-        var vu2 = new VersionUnit("0", ".", behaviourInc);
-        var vu3 = new VersionUnit("1", ".", behaviourInc);
+        var vu2 = new VersionUnit("0", ".", BEHAVIOURINC);
+        var vu3 = new VersionUnit("1", ".", BEHAVIOURINC);
         var sut = new CompleteVersion(vu1, vu2, vu3);
 
         string result = sut.GetBehaviourString("*");
@@ -238,8 +238,9 @@ public class CompleteVersionTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Increment_OverrideReplacesIncrement() {
-        var vu = new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement);
-        vu.IncrementOverride = "9";
+        var vu = new VersionUnit("1", "", DigitIncrementBehaviour.ContinualIncrement) {
+            IncrementOverride = "9"
+        };
         var sut = new CompleteVersion(vu);
 
         sut.Increment();
@@ -253,8 +254,9 @@ public class CompleteVersionTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Increment_OverrideWorksForNames() {
-        var vu = new VersionUnit("Monkey");
-        vu.IncrementOverride = "Fish";
+        var vu = new VersionUnit("Monkey") {
+            IncrementOverride = "Fish"
+        };
 
         var sut = new CompleteVersion(vu);
 
@@ -269,8 +271,9 @@ public class CompleteVersionTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Increment_OverrideWorksForNumbers() {
-        var vu = new VersionUnit("1");
-        vu.IncrementOverride = "5";
+        var vu = new VersionUnit("1") {
+            IncrementOverride = "5"
+        };
 
         var sut = new CompleteVersion(vu);
 
@@ -285,8 +288,9 @@ public class CompleteVersionTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Increment_OverrideWorksOnFixed() {
-        var vu = new VersionUnit("1", "", DigitIncrementBehaviour.Fixed);
-        vu.IncrementOverride = "Fish";
+        var vu = new VersionUnit("1", "", DigitIncrementBehaviour.Fixed) {
+            IncrementOverride = "Fish"
+        };
 
         var sut = new CompleteVersion(vu);
 
@@ -385,9 +389,10 @@ public class CompleteVersionTests {
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     public void Override_NoIncrement_DoesNotChangeValue() {
-        var vu = new VersionUnit("1");
-        vu.Value = "Monkey";
-        vu.IncrementOverride = "Fish";
+        var vu = new VersionUnit("1") {
+            Value = "Monkey",
+            IncrementOverride = "Fish"
+        };
         var sut = new CompleteVersion(vu);
 
         string result = sut.GetVersionString(DisplayType.Full);
@@ -727,9 +732,9 @@ public class CompleteVersionTests {
         [Trait(Traits.Style, Traits.Unit)]
         public void Short_returns_two_digits() {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."));
-            var dt = DisplayType.Short;
+            const DisplayType DT = DisplayType.Short;
 
-            string result = sut.GetVersionString(dt);
+            string result = sut.GetVersionString(DT);
 
             result.ShouldBe("1.0");
         }
@@ -739,9 +744,9 @@ public class CompleteVersionTests {
         [Trait(Traits.Style, Traits.Unit)]
         public void Short_returns_two_digits_when_more_present() {
             var sut = new CompleteVersion(new VersionUnit("1"), new VersionUnit("0", "."), new VersionUnit("1", "."));
-            var dt = DisplayType.Short;
+            const DisplayType DT = DisplayType.Short;
 
-            string result = sut.GetVersionString(dt);
+            string result = sut.GetVersionString(DT);
 
             result.ShouldBe("1.0");
         }

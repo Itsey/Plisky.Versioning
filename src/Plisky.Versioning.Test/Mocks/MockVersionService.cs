@@ -36,7 +36,9 @@ public class MockVersionService : IKnowHowToVersion {
         if (string.IsNullOrEmpty(branch)) {
             throw new ArgumentOutOfRangeException(nameof(branch), "branch must be specified, use 'default' if not known");
         }
-        ArgumentNullException.ThrowIfNull(v);
+        if (v is null) {
+            throw new ArgumentException("Version number must be specified", nameof(v));
+        }
 
         #endregion entry code
 

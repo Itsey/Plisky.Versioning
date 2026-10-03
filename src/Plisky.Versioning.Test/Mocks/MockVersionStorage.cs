@@ -11,9 +11,6 @@ internal class MockVersionStorage : VersionStorage {
     public class Mocking(MockVersionStorage p) {
         private readonly MockVersionStorage parent = p;
 
-        public void Mock_MockingBird() {
-        }
-
         public void SetBehaviours(DigitIncrementBehaviour dig1, DigitIncrementBehaviour dig2, DigitIncrementBehaviour dig3, DigitIncrementBehaviour dig4) {
             parent.loadedVersion.Digits[0].SetBehaviour(dig1);
             parent.loadedVersion.Digits[1].SetBehaviour(dig2);

@@ -27,9 +27,9 @@ public class UseCaseTests {
         var mvs = new MockVersionStorage("0.0.0.1");
         var sut = new Versioning(mvs);
 
-        _ = Assert.Throws<ArgumentNullException>(() => { sut.AddNugetFile(null!); });
-        _ = Assert.Throws<FileNotFoundException>(() => { sut.AddNugetFile(""); });
-        _ = Assert.Throws<FileNotFoundException>(() => { sut.AddNugetFile("c:\\arflebarflegloop.txt"); });
+        _ = Assert.Throws<ArgumentNullException>(() => sut.AddNugetFile(null!));
+        _ = Assert.Throws<FileNotFoundException>(() => sut.AddNugetFile(""));
+        _ = Assert.Throws<FileNotFoundException>(() => sut.AddNugetFile("c:\\arflebarflegloop.txt"));
     }
 
     [Theory(DisplayName = nameof(UC_BehaviouralIncrement_Works))]

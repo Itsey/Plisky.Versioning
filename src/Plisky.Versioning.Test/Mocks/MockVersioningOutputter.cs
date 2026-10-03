@@ -3,23 +3,17 @@ using Plisky.Plumbing;
 
 namespace Plisky.CodeCraft.Test;
 
-public class MockVersioningOutputter : VersioningOutputter {
-    protected List<string> outputReceived = new List<string>();
+public class MockVersioningOutputter(CompleteVersion v, Hub outey) : VersioningOutputter(v, outey) {
+    protected List<string> outputReceived = [];
 
-    public MockVersioningOutputter(CompleteVersion v, Hub outey) : base(v, outey) {
-        EnvWasSet = false;
-        FileWasWritten = false;
-        WrittenToConsole = null;
-    }
-
-    public bool EnvWasSet { get; set; }
-    public bool FileWasWritten { get; set; }
+    public bool EnvWasSet { get; set; } = false;
+    public bool FileWasWritten { get; set; } = false;
 
     public string[] OutputLines {
-        get { return outputReceived.ToArray(); }
+        get { return [.. outputReceived]; }
     }
 
-    public string? WrittenToConsole { get; set; }
+    public string? WrittenToConsole { get; set; } = null;
 
     public string GetTheValueRequestedToWrite() {
         return ValToWrite;

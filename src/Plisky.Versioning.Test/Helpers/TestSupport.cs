@@ -7,7 +7,6 @@ using Plisky.Test;
 namespace Plisky.CodeCraft.Test;
 
 public class TestSupport(UnitTestHelper newuth) {
-    private readonly Bilge b = new();
     private readonly UnitTestHelper uth = newuth;
 
     public string CreateStoredVersionNumer() {
@@ -37,7 +36,7 @@ public class TestSupport(UnitTestHelper newuth) {
         return fn;
     }
 
-    public string GetVersion(FileUpdateType fut, string srcFile) {
+    public static string GetVersion(FileUpdateType fut, string srcFile) {
         return fut switch {
             FileUpdateType.Nuspec => GetVersionFromNuspec(srcFile),
             FileUpdateType.StdAssembly => GetVersionFromCSProj(srcFile, "AssemblyVersion"),
@@ -48,7 +47,7 @@ public class TestSupport(UnitTestHelper newuth) {
         };
     }
 
-    public string GetVersionFromCSProj(string srcFile, string propName) {
+    public static string GetVersionFromCSProj(string srcFile, string propName) {
         var xd2 = XDocument.Load(srcFile);
         var el2 = xd2.Element("Project")?.Element("PropertyGroup")?.Element(propName);
         if (el2 == null) { return null!; }
@@ -56,7 +55,7 @@ public class TestSupport(UnitTestHelper newuth) {
         return after;
     }
 
-    public string GetVersionFromNuspec(string srcFile) {
+    public static string GetVersionFromNuspec(string srcFile) {
         XNamespace ns = "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd";
         var xd2 = XDocument.Load(srcFile);
         var el2 = xd2.Element(ns + "package")?.Element(ns + "metadata")?.Element(ns + "version");
@@ -64,7 +63,7 @@ public class TestSupport(UnitTestHelper newuth) {
         return after;
     }
 
-    public string GetVersionFromWix(string srcFile) {
+    public static string GetVersionFromWix(string srcFile) {
         XNamespace ns = "http://schemas.microsoft.com/wix/2006/wi";
         var xd2 = XDocument.Load(srcFile);
         var el2 = xd2.Element(ns + "Wix")?.Element(ns + "Product")?.Attribute("Version");

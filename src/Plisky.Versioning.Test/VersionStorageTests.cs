@@ -43,8 +43,8 @@ public class VersionStorageTests {
     [Trait(Traits.Style, Traits.Integration)]
     public void VersionStorage_Json_BackwardCompatibleWithoutGroupName() {
         string fn = uth.NewTemporaryFileName(true);
-        string legacyStore = "{\"Digits\":[{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"1\",\"PreFix\":\"\"},{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"2\",\"PreFix\":\".\"},{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"3\",\"PreFix\":\".\"}],\"DisplayTypes\":{\"NetAssembly\":1,\"NetFile\":2,\"NetInformational\":2,\"Wix\":2,\"Nuspec\":4,\"StdAssembly\":1,\"StdFile\":2,\"StdInformational\":2,\"TextFile\":1},\"IsDefault\":false,\"ReleaseName\":null}";
-        File.WriteAllText(fn, legacyStore);
+        const string LEGACYSTORE = "{\"Digits\":[{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"1\",\"PreFix\":\"\"},{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"2\",\"PreFix\":\".\"},{\"Behaviour\":0,\"IncrementOverride\":null,\"Value\":\"3\",\"PreFix\":\".\"}],\"DisplayTypes\":{\"NetAssembly\":1,\"NetFile\":2,\"NetInformational\":2,\"Wix\":2,\"Nuspec\":4,\"StdAssembly\":1,\"StdFile\":2,\"StdInformational\":2,\"TextFile\":1},\"IsDefault\":false,\"ReleaseName\":null}";
+        File.WriteAllText(fn, LEGACYSTORE);
 
         var sut = new JsonVersionPersister(fn);
         var loaded = sut.GetVersion();

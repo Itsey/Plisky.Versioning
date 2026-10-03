@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using GlobExpressions;
 using Plisky.Diagnostics;
 using Plisky.Test;
+using Shouldly;
 using Xunit;
 
 public class MinmatchTests {
@@ -25,7 +26,7 @@ public class MinmatchTests {
 
         var v = new MockVersioning(new MockVersionStorage(""));
 
-        Assert.True(v.mock.ReturnMinMatchers().Length == 0, "There should be no default minmatchers loaded by versioning");
+        v.mock.ReturnMinMatchers().Length.ShouldBe(0, "There should be no default minmatchers loaded by versioning");
     }
 
     [Fact]
@@ -33,30 +34,30 @@ public class MinmatchTests {
     [Trait(Traits.Style, Traits.Unit)]
     public void MiniMatchSyntax_FindAssemblyInfo() {
         var mtchs = new List<Tuple<string, bool>> {
-            new Tuple<string, bool>(@"C:\temp\te st\properties\assemblyinfo.cs", true),
-            new Tuple<string, bool>(@"C:\te mp\test\assemblyinfo.cs", false),
-            new Tuple<string, bool>(@"C:\te mp\t e s t\properties\notassemblyinfo.cs", false),
-            new Tuple<string, bool>(@"C:\temp\test\properties\assemblyinfo.cs.txt", false),
-            new Tuple<string, bool>(@"C:\a\1\s\PliskyLibrary\PliskyLib\Properties\AssemblyInfo.cs", true)
+            new(@"C:\temp\te st\properties\assemblyinfo.cs", true),
+            new(@"C:\te mp\test\assemblyinfo.cs", false),
+            new(@"C:\te mp\t e s t\properties\notassemblyinfo.cs", false),
+            new(@"C:\temp\test\properties\assemblyinfo.cs.txt", false),
+            new(@"C:\a\1\s\PliskyLibrary\PliskyLib\Properties\AssemblyInfo.cs", true)
         };
-        string againstThis = @"**\properties\assemblyinfo.cs";
-        CheckTheseMatches(mtchs, againstThis);
+        const string AGAINSTTHIS = @"**\properties\assemblyinfo.cs";
+        CheckTheseMatches(mtchs, AGAINSTTHIS);
 
-        var mm2 = new Glob((@"C:\temp\test\testfile.tst").Replace('\\', '/'));
-        Assert.True(mm2.IsMatch(@"C:\temp\test\testfile.tst"), "Cant match on full filename");
+        var mm2 = new Glob(@"C:\temp\test\testfile.tst".Replace('\\', '/'));
+        mm2.IsMatch(@"C:\temp\test\testfile.tst").ShouldBeTrue("Cant match on full filename");
     }
 
     [Theory]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     [InlineData(@"C:\temp\verworking\assemblyinfo.cs", @"**\assemblyinfo.cs", true)]
-    [InlineData(@"C:\temp\verworking\testing.csproj", @"**/*.csproj", true)]
+    [InlineData(@"C:\temp\verworking\testing.csproj", "**/*.csproj", true)]
     [InlineData(@"C:\temp\verworking\testing.csproj", @"**\verworking\*.csproj", true)]
     [InlineData(@"C:\temp\verworking\AsUbBy\testing.csproj", @"**\asubby\**\*.csproj", true)]
     [InlineData(@"C:\temp\verworking\AsUbBy\commonassemblyinfo.cs", @"**\asubby\**\common*.cs", true)]
     public void MinimatchSyntax_Research(string filename, string minimatch, bool shouldPass) {
         var mtchs = new List<Tuple<string, bool>> {
-            new Tuple<string, bool>(filename, shouldPass)
+            new(filename, shouldPass)
         };
         CheckTheseMatches(mtchs, minimatch);
     }
@@ -70,8 +71,7 @@ public class MinmatchTests {
         var v = new MockVersioning(new MockVersionStorage(""));
 
         v.ClearMiniMatchers();
-
-        Assert.True(v.mock.ReturnMinMatchers().Length == 0, "Clear should remove all minimatchers");
+        v.mock.ReturnMinMatchers().Length.ShouldBe(0, "Clear should remove all minimatchers");
     }
 
     [Fact(DisplayName = nameof(Versioning_MMLoadedFromFile))]
@@ -87,8 +87,7 @@ public class MinmatchTests {
         var v = new MockVersioning(mva);
 
         v.LoadMiniMatches(srcFile);
-
-        Assert.Equal(9, v.mock.ReturnMinMatchers().Length);
+        v.mock.ReturnMinMatchers().Length.ShouldBe(9);
     }
 
     private static void CheckTheseMatches(List<Tuple<string, bool>> mtchs, string againstThis) {
@@ -97,7 +96,7 @@ public class MinmatchTests {
         foreach (var v in mtchs) {
             i++;
             bool isMatch = mm.IsMatch(v.Item1);
-            Assert.Equal(v.Item2, isMatch);
+            v.Item2.ShouldBe(isMatch, $"Test {i} failed. Expected {v.Item2} but got {isMatch} for {v.Item1} against {againstThis}");
         }
     }
 }

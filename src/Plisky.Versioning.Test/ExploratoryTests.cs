@@ -57,14 +57,14 @@ public class ExploratoryTests {
     [Fact]
     public void ApplyValueUpdate_FixedBehaviour_ReleaseNameValue_SetsToReleaseName() {
         CompleteVersion version = new(new VersionUnit("1", "", DigitIncrementBehaviour.Fixed), new VersionUnit("2"));
-        string expectedReleaseName = "MyRelease";
-        version.ReleaseName = expectedReleaseName;
+        const string EXPECTEDRELEASENAME = "MyRelease";
+        version.ReleaseName = EXPECTEDRELEASENAME;
 
         version.ApplyValueUpdate(0, "ReleaseName");
 
         string? d0 = version.Digits[0].Value;
 
-        d0.ShouldBe(expectedReleaseName);
+        d0.ShouldBe(EXPECTEDRELEASENAME);
     }
 
     [Theory]
@@ -225,17 +225,17 @@ public class ExploratoryTests {
     public void Outputter_Console_Writes_Correct_Output(bool releaseRequest) {
         b.Info.Flow();
 
-        string releaseName = "testReleaseName";
-        string versionNumber = "2.0.1.0";
+        const string RELEASENAME = "testReleaseName";
+        const string VERSIONNUMBER = "2.0.1.0";
 
-        MockVersionStorage mvs = new(versionNumber);
+        MockVersionStorage mvs = new(VERSIONNUMBER);
         Versioning sut = new(mvs);
         var v = sut.Version;
-        v.ReleaseName = releaseName;
+        v.ReleaseName = RELEASENAME;
         MockVersioningOutputter op = new(v, Hub.Current) {
             ReleaseRequested = releaseRequest
         };
-        string expectedOutput = releaseRequest ? releaseName : versionNumber;
+        string expectedOutput = releaseRequest ? RELEASENAME : VERSIONNUMBER;
 
         op.DoOutput(OutputPossibilities.File, VersioningCommand.PassiveOutput);
 
@@ -300,8 +300,8 @@ public class ExploratoryTests {
     [Fact]
     public void Outputter_ValToWrite_IsReleaseName_WhenReleaseRequestedTrue() {
         CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"));
-        string expectedReleaseName = "ReleaseX";
-        version.ReleaseName = expectedReleaseName;
+        const string EXPECTEDRELEASENAME = "ReleaseX";
+        version.ReleaseName = EXPECTEDRELEASENAME;
 
         MockVersioningOutputter outputter = new(version, Hub.Current) {
             ReleaseRequested = true
@@ -309,15 +309,15 @@ public class ExploratoryTests {
 
         string valToWrite = outputter.GetTheValueRequestedToWrite();
 
-        valToWrite.ShouldBe(expectedReleaseName);
+        valToWrite.ShouldBe(EXPECTEDRELEASENAME);
     }
 
     [Fact]
     public void SetAllDigitsFromString_ignores_extra_parts() {
         var version = new CompleteVersion(new VersionUnit("1"), new VersionUnit("2"));
-        string valueToSet = "5.6.7.8";
+        const string VALUETOSET = "5.6.7.8";
 
-        version.SetCompleteVersionFromString(valueToSet);
+        version.SetCompleteVersionFromString(VALUETOSET);
 
         version.Digits.Length.ShouldBe(2);
         version.Digits[0].Value.ShouldBe("5");
@@ -327,9 +327,9 @@ public class ExploratoryTests {
     [Fact]
     public void SetAllDigitsFromString_pads_missing_digits_with_zero() {
         var version = new CompleteVersion(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"), new VersionUnit("4"));
-        string valueToSet = "5.6";
+        const string VALUETOSET = "5.6";
 
-        version.SetCompleteVersionFromString(valueToSet);
+        version.SetCompleteVersionFromString(VALUETOSET);
 
         version.Digits[0].Value.ShouldBe("5");
         version.Digits[1].Value.ShouldBe("6");
@@ -340,9 +340,9 @@ public class ExploratoryTests {
     [Fact]
     public void SetAllDigitsFromString_sets_digits_from_dotted_string() {
         var version = new CompleteVersion(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
-        string valueToSet = "5.6.7";
+        const string VALUETOSET = "5.6.7";
 
-        version.SetCompleteVersionFromString(valueToSet);
+        version.SetCompleteVersionFromString(VALUETOSET);
 
         version.Digits[0].Value.ShouldBe("5");
         version.Digits[1].Value.ShouldBe("6");
@@ -352,43 +352,43 @@ public class ExploratoryTests {
     [Fact]
     public void SetIndividualDigits_SetsMultipleDigitsToSameValue() {
         CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
-        string valueToSet = "77";
+        const string VALUETOSET = "77";
 
-        version.SetIndividualDigits(["0", "2"], valueToSet);
+        version.SetIndividualDigits(["0", "2"], VALUETOSET);
 
         string? d0 = version.Digits[0].Value;
         string? d1 = version.Digits[1].Value;
         string? d2 = version.Digits[2].Value;
 
-        d0.ShouldBe(valueToSet);
+        d0.ShouldBe(VALUETOSET);
         d1.ShouldBe("2");
-        d2.ShouldBe(valueToSet);
+        d2.ShouldBe(VALUETOSET);
     }
 
     [Fact]
     public void SetIndividualDigits_SetsSingleDigitToValue() {
         CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
-        string valueToSet = "99";
+        const string VALUETOSET = "99";
 
-        version.SetIndividualDigits(["1"], valueToSet);
+        version.SetIndividualDigits(["1"], VALUETOSET);
 
         string? d0 = version.Digits[0].Value;
         string? d1 = version.Digits[1].Value;
         string? d2 = version.Digits[2].Value;
 
         d0.ShouldBe("1");
-        d1.ShouldBe(valueToSet);
+        d1.ShouldBe(VALUETOSET);
         d2.ShouldBe("3");
     }
 
     [Fact]
     public void SetIndividualDigits_WithNoDigitsToSet_DoesNotSet() {
         CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
-        string valueToSet = "42";
+        const string VALUETOSET = "42";
 
-        version.SetIndividualDigits([], valueToSet);
+        version.SetIndividualDigits([], VALUETOSET);
 
-        bool allSet = version.Digits.All(d => d.Value == valueToSet);
+        bool allSet = version.Digits.All(d => d.Value == VALUETOSET);
 
         allSet.ShouldBeFalse();
     }
@@ -396,11 +396,11 @@ public class ExploratoryTests {
     [Fact]
     public void SetIndividualDigits_WithWildcard_SetsAllDigitsToValue() {
         CompleteVersion version = new(new VersionUnit("1"), new VersionUnit("2"), new VersionUnit("3"));
-        string valueToSet = "42";
+        const string VALUETOSET = "42";
 
-        version.SetIndividualDigits(["*"], valueToSet);
+        version.SetIndividualDigits(["*"], VALUETOSET);
 
-        bool allSet = version.Digits.All(d => d.Value == valueToSet);
+        bool allSet = version.Digits.All(d => d.Value == VALUETOSET);
 
         allSet.ShouldBeTrue();
     }
