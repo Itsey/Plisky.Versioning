@@ -5,7 +5,7 @@ using Shouldly;
 namespace Versonify.ITest;
 
 public class CommandLineArgumentCoverageTests : IDisposable {
-    protected Bilge b = new Bilge("Versonify-ITest");
+    protected Bilge b = new("Versonify-ITest");
     protected TestHelper th;
     protected UnitTestHelper uth;
 
@@ -226,6 +226,47 @@ public class CommandLineArgumentCoverageTests : IDisposable {
 
         output.StdOut.ShouldContain($"Loaded Release Name: {releaseName}");
         output.ReturnCode.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Passive_release_flag_outputs_stored_release_without_changing_store() {
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
+        string versionStorePath = uth.GetTestDataFile(resourceName);
+        const string RELEASE_NAME = "StoredRelease";
+        var setup = await th.ExecuteVersonify($"set -v=\"{versionStorePath}\" --release={RELEASE_NAME}");
+        setup.ReturnCode.ShouldBe(0);
+        string before = File.ReadAllText(versionStorePath);
+
+        var output = await th.ExecuteVersonify($"--command=passive -V=\"{versionStorePath}\" --release={RELEASE_NAME}", appendDebug: false);
+
+        output.ReturnCode.ShouldBe(0);
+        output.StdOut.ShouldContain($"Loaded Release Name: {RELEASE_NAME}");
+        output.StdOut.Trim().Split('\n')[^1].Trim().ShouldBe(RELEASE_NAME);
+        File.ReadAllText(versionStorePath).ShouldBe(before);
+
+        var versionOutput = await th.ExecuteVersonify($"passive -v=\"{versionStorePath}\"", appendDebug: false);
+        versionOutput.ReturnCode.ShouldBe(0);
+        versionOutput.StdOut.ShouldNotContain("Loaded Release Name:");
+        versionOutput.StdOut.Trim().Split('\n')[^1].Trim().ShouldBe("0.1.1.0");
+    }
+
+    [Theory]
+    [InlineData("--release")]
+    [InlineData("--release=")]
+    public async Task Set_release_without_value_reports_error_and_does_not_change_store(string releaseArg) {
+        string resourceName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
+        string versionStorePath = uth.GetTestDataFile(resourceName);
+        const string RELEASE_NAME = "ExistingRelease";
+        var setup = await th.ExecuteVersonify($"set -v=\"{versionStorePath}\" --release={RELEASE_NAME}");
+        setup.ReturnCode.ShouldBe(0);
+        string before = File.ReadAllText(versionStorePath);
+
+        var output = await th.ExecuteVersonify($"set -v=\"{versionStorePath}\" {releaseArg}", appendDebug: false);
+
+        output.ReturnCode.ShouldNotBe(0);
+        output.StdOut.ShouldContain("Error >> A release name is required for --release except with the passive command.");
+        output.StdOut.ShouldNotContain("Saving new Release Name as:");
+        File.ReadAllText(versionStorePath).ShouldBe(before);
     }
 
     [Fact]

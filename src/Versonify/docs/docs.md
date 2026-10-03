@@ -41,7 +41,7 @@ Command names are shown in lowercase and are case-insensitive. Uppercase and mix
 | `--pre-release` | `-p` | Pre-release shortcut. For `passive`, behaves like `--digit-group=default,pre-release`. For mutation/increment flows, behaves like `--digit-group=pre-release`. Cannot be combined with `--digit-group`. |
 | `--qqpnf` |  | Returns an exit code indicating a compatibility level. This document is compatible with exit code 201. |
 | `--quick-value` | `-q` | Supplies the quick value or pattern text.  For a quick value then a standard version number is supplied with the relevant number of digits.  E.g. `1.0`  or `1.0.0` or `5.345.233.1.1.1`.  If a pattern is to be used then this will indicate actions to take on existing digits and will use + or - symbols to perform the activities.  e.g.  `+.-..` will increment the first digit, decrement the second digit and leave all other digits unchanged whereas `..+.+` would leave the first and second digits unchanged and increment the third and fourth digits. |
-| `--release` | `-r` | Sets the release name. |
+| `--release` | `-r` | Sets the release name when a value is supplied. With `passive`, specify `--release` without a value to output the stored release name instead of the full version number, e.g. `versonify --command=passive -v=store.vstore --release`. Other commands require a value, e.g. `versonify set -v=store.vstore --release=Bronte`. |
 | `--root` |  | Sets the root directory for file updates. |
 | `--trace` |  | Sets trace level.  This is used in debugging, if you are finding that it is not working as intended then this should be set to ensure that additional logging is present. |
 | `--version` |  | Shows the application version and exits. |

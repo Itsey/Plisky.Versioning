@@ -78,6 +78,11 @@ public static class ArgumentValidator {
         }
 
         // Command-specific checks
+        if (options.ReleaseValueMissing && options.RequestedCommand != VersioningCommand.PassiveOutput) {
+            Console.WriteLine("Error >> A release name is required for --release except with the passive command.");
+            valid = false;
+        }
+
         switch (options.RequestedCommand) {
             case VersioningCommand.BehaviourOutput:
             case VersioningCommand.BehaviourUpdate:

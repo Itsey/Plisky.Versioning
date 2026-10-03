@@ -114,7 +114,9 @@ public static class CommandLineParser {
         result.NoOverride = parseResult.GetValue(noOverrideOpt!);
         result.PerformIncrement = parseResult.GetValue(incrementOpt!);
         result.QuickValue = parseResult.GetValue(quickValueOpt!);
-        result.Release = parseResult.GetValue(releaseOpt!);
+        var releaseResult = parseResult.GetResult(releaseOpt!);
+        result.Release = releaseResult == null ? null : parseResult.GetValue(releaseOpt!) ?? string.Empty;
+        result.ReleaseValueMissing = releaseResult?.Tokens.Count == 0;
         result.Root = parseResult.GetValue(rootPathOpt!);
         result.Trace = parseResult.GetValue(traceOpt!);
         result.VersionPersistanceValue = parseResult.GetValue(versionSourceOpt!);
@@ -239,7 +241,8 @@ public static class CommandLineParser {
 
         string[] releaseAliases = includeDeprecatedAliases ? ["-R", "-r", "-Release", "--Release"] : ["-r"];
         var releaseOpt = new Option<string>(RELEASE_ARG, releaseAliases) {
-            Description = "Release name associated with this version"
+            Description = "Release name associated with this version; omit the value with passive to output the stored release name",
+            Arity = ArgumentArity.ZeroOrOne
         };
         rc.Add(releaseOpt);
 

@@ -7,6 +7,33 @@ using Xunit;
 
 public class ArgumentValidatorTests {
 
+    [Theory]
+    [Trait(Traits.Age, Traits.Regression)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("passive", true)]
+    [InlineData("set", false)]
+    [InlineData("createversion", false)]
+    [InlineData("updatefiles", false)]
+    [InlineData("override", false)]
+    [InlineData("behaviour", false)]
+    [InlineData("get", false)]
+    [InlineData("prefix", false)]
+    public void Validate_when_release_value_is_missing_only_passive_is_allowed(string command, bool expected) {
+        var sut = new VersonifyOptions {
+            Command = command,
+            VersionPersistanceValue = "store.vstore",
+            Release = string.Empty,
+            DigitManipulations = ["0"],
+            QuickValue = command is "set" or "behaviour" ? null : "1",
+            VersionTargetMinMatch = ["matches.txt"],
+        };
+        ArgumentValidator.ValidateArgumentSettings(sut).ShouldBeTrue();
+
+        sut.ReleaseValueMissing = true;
+
+        ArgumentValidator.ValidateArgumentSettings(sut).ShouldBe(expected);
+    }
+
     [Fact]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]

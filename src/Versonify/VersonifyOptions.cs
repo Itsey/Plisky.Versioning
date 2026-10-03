@@ -7,7 +7,7 @@ using Plisky.Versioning;
 namespace Versonify;
 
 public class VersonifyOptions {
-    protected Bilge b = new Bilge("Options");
+    protected Bilge b = new("Options");
     private string outOpts = string.Empty;
 
     private string? pathPassed;
@@ -45,6 +45,7 @@ public class VersonifyOptions {
     public string? QuickValue { get; set; }
     public string? RawOutputOptions { get; set; }
     public string? Release { get; set; }
+    public bool ReleaseValueMissing { get; set; }
 
     public VersioningCommand RequestedCommand {
         get {
@@ -141,7 +142,7 @@ public class VersonifyOptions {
 
         outOpts = outOpts.Trim().ToLowerInvariant();
         if (outOpts.EndsWith("-nf")) {
-            outOpts = outOpts.Substring(0, outOpts.Length - 3);
+            outOpts = outOpts[..^3];
             OutputsActive = OutputPossibilities.NukeFusion;
         } else {
             OutputsActive = OutputPossibilities.None;
@@ -168,7 +169,7 @@ public class VersonifyOptions {
             if (outOpts.Contains(':')) {
                 int markerPos = outOpts.IndexOf(':') + 1;
                 if (markerPos < outOpts.Length) {
-                    PverFileName = outOpts.Substring(markerPos).Trim();
+                    PverFileName = outOpts[markerPos..].Trim();
                 }
             }
             return;
@@ -180,16 +181,16 @@ public class VersonifyOptions {
             OutputsActive |= OutputPossibilities.Console;
 
             string varToReplace = "CodeVersionNumber";
-            string outputTemplate = "##vso[task.setvariable variable=XXVARIABLENAMEXX;isOutput=true]%VER%";
+            const string OUTPUT_TEMPLATE = "##vso[task.setvariable variable=XXVARIABLENAMEXX;isOutput=true]%VER%";
 
-            if (outOpts.Contains(":")) {
-                int markerPos = outOpts.IndexOf(":") + 1;
+            if (outOpts.Contains(':')) {
+                int markerPos = outOpts.IndexOf(':') + 1;
                 if (markerPos < outOpts.Length) {
-                    varToReplace = outOpts.Substring(markerPos);
+                    varToReplace = outOpts[markerPos..];
                 }
             }
 
-            ConsoleTemplate = outputTemplate.Replace("XXVARIABLENAMEXX", varToReplace);
+            ConsoleTemplate = OUTPUT_TEMPLATE.Replace("XXVARIABLENAMEXX", varToReplace);
             b.Verbose.Log($"Console Template Updated to {ConsoleTemplate.Replace("##vso", "dummy")}");
 
             return;

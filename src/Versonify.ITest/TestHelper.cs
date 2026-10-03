@@ -20,14 +20,9 @@ internal sealed class VersonifyExecutionResult {
     public string StdOut { get; init; } = string.Empty;
 }
 
-public class TestHelper {
-    protected Bilge b;
-    private readonly UnitTestHelper uth;
-
-    public TestHelper(UnitTestHelper unitTestHelper) {
-        b = new Bilge("Versonify.TestHelper");
-        uth = unitTestHelper;
-    }
+public class TestHelper(UnitTestHelper unitTestHelper) {
+    protected Bilge b = new("Versonify.TestHelper");
+    private readonly UnitTestHelper uth = unitTestHelper;
 
     public int LastExecutionExitCode { get; set; } = 0;
     protected static string? SolutionPathCache { get; set; } = null;
