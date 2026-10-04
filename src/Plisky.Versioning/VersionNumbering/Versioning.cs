@@ -1,26 +1,34 @@
-﻿namespace Plisky.CodeCraft;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using GlobExpressions;
 using Plisky.Diagnostics;
+using Plisky.Plumbing;
+using Plisky.Versioning;
+
+namespace Plisky.CodeCraft;
 
 public class Versioning {
     protected Bilge b = new Bilge("Plisky-Versioning");
     protected CompleteVersion cv;
-    protected List<Tuple<string, FileUpdateType>> filenamesRegistered = new List<Tuple<string, FileUpdateType>>();
     protected Dictionary<FileUpdateType, List<string>> fileUpdateMinmatchers = new Dictionary<FileUpdateType, List<string>>();
+    protected List<Tuple<string, FileUpdateType>> filenamesRegistered = new List<Tuple<string, FileUpdateType>>();
     protected VersionStorage repo;
     protected bool testMode;
     protected VersionFileUpdater vfu;
 
-    public Versioning(VersionStorage jvp, bool dryRun = false) {
+    public Versioning(VersionStorage jvp, bool dryRun = false, Hub hb = null) {
         b.Verbose.Log($"Versioning Online - DryRun {dryRun}");
 
         testMode = dryRun;
         repo = jvp;
         cv = repo.GetVersion();
+
+        if (hb != null) {
+            Messenger = hb;
+        } else {
+            Messenger = Hub.Current;
+        }
 
         if (dryRun) {
             vfu = new DryRunVersionFileUpdater(cv);
@@ -31,7 +39,7 @@ public class Versioning {
 
     public string FileUpdateDisplayGroups { get; set; } = string.Empty;
 
-    public Action<string>? Logger { get; set; }
+    public Hub Messenger { get; set; }
 
     public CompleteVersion Version {
         get { return cv; }
@@ -221,11 +229,11 @@ public class Versioning {
 
     private void Log(string v) {
         b.Info.Log(v);
-        Logger?.Invoke(v);
+        Messenger.Launch(new SimpleMessage(v));
     }
 
     private void Warning(string v) {
         b.Warning.Log(v);
-        Logger?.Invoke(v);
+        Messenger.Launch(new SimpleMessage(v));
     }
 }

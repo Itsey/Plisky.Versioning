@@ -168,10 +168,9 @@ internal static class Program {
 
         ArgumentNullException.ThrowIfNull(opts, nameof(opts));
 
-        var ver = new Versioning(storage!, opts.DryRunOnly);
+        var ver = new Versioning(storage!, opts.DryRunOnly, outputContent);
         versionerUsed = ver.Version;
 
-        ver.Logger = msg => outputContent.Launch(new SimpleMessage(msg));
         ver.FileUpdateDisplayGroups = ResolveDigitGroupsForDisplay();
 
         if (opts.NoOverride) {
