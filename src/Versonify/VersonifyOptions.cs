@@ -140,7 +140,8 @@ public class VersonifyOptions {
     private void ParseOutputOptions() {
         b.Verbose.Flow();
 
-        outOpts = outOpts.Trim().ToLowerInvariant();
+        string outRaw = outOpts.Trim();
+        outOpts = outRaw.ToLowerInvariant();
         if (outOpts.EndsWith("-nf")) {
             outOpts = outOpts[..^3];
             OutputsActive = OutputPossibilities.NukeFusion;
@@ -166,10 +167,10 @@ public class VersonifyOptions {
 
         if (outOpts.StartsWith("file")) {
             OutputsActive |= OutputPossibilities.File;
-            if (outOpts.Contains(':')) {
-                int markerPos = outOpts.IndexOf(':') + 1;
-                if (markerPos < outOpts.Length) {
-                    PverFileName = outOpts[markerPos..].Trim();
+            if (outRaw.Contains(':')) {
+                int markerPos = outRaw.IndexOf(':') + 1;
+                if (markerPos < outRaw.Length) {
+                    PverFileName = outRaw[markerPos..].Trim();
                 }
             }
             return;
@@ -184,9 +185,9 @@ public class VersonifyOptions {
             const string OUTPUT_TEMPLATE = "##vso[task.setvariable variable=XXVARIABLENAMEXX;isOutput=true]%VER%";
 
             if (outOpts.Contains(':')) {
-                int markerPos = outOpts.IndexOf(':') + 1;
-                if (markerPos < outOpts.Length) {
-                    varToReplace = outOpts[markerPos..];
+                int markerPos = outRaw.IndexOf(':') + 1;
+                if (markerPos < outRaw.Length) {
+                    varToReplace = outRaw[markerPos..];
                 }
             }
 

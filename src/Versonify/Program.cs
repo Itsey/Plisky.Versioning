@@ -200,52 +200,52 @@ internal static class Program {
         } else {
             result.WasProcessedSuccessfully = false;
             result.AddError($"Invalid or Missing Root Path: {opts.Root}.");
-            // TODO: Consistant error code map
-            result.ExitCode = 5;
+            result.ExitCode = ExitCodes.NoRootPathPresent;
         }
 
         int filesUpdated = ver.UpdateAllRegisteredFiles();
 
         if (filesUpdated == 0) {
-            // TODO: Consistant error code map
             result.AddError("No files were updated, likely due to mismatches in the glob patterns.");
-            result.ExitCode = 6;
+            result.ExitCode = ExitCodes.UpdateFileUpdatedNoFiles;
         }
 
         ver.SaveUpdatedVersion();
     }
 
-    private static int CheckPnfCompatibiliyRequest(string[] args) {
-        if (args.Length == 1 && args[0].Equals("--QQpnf", StringComparison.OrdinalIgnoreCase)) {
+    private static ExitCodes CheckPnfCompatibiliyRequest(string[] args) {
+        if (args.Length == 1 && (args[0].Equals("--QQpnf", StringComparison.OrdinalIgnoreCase) || args[0].Equals("--QQpff", StringComparison.OrdinalIgnoreCase))) {
             // 200 is the first implemented compatibility exit code. Before this no compatibility exit codes existed  - Versonify Release 1.0.1 Austen.
             // 201 is the new command line interface.  Versonify Release 2.0 Bronte.
-            return 201;
+            return ExitCodes.BronteCompatibilityVersion;
         }
-        return 0;
+        return ExitCodes.Ok;
     }
 
-    private static (bool shouldExit, int returnCode) CheckQuickReturns(string[] args) {
-        int pnfShortCircuit = CheckPnfCompatibiliyRequest(args);
-        if (pnfShortCircuit >= 200) {
+    private static (bool shouldExit, ExitCodes returnCode) CheckQuickReturns(string[] args) {
+        var pnfShortCircuit = CheckPnfCompatibiliyRequest(args);
+        if (pnfShortCircuit >= ExitCodes.VersionCheckInitialVersion) {
             return (true, pnfShortCircuit);
         }
 
         if (IsVersionRequested(args)) {
             Console.WriteLine(GetAssemblyVersionString());
-            return (true, 0);
+            return (true, ExitCodes.Ok);
         }
 
         if (CommandLineParser.IsHelpRequested(args)) {
             WriteGreetingMessage();
             CommandLineParser.DisplayHelp();
-            return (true, 0);
+            return (true, ExitCodes.Ok);
         }
 
-        return (false, 0);
+        return (false, ExitCodes.Ok);
     }
 
-    private static void ConfigureOutput(VersonifyOptions options) {
+    private static void ConfigureOutput(VersonifyOptions options, Action<SimpleMessage> defaultHandler) {
         ArgumentNullException.ThrowIfNull(options, nameof(options));
+
+        outputContent.StopLooking(defaultHandler);
 
         if (options.OutputsActive == OutputPossibilities.None) {
             b.Warning.Log("No output is set, there will be nothing written from the session.");
@@ -395,7 +395,7 @@ internal static class Program {
         int[] groupDigitIndices = ver.Version.GetDigitsByGroup(groupName);
         if (groupDigitIndices.Length == 0) {
             b.Warning.Log($"Digit-group [{groupName}] contains no digits, cannot continue with Get command.");
-            result.AddError($"Error >> The digit-group '{groupName}' does not contain any digits.", 1);
+            result.AddError($"Error >> The digit-group '{groupName}' does not contain any digits.", ExitCodes.ValidationInvalidDigitGroup);
             return false;
         }
 
@@ -450,9 +450,11 @@ internal static class Program {
 
     private static async Task<int> Main(string[] args) {
         try {
-            (bool shouldexit, int returnCode) = CheckQuickReturns(args);
+            var defaultHandler = outputContent.LookFor<SimpleMessage>(msg => { Console.WriteLine(msg.Content); });
+
+            (bool shouldexit, var returnCode) = CheckQuickReturns(args);
             if (shouldexit) {
-                return returnCode;
+                return (int)returnCode;
             }
 
             (bool success, var options) = CommandLineParser.Parse(args);
@@ -462,28 +464,22 @@ internal static class Program {
                 WriteGreetingMessage();
             }
 
-            if (options.Debug) {
-                Console.WriteLine("Debug Mode, Command Line Arguments:");
-
-                for (int n = 0; n < args.Length; n++) {
-                    Console.WriteLine($"args[{n}]: {args[n]}");
-                }
-            }
+            LogArguments(args, options.Debug);
 
             if (!success) {
                 WriteErrorConditions();
-                return 11;
+                return (int)ExitCodes.FailedToParseArguments;
             }
 
             if (options.GetMdHelp) {
                 return await WriteMarkdownHelpFileAsync();
             }
 
-            ConfigureOutput(options);
+            ConfigureOutput(options, defaultHandler);
 
             if (!ArgumentValidator.ValidateArgumentSettings(options)) {
                 WriteErrorConditions();
-                return 12;
+                return (int)ExitCodes.FailedToValidateArguments;
             }
 
             if (options.Debug || (!string.IsNullOrEmpty(options.Trace))) {
@@ -527,13 +523,23 @@ internal static class Program {
 
             if (options.ReturnZero) {
                 outputContent.Launch(new SimpleMessage($"ReturnZero option specified:  ExitCode: {result.ExitCode} suppressed."));
-                return 0;
+                return (int)ExitCodes.Ok;
             }
 
-            return result.ExitCode;
+            return (int)result.ExitCode;
         } catch (Exception ex) {
             outputContent.Launch(new SimpleMessage("Fatal: An unhandled exception was encountered. " + ex.Message));
-            return 1;
+            return (int)ExitCodes.UnknownFatalError;
+        }
+    }
+
+    private static void LogArguments(string[] args, bool logIt) {
+        if (logIt) {
+            Console.WriteLine("Debug Mode, Command Line Arguments:");
+
+            for (int n = 0; n < args.Length; n++) {
+                Console.WriteLine($"args[{n}]: {args[n]}");
+            }
         }
     }
 
@@ -553,7 +559,7 @@ internal static class Program {
         if (!ArgumentValidator.ValidateVersionStorage(storage, opts)) {
             // Do not like this at all - LFY-68 created.
             result.WasProcessedSuccessfully = false;
-            result.ExitCode = 1;
+            result.ExitCode = ExitCodes.ValidationFailVersionStorage;
             return result;
         }
 
@@ -571,8 +577,7 @@ internal static class Program {
             case VersioningCommand.UpdateFiles:
                 if (opts.VersionTargetMinMatch == null || opts.VersionTargetMinMatch.Length == 0) {
                     result.AddError("Error >> The Update command requires a minmatch file to be provided. Use -M=<path to minmatch file.>¦-M=Minmatch glob");
-                    // TODO : Proper Exit Code Map
-                    result.ExitCode = 7;
+                    result.ExitCode = ExitCodes.InvalidOrMissingMinMatch;
                     result.WasProcessedSuccessfully = false;
                 } else {
                     ApplyVersionIncrement(result);
@@ -620,8 +625,7 @@ internal static class Program {
 
             default:
                 result.AddError("Error >> Unrecognised Command: " + opts.Command);
-                result.ExitCode = 8;
-                // Todo: Proper exit code map
+                result.ExitCode = ExitCodes.InvalidOrUnrecognisedCommand;
                 result.WasProcessedSuccessfully = false;
                 break;
         }
@@ -689,7 +693,7 @@ internal static class Program {
 
             if (!groupDigitIndices.Contains(digitIndex)) {
                 b.Warning.Log($"Digit [{digitIndex}] requested for Get command is not part of digit-group [{groupName}].");
-                result.AddError($"Error >> The digit [{requestedDigit}] is not in digit-group '{groupName}'.", 1);
+                result.AddError($"Error >> The digit [{requestedDigit}] is not in digit-group '{groupName}'.", ExitCodes.ValidationDigitNotInDigitGroup);
                 return null;
             }
 

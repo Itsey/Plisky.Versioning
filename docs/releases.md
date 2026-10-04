@@ -10,7 +10,7 @@ This is a versioning library and corresponding command line tool to apply versio
 
 ### VNext.  
 
-🎵 Stumbled over createversion --dry-run bug.  Did review of code for outputter functionality.
+🎵 Stumbled over createversion --dry-run bug.  Did review of code for outputter functionality.  Performed some other small review and bug fixes. Added a default message handler for output that was sent before the actual outputter was registered, then had to remove that when the real output is registered to prevent double outputs.  Preemeptivly allowed for -qqpff in case.
 
 ➕ --flush added for edge case debugging scenarios. This should not be needed in usual circumstances but can be useful if trace is getting truncated.
 

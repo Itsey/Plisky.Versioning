@@ -1,16 +1,13 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace Versonify;
 
 internal class ExecutionResult {
-
     public string[] Errors {
-        get {
-            return [.. AllErrors];
-        }
+        get { return [.. AllErrors]; }
     }
 
-    public int ExitCode { get; set; }
+    public ExitCodes ExitCode { get; set; }
     public bool WasProcessedSuccessfully { get; internal set; }
     protected List<string> AllErrors { get; set; } = [];
 
@@ -18,7 +15,7 @@ internal class ExecutionResult {
         AllErrors.Add(errorMessage);
     }
 
-    internal void AddError(string errorMessage, int exit) {
+    internal void AddError(string errorMessage, ExitCodes exit) {
         AllErrors.Add(errorMessage);
         ExitCode = exit;
     }

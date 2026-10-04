@@ -117,4 +117,13 @@ public class RegressionTests {
             }
         }
     }
+
+    [Fact]
+    public async Task Invalid_output_parameter_logs_error_works() {
+        b.Info.Flow();
+
+        var output = await th.ExecuteVersonify("--output=monkey");
+
+        output.StdOut.ShouldContain("Fatal:");
+    }
 }
