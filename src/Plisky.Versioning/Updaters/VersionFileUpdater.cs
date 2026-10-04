@@ -1,5 +1,3 @@
-namespace Plisky.CodeCraft;
-
 using System;
 using System.IO;
 using System.Text;
@@ -7,9 +5,10 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Plisky.Diagnostics;
 
+namespace Plisky.CodeCraft;
+
 public class VersionFileUpdater {
     protected const string RELEASE_NAME_FILE_IDENTIFIER = "XXX-RELEASENAME-XXX";
-    protected Bilge b;
     private const string ASM_STD_ASMVTAG = "AssemblyVersion";
     private const string ASM_STD_FILETAG = "FileVersion";
     private const string ASM_STD_VERSTAG = "Version";
@@ -18,6 +17,7 @@ public class VersionFileUpdater {
     private const string ASMFILE_VER_TAG = "AssemblyVersion";
 
     private readonly CompleteVersion cv;
+    protected Bilge b;
 
     public VersionFileUpdater() {
         b = new Bilge("Plisky-Versioning");
@@ -113,7 +113,6 @@ public class VersionFileUpdater {
     /// <param name="targetAttribute">The name of the attribute to write the version number into</param>
     /// <param name="versionValue">The version number to apply to the code</param>
     protected virtual void UpdateCSFileWithAttribute(string fileName, string targetAttribute, string versionValue) {
-
         #region entry code
 
         b.Assert.True(!string.IsNullOrEmpty(fileName), "fileName is null, internal consistancy error.");
@@ -128,8 +127,8 @@ public class VersionFileUpdater {
 
         if (!File.Exists(fileName)) {
             b.Verbose.Log("There was no file, creating file and adding attribute");
-            outputFile.Append("using System.Reflection;\r\n");
-            outputFile.Append($"[assembly: {targetAttribute}(\"{versionValue}\")]\r\n");
+            outputFile.Append("using System.Reflection;" + Environment.NewLine);
+            outputFile.Append($"[assembly: {targetAttribute}(\"{versionValue}\")]" + Environment.NewLine);
         } else {
             // If it does exist we need to verify that it is not readonly.
             if ((File.GetAttributes(fileName) & FileAttributes.ReadOnly) == FileAttributes.ReadOnly) {
@@ -154,28 +153,30 @@ public class VersionFileUpdater {
                     //  its the line we are to replace
                     outputFile.Append("[assembly: " + targetAttribute + "(\"");
                     outputFile.Append(versionValue);
-                    outputFile.Append("\")]\r\n");
+                    outputFile.Append("\")]" + Environment.NewLine);
                     replacementMade = true;
                 } else {
                     // All lines except the one we are interested in are copied across.
-                    outputFile.Append(nextLine + "\r\n");
+                    outputFile.Append(nextLine + Environment.NewLine);
                 }
             }
 
             if (!replacementMade) {
                 b.Warning.Log("No " + targetAttribute + " found in file, appending new one.");
-                outputFile.Append($"\r\n[assembly: {targetAttribute}(\"{versionValue}\")]\r\n");
+                outputFile.Append(Environment.NewLine + $"[assembly: {targetAttribute}(\"{versionValue}\")]" + Environment.NewLine);
             }
         }
 
-        File.WriteAllText(fileName, outputFile.ToString(), Encoding.UTF8);
+        SaveUpdatedReplacedFile(fileName, outputFile.ToString());
 
         b.Info.Log("The attribute " + targetAttribute + " was applied to the file " + fileName + " Successfully.");
     }
 
     protected virtual string UpdateLiteralReplacer(string fileToCheck, CompleteVersion versonToWrite, DisplayType displayStyle, DisplayType originalDisplayStyle = DisplayType.Default, string groupNamesForDisplay = "") {
 #if DEBUG
-        if (!File.Exists(fileToCheck)) { throw new InvalidOperationException("Must not be possible, check this before you reach this code"); }
+        if (!File.Exists(fileToCheck)) {
+            throw new InvalidOperationException("Must not be possible, check this before you reach this code");
+        }
 #endif
         string response = string.Empty;
 
@@ -200,18 +201,22 @@ public class VersionFileUpdater {
                 response = "Replacing XXX-VERSION* with " + VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay);
 
                 return inney.Replace(RELEASE_NAME_FILE_IDENTIFIER, versonToWrite.ReleaseName)
-                .Replace("XXX-VERSION-XXX", VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay))
-                .Replace("XXX-VERSIONT-XXX", VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, DisplayType.ThreeDigit, groupNamesForDisplay))
-                .Replace("XXX-VERSIONF-XXX", VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, DisplayType.FourDigit, groupNamesForDisplay))
-                .Replace("XXX-VERSION3-XXX", versonToWrite.GetVersionString(DisplayType.ThreeDigitNumeric))
-                .Replace("XXX-VERSION2-XXX", VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, DisplayType.Short, groupNamesForDisplay))
-                .Replace("XXX-VERSION4-XXX", versonToWrite.GetVersionString(DisplayType.FourDigitNumeric));
+                    .Replace("XXX-VERSION-XXX", VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, originalDisplayStyle, groupNamesForDisplay))
+                    .Replace("XXX-VERSIONT-XXX", VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, DisplayType.ThreeDigit, groupNamesForDisplay))
+                    .Replace("XXX-VERSIONF-XXX", VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, DisplayType.FourDigit, groupNamesForDisplay))
+                    .Replace("XXX-VERSION3-XXX", versonToWrite.GetVersionString(DisplayType.ThreeDigitNumeric))
+                    .Replace("XXX-VERSION2-XXX", VersionFileUpdater.GetVersionStringForLiteral(versonToWrite, DisplayType.Short, groupNamesForDisplay))
+                    .Replace("XXX-VERSION4-XXX", versonToWrite.GetVersionString(DisplayType.FourDigitNumeric));
             });
         }
 
         string fileText = replacer(File.ReadAllText(fileToCheck));
-        File.WriteAllText(fileToCheck, fileText);
+        SaveUpdatedReplacedFile(fileToCheck, fileText);
         return response;
+    }
+
+    protected virtual void SaveUpdatedReplacedFile(string fileToCheck, string fileText) {
+        File.WriteAllText(fileToCheck, fileText);
     }
 
     protected virtual string UpdateNuspecFile(string fileName, string versionText) {
@@ -236,13 +241,7 @@ public class VersionFileUpdater {
                 el2.Value = versionText;
                 b.Verbose.Log($"About to save. - {fileName}");
 
-                xd.Save(fileName);
-                string[] x = File.ReadAllLines(fileName);
-                foreach (string n in x) {
-                    b.Verbose.Log("LINE: " + n);
-                }
-
-                b.Verbose.Log(xd.Element(ns + "package")?.Element(ns + "metadata")?.Element(ns + "version")?.Value);
+                SaveUpdatedNuspecFile(fileName, xd);
             } catch (Exception ex) {
                 b.Warning.Dump(ex, "Unable to save nuspec file");
                 result = "WARNING >> Unable to save nuspec file, update failed.";
@@ -255,17 +254,17 @@ public class VersionFileUpdater {
         return result;
     }
 
-    // Special handling for the VERSIONT literal: when pre-release group is requested trim a trailing numeric pre-release part (e.g. ".1").
-    //protected string GetVersionTString(CompleteVersion version, string groupNamesForDisplay) {
-    //    // Reuse existing API and use a single stdlib Regex to drop a trailing numeric pre-release segment.
-    //    string s = version.GetVersionStringByGroupSelection(groupNamesForDisplay, 3) ?? string.Empty;
-    //    return System.Text.RegularExpressions.Regex.Replace(s, @"\.\d+$", "");
-    //}
+    protected virtual void SaveUpdatedNuspecFile(string fileName, XDocument xd) {
+        xd.Save(fileName);
+    }
+
     protected virtual void UpdateStdCSPRoj(string fl, string versonToWrite, string propName) {
         const string PROPERTYGROUP_ELNAME = "PropertyGroup";
         const string PROJECT_ELNAME = "Project";
 #if DEBUG
-        if (!File.Exists(fl)) { throw new InvalidOperationException("Must not be possible, validate that the file exists prior to this point in the code."); }
+        if (!File.Exists(fl)) {
+            throw new InvalidOperationException("Must not be possible, validate that the file exists prior to this point in the code.");
+        }
 #endif
         b.Info.Log($"Updating NetStd style file with ver {versonToWrite} property {propName}", fl);
 
@@ -291,6 +290,10 @@ public class VersionFileUpdater {
             b.Warning.Log($"Unable to locate [{PROPERTYGROUP_ELNAME}] element in the file [{fl}], version update failed");
         }
 
+        SaveUpdatedCSProj(fl, xd2);
+    }
+
+    protected virtual void SaveUpdatedCSProj(string fl, XDocument xd2) {
         xd2.Save(fl);
     }
 
@@ -316,6 +319,10 @@ public class VersionFileUpdater {
             b.Verbose.Log("Invalid attribute, could not find Wix/Product [version]");
         }
 
+        SaveUpdateWix(fileName, xd);
+    }
+
+    protected virtual void SaveUpdateWix(string fileName, XDocument xd) {
         xd.Save(fileName);
     }
 }

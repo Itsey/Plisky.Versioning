@@ -69,7 +69,7 @@ The possible versioning types are:
 | `NetAssembly` | .NET framework assembly version attribute update. |
 | `NetInformational` | .NET framework assembly informational version attribute update. |
 | `NetFile` | .NET framework assembly file version attribute update. |
-| `Wix` | Wix installation file product version update. |
+| `Wix` | Wix installation file product version update. Note that the wix file must be valid for the update to happen and if XXX_VERSION_XXX is in the name attribute this will get updated as well. |
 
 An example set of file update statements:
 

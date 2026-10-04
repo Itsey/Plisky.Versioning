@@ -167,6 +167,7 @@ internal static class Program {
         b.Verbose.Flow();
 
         ArgumentNullException.ThrowIfNull(opts, nameof(opts));
+        result.WasProcessedSuccessfully = true;
 
         var ver = new Versioning(storage!, opts.DryRunOnly, outputContent);
         versionerUsed = ver.Version;
@@ -207,6 +208,7 @@ internal static class Program {
 
         if (filesUpdated == 0) {
             result.AddError("No files were updated, likely due to mismatches in the glob patterns.");
+            result.WasProcessedSuccessfully = false;
             result.ExitCode = ExitCodes.UpdateFileUpdatedNoFiles;
         }
 
@@ -581,7 +583,6 @@ internal static class Program {
                     result.WasProcessedSuccessfully = false;
                 } else {
                     ApplyVersionIncrement(result);
-                    result.WasProcessedSuccessfully = true;
                 }
                 break;
 
