@@ -97,4 +97,24 @@ public class RegressionTests {
             }
         }
     }
+
+    [Fact]
+    public async Task CreateVersion_with_dry_run_file_not_found() {
+        b.Info.Flow();
+
+        string pth = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(Path.GetRandomFileName()));
+        Directory.CreateDirectory(pth);
+
+        try {
+            string versionStore = Path.Combine(pth, "vstore.delme");
+
+            var output = await th.ExecuteVersonify($"CreateVersion -v={versionStore} -Q=\"1.0.0.0\" --dry-run");
+
+            File.Exists(versionStore).ShouldBeFalse();
+        } finally {
+            if (Directory.Exists(pth)) {
+                Directory.Delete(pth, true);
+            }
+        }
+    }
 }

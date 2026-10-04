@@ -320,8 +320,12 @@ internal static class Program {
         };
         versionerUsed = cv;
 
-        outputContent.Launch(new SimpleMessage($"Saving {cv.GetVersionString()}"));
-        storage!.Persist(cv);
+        if (opts.DryRunOnly) {
+            outputContent.Launch(new SimpleMessage($"DryRun - Would Save: {cv.GetVersionString()}"));
+        } else {
+            outputContent.Launch(new SimpleMessage($"Saving {cv.GetVersionString()}"));
+            storage!.Persist(cv);
+        }
     }
 
     private static void DisplayDryRunBehaviours(Versioning ver, string[] digitsToUpdate) {

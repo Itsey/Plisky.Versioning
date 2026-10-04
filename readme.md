@@ -4,3 +4,7 @@ This is the repository for Versonify, the versioning tool that has replaced Plis
 
 See the documentation at itsey.github.io
 
+### Good Little Dev.
+
+The mollycoddle version is `latest`
+

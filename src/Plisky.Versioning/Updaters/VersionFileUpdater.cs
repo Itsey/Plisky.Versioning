@@ -1,4 +1,4 @@
-﻿namespace Plisky.CodeCraft;
+namespace Plisky.CodeCraft;
 
 using System;
 using System.IO;
@@ -46,7 +46,7 @@ public class VersionFileUpdater {
         switch (fut) {
             case FileUpdateType.NetAssembly:
                 UpdateCSFileWithAttribute(fl, ASMFILE_VER_TAG, versonToWrite);
-                responseLog = $"Updated {ASMFILE_FILEVER_TAG} to {versonToWrite}";
+                responseLog = $"Updated {ASMFILE_VER_TAG} to {versonToWrite}";
                 break;
 
             case FileUpdateType.NetInformational:

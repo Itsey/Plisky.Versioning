@@ -10,6 +10,8 @@ This is a versioning library and corresponding command line tool to apply versio
 
 ### VNext.  
 
+🎵 Stumbled over createversion --dry-run bug.  Did review of code for outputter functionality.
+
 ➕ --flush added for edge case debugging scenarios. This should not be needed in usual circumstances but can be useful if trace is getting truncated.
 
 🎵 Added regression test to check that double digit commands worked the same way as their replacement counterparts, this led to noticing that our regression tests are significantly slower than they should be, this is down to TCP timeouts in debug mode forcing the code to run much more slowly than was needed.  Added --flush in to support this edge case, which has reduced overall execution time of the integration tests.
