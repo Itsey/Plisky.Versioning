@@ -150,6 +150,10 @@
           "type": "string",
           "description": "Specifies a quick version command for the versioning quick step"
         },
+        "ReleaseName": {
+          "type": "string",
+          "description": "Set the release name in the pre-release version store"
+        },
         "SimplifyLogging": {
           "type": "boolean",
           "description": "Uses a simpler logging approach that adds stability if required"

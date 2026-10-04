@@ -75,6 +75,10 @@ public partial class Build : NukeBuild {
               );
           }
 
+          if (PreRelease) {
+              ApplyPreReleaseName(dryRunMode, vc);
+          }
+
           b.Info.Log($"PRE File Update >> {vc.VersionLiteral}");
           vc.FileUpdateCommand(s => s
               .SetVersionPersistanceValue(vtFile)
@@ -102,6 +106,20 @@ public partial class Build : NukeBuild {
           Console.WriteLine($"##vso[task.setvariable variable=FullVersionNumber;isOutput=true]{FullVersionNumber}");
       });
 
+    private void ApplyPreReleaseName(bool dryRunMode, VersonifyTasks vc) {
+        if (!string.IsNullOrEmpty(ReleaseName)) {
+            Log.Information($"[Versioning] Pre-release name requested: {ReleaseName}.");
+            vc.OverrideCommand(s => s
+                .SetVersionPersistanceValue(settings!.VersioningPersistanceToken)
+                .SetOutputStyle("console-nf")
+                .AsDryRun(dryRunMode)
+                .SetRoot(Solution!.Directory)
+                .SetQuickValue($"...{ReleaseName}")
+                .SetRelease(ReleaseName) // SetRelease does not work due to PFF bug LFY-91
+            );
+        }
+    }
+
     private void UpdatePreReleaseVersionNumber(bool dryRunMode, string versioningType, VersonifyTasks vc, AbsolutePath mmPathBase) {
         Log.Information($"[Versioning]{versioningType} Applying release version number to pre-release data. ({vc.VersionLiteral})");
 
@@ -121,6 +139,8 @@ public partial class Build : NukeBuild {
             .SetRoot(Solution!.Directory)
             .SetQuickValue(quickVal)
         );
+
+        ApplyPreReleaseName(dryRunMode, vc);
 
         var nmPath = mmPathBase / "noversion.txt";
         vc.FileUpdateCommand(s => s

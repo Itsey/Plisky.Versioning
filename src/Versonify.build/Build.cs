@@ -44,6 +44,9 @@ public partial class Build : NukeBuild {
     [Parameter("Increment the minor version digit instead of patch.")]
     private readonly bool IsMinor = false;
 
+    [Parameter("Set the release name in the pre-release version store.")]
+    private readonly string? ReleaseName;
+
     [Parameter("Specifies a quick version command for the versioning quick step", Name = "QuickVersion")]
     private readonly string QuickVersion = "";
 
