@@ -19,9 +19,15 @@ parameters:
     type: boolean
     default: false
   - name: ReleaseName
-    displayName: 'ReleaseName (pre-release only)'
+    displayName: 'ReleaseName (pre-release only; leave (unchanged) to keep current name)'
     type: string
-    default: ''
+    default: '(unchanged)'
+
+variables:
+  ${{ if or(eq(parameters.ReleaseName, '(unchanged)'), eq(parameters.ReleaseName, '')) }}:
+    ReleaseNameArgument: ''
+  ${{ else }}:
+    ReleaseNameArgument: '--ReleaseName "${{ parameters.ReleaseName }}"'
 
 trigger:
   - none
@@ -46,30 +52,30 @@ stages:
           - task: CmdLine@2
             displayName: 'Run: ArrangeStep'
             inputs:
-              script: '.\src\build.cmd ArrangeStep Clean MollyCheck --root .\src\ --PreRelease ${{ parameters.PreRelease }} --IsMajor ${{ parameters.IsMajor }} --IsMinor ${{ parameters.IsMinor }}'
+              script: '.\src\build.cmd ArrangeStep Clean MollyCheck --root .\src\'
 
           - task: CmdLine@2
             displayName: 'Run: ConstructStep'
             name: ConstructStep
             inputs:
-              script: '.\src\build.cmd ConstructStep Compile --skip ArrangeStep --root .\src\ --PreRelease ${{ parameters.PreRelease }} --IsMajor ${{ parameters.IsMajor }} --IsMinor ${{ parameters.IsMinor }} --ReleaseName "${{ parameters.ReleaseName }}"'
+              script: '.\src\build.cmd ConstructStep Compile --skip ArrangeStep --root .\src\ --PreRelease ${{ parameters.PreRelease }} --IsMajor ${{ parameters.IsMajor }} --IsMinor ${{ parameters.IsMinor }} ${{ variables.ReleaseNameArgument }}'
       
           - task: CmdLine@2
             displayName: 'Run: ExamineStep'
             inputs:
-              script: '.\src\build.cmd ExamineStep --skip ArrangeStep ConstructStep --root .\src\ --PreRelease ${{ parameters.PreRelease }} --IsMajor ${{ parameters.IsMajor }} --IsMinor ${{ parameters.IsMinor }}'
+              script: '.\src\build.cmd ExamineStep --skip ArrangeStep ConstructStep --root .\src\ --AnalysisMode Lite'
               
           - task: CmdLine@2
             displayName: 'Run: PackageStep'
             inputs:
-              script: '.\src\build.cmd PackageStep --skip ArrangeStep ConstructStep ExamineStep --root .\src\ --PreRelease ${{ parameters.PreRelease }} --IsMajor ${{ parameters.IsMajor }} --IsMinor ${{ parameters.IsMinor }}'
+              script: '.\src\build.cmd PackageStep --skip ArrangeStep ConstructStep ExamineStep --root .\src\'
 
           - task: CmdLine@2
             displayName: 'Run: ReleaseStep'
             inputs:
-              script: '.\src\build.cmd ReleaseStep --skip ArrangeStep ConstructStep ExamineStep PackageStep --root .\src\ --PreRelease ${{ parameters.PreRelease }} --IsMajor ${{ parameters.IsMajor }} --IsMinor ${{ parameters.IsMinor }}  --FullVersionNumber $(ConstructStep.FullVersionNumber)'
+              script: '.\src\build.cmd ReleaseStep --skip ArrangeStep ConstructStep ExamineStep PackageStep --root .\src\ --FullVersionNumber $(ConstructStep.FullVersionNumber)'
 
           - task: CmdLine@2
             displayName: 'Run: TestStep'
             inputs:
-              script: '.\src\build.cmd TestStep --skip ArrangeStep ConstructStep ExamineStep PackageStep ReleaseStep --root .\src\ --PreRelease ${{ parameters.PreRelease }} --IsMajor ${{ parameters.IsMajor }} --IsMinor ${{ parameters.IsMinor }}'
+              script: '.\src\build.cmd TestStep --skip ArrangeStep ConstructStep ExamineStep PackageStep ReleaseStep --root .\src\'

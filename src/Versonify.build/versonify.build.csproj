@@ -30,9 +30,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageDownload Include="Nuget.CommandLine" Version="[6.9.1]" />
-    <PackageDownload Include="dotnet-stryker" Version="[4.8.0]" />
+    <PackageDownload Include="dotnet-stryker" Version="[5.0.0]" />
     <PackageDownload Include="Plisky.Versonify" Version="[1.0.3]" />
-    <PackageDownload Include="Plisky.Mollycoddle" Version="[1.0.3]" />
+    <PackageDownload Include="Plisky.Mollycoddle" Version="[1.4.3]" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Plisky.Versioning\Plisky.Versioning.csproj" />
