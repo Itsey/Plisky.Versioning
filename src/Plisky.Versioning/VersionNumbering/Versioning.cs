@@ -9,26 +9,22 @@ using Plisky.Versioning;
 namespace Plisky.CodeCraft;
 
 public class Versioning {
-    protected Bilge b = new Bilge("Plisky-Versioning");
+    protected Bilge b = new("Plisky-Versioning");
     protected CompleteVersion cv;
-    protected Dictionary<FileUpdateType, List<string>> fileUpdateMinmatchers = new Dictionary<FileUpdateType, List<string>>();
-    protected List<Tuple<string, FileUpdateType>> filenamesRegistered = new List<Tuple<string, FileUpdateType>>();
+    protected Dictionary<FileUpdateType, List<string>> fileUpdateMinmatchers = [];
+    protected List<Tuple<string, FileUpdateType>> filenamesRegistered = [];
     protected VersionStorage repo;
     protected bool testMode;
     protected VersionFileUpdater vfu;
 
-    public Versioning(VersionStorage jvp, bool dryRun = false, Hub hb = null) {
+    public Versioning(VersionStorage jvp, bool dryRun = false, Hub? hb = null) {
         b.Verbose.Log($"Versioning Online - DryRun {dryRun}");
 
         testMode = dryRun;
         repo = jvp;
         cv = repo.GetVersion();
 
-        if (hb != null) {
-            Messenger = hb;
-        } else {
-            Messenger = Hub.Current;
-        }
+        Messenger = hb ?? Hub.Current;
 
         if (dryRun) {
             vfu = new DryRunVersionFileUpdater(cv);
@@ -46,9 +42,7 @@ public class Versioning {
     }
 
     public void AddCSharpFile(string targetCSFile) {
-        if (targetCSFile == null) {
-            throw new ArgumentNullException(nameof(targetCSFile));
-        }
+        ArgumentNullException.ThrowIfNull(targetCSFile);
         if ((string.IsNullOrEmpty(targetCSFile)) || (!File.Exists(targetCSFile))) {
             throw new FileNotFoundException("Filename not found", targetCSFile);
         }
@@ -57,9 +51,8 @@ public class Versioning {
     }
 
     public void AddNugetFile(string targetNugetFile) {
-        if (targetNugetFile == null) {
-            throw new ArgumentNullException(nameof(targetNugetFile));
-        }
+        ArgumentNullException.ThrowIfNull(targetNugetFile);
+
         if ((string.IsNullOrEmpty(targetNugetFile)) || (!File.Exists(targetNugetFile))) {
             throw new FileNotFoundException("Filename not found", targetNugetFile);
         }
@@ -73,7 +66,7 @@ public class Versioning {
     }
 
     public string GetBehaviour(string digit) {
-        b.Verbose.Log($"Returning Behaviours");
+        b.Verbose.Log("Returning Behaviours");
         string result = cv.GetBehaviourString(digit);
         return result;
     }
@@ -150,7 +143,7 @@ public class Versioning {
                 }
             }
         } catch (UnauthorizedAccessException) {
-            Warning($"Access Denied - File Searcher Stopped.");
+            Warning("Access Denied - File Searcher Stopped.");
         }
         b.Verbose.Log($"Total Files {totalNoFiles} registered for update {registered}");
 
@@ -159,7 +152,7 @@ public class Versioning {
 
     public void SetMiniMatches(FileUpdateType target, params string[] versionTargetMinMatch) {
         if (!fileUpdateMinmatchers.ContainsKey(target)) {
-            fileUpdateMinmatchers.Add(target, new List<string>());
+            fileUpdateMinmatchers.Add(target, []);
         }
         fileUpdateMinmatchers[target].AddRange(versionTargetMinMatch);
     }

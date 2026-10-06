@@ -3,10 +3,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <Nullable>enable</Nullable>
+    <RunAnalyzers>false</RunAnalyzers>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="automation\VersonifyCommands.cmd" />
+    <None Include="Templates\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Templates\" />
