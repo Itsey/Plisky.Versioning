@@ -80,19 +80,31 @@ public class Exploratory {
         var output = await th.ExecuteVersonify(args);
 
         output.StdOut.ShouldNotContain("PNFV]");
+        output.StdOut.ShouldNotContain("PFV]");
         output.ReturnCode.ShouldBe(0);
     }
 
-    [Fact]
-    public async Task Console_with_nuke_has_markers() {
+    [Theory]
+    [InlineData("con-nf", "PN", "PFV]")]
+    [InlineData("con-pf", "P", "PNFV]")]
+    public async Task Console_with_fusion_has_markers(string mode, string prefix, string excludedMarker) {
         b.Info.Flow();
         string resName = TestResources.GetIdentifiers(TestResourcesReferences.DefaultVersionStore)!;
         string vStoreFilePath = uth.GetTestDataFile(resName);
 
-        string args = $"passive -v={vStoreFilePath} -O=con-nf -Q=1.9.4.3";
-        string s = await th.ExecuteVersonify(args);
+        string args = $"passive -v={vStoreFilePath} -o={mode}";
+        var output = await th.ExecuteVersonify(args, appendDebug: false);
 
-        s.ShouldContain("PNFV]", customMessage: "Nuke Marker not found in output");
+        output.ReturnCode.ShouldBe(0);
+        output.StdOut.ShouldContain($"{prefix}FV]");
+        output.StdOut.ShouldContain($"{prefix}F2]");
+        output.StdOut.ShouldContain($"{prefix}F3]");
+        output.StdOut.ShouldContain($"{prefix}3D]");
+        output.StdOut.ShouldContain($"{prefix}F4]");
+        output.StdOut.ShouldContain($"{prefix}QF]");
+        output.StdOut.ShouldContain($"{prefix}4D]");
+        output.StdOut.ShouldContain($"{prefix}FN]");
+        output.StdOut.ShouldNotContain(excludedMarker);
     }
 
     [Fact]

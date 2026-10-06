@@ -169,7 +169,7 @@ flowchart TD
 
         subgraph OutputSubsystem ["Output & Notification Subsystem"]
             VO["VersioningOutputter<br/><i>[Output Engine]</i><br/>Generates formatted outputs for console, files, environment, and AzDo."]
-            OP["OutputPossibilities<br/><i>[Flags Enum]</i><br/>Console, Json, File, Environment, NukeFusion."]
+            OP["OutputPossibilities<br/><i>[Flags Enum]</i><br/>Console, Json, File, Environment, NukeFusion, PliskyFusion."]
         end
     end
 

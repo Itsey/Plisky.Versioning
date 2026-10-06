@@ -119,15 +119,22 @@ public class VersioningOutputter {
         }
 
         if ((oo & OutputPossibilities.NukeFusion) == OutputPossibilities.NukeFusion) {
-            string outputString = $"PNFV]{ValToWrite}";
-            WriteToConsole(outputString);
-            WriteToConsole($"PNF2]{versionToLog.GetVersionString(DisplayType.Short)}");
-            WriteToConsole($"PNF3]{versionToLog.GetVersionString(DisplayType.ThreeDigit)}");
-            WriteToConsole($"PN3D]{versionToLog.GetVersionString(DisplayType.ThreeDigitNumeric)}");
-            WriteToConsole($"PNF4]{versionToLog.GetVersionString(DisplayType.FourDigit)}");
-            WriteToConsole($"PNQF]{versionToLog.GetVersionString(DisplayType.QueuedFull)}");
-            WriteToConsole($"PN4D]{versionToLog.GetVersionString(DisplayType.FourDigitNumeric)}");
-            WriteToConsole($"PNFN]{versionToLog.ReleaseName}");
+            WriteFusionOutput("PN");
         }
+
+        if ((oo & OutputPossibilities.PliskyFusion) == OutputPossibilities.PliskyFusion) {
+            WriteFusionOutput("P");
+        }
+    }
+
+    private void WriteFusionOutput(string prefix) {
+        WriteToConsole($"{prefix}FV]{ValToWrite}");
+        WriteToConsole($"{prefix}F2]{versionToLog.GetVersionString(DisplayType.Short)}");
+        WriteToConsole($"{prefix}F3]{versionToLog.GetVersionString(DisplayType.ThreeDigit)}");
+        WriteToConsole($"{prefix}3D]{versionToLog.GetVersionString(DisplayType.ThreeDigitNumeric)}");
+        WriteToConsole($"{prefix}F4]{versionToLog.GetVersionString(DisplayType.FourDigit)}");
+        WriteToConsole($"{prefix}QF]{versionToLog.GetVersionString(DisplayType.QueuedFull)}");
+        WriteToConsole($"{prefix}4D]{versionToLog.GetVersionString(DisplayType.FourDigitNumeric)}");
+        WriteToConsole($"{prefix}FN]{versionToLog.ReleaseName}");
     }
 }

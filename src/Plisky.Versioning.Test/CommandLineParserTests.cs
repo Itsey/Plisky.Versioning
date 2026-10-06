@@ -83,6 +83,26 @@ public class CommandLineParserTests {
     }
 
     [Theory]
+    [Trait(Traits.Age, Traits.Fresh)]
+    [Trait(Traits.Style, Traits.Unit)]
+    [InlineData("--output", "con-pf", OutputPossibilities.PliskyFusion)]
+    [InlineData("-o", "con-pf", OutputPossibilities.PliskyFusion)]
+    [InlineData("-O", "CON-PF", OutputPossibilities.PliskyFusion)]
+    [InlineData("--output", "con-nf", OutputPossibilities.NukeFusion)]
+    [InlineData("-o", "con-nf", OutputPossibilities.NukeFusion)]
+    [InlineData("-O", "CON-NF", OutputPossibilities.NukeFusion)]
+    public void Parse_when_fusion_output_is_selected_sets_console_and_fusion_flags(string alias, string mode, OutputPossibilities fusion) {
+        var (success, options) = CommandLineParser.Parse(["passive", $"{alias}={mode}"]);
+
+        success.ShouldBeTrue();
+        options.OutputsActive.ShouldBe(OutputPossibilities.Console | fusion);
+        options.ConsoleTemplate.ShouldBe("%VER%");
+
+        options.OutputOptions = "con";
+        options.OutputsActive.ShouldBe(OutputPossibilities.Console);
+    }
+
+    [Theory]
     [Trait(Traits.Age, Traits.Regression)]
     [Trait(Traits.Style, Traits.Unit)]
     [InlineData("passive", "--release")]

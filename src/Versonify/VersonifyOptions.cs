@@ -145,6 +145,9 @@ public class VersonifyOptions {
         if (outOpts.EndsWith("-nf")) {
             outOpts = outOpts[..^3];
             OutputsActive = OutputPossibilities.NukeFusion;
+        } else if (outOpts.EndsWith("-pf")) {
+            outOpts = outOpts[..^3];
+            OutputsActive = OutputPossibilities.PliskyFusion;
         } else {
             OutputsActive = OutputPossibilities.None;
         }
@@ -203,6 +206,6 @@ public class VersonifyOptions {
             return;
         }
 
-        throw new ArgumentOutOfRangeException("OutputOptions", $"The output option [{outOpts}] that were specified are invalid. Use (vsts|azdo|con|file|env).");
+        throw new ArgumentOutOfRangeException("OutputOptions", $"The output option [{outOpts}] that were specified are invalid. Use (vsts|azdo|con|con-nf|con-pf|jcon|file|env).");
     }
 }

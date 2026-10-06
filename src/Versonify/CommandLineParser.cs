@@ -223,7 +223,7 @@ public static class CommandLineParser {
 
         string[] outputAliases = includeDeprecatedAliases ? ["-O", "-o", "-Output", "-output", "--Output"] : ["-o"];
         var outputOpt = new Option<string>(OUTPUT_ARG, outputAliases) {
-            Description = "Output mode: env|con|jcon|azdo[:VarName]|file[:FileName]|con-nf"
+            Description = "Output mode: env|con|jcon|azdo[:VarName]|file[:FileName]|con-nf|con-pf"
         };
         rc.Add(outputOpt);
 

@@ -10,5 +10,6 @@ public enum OutputPossibilities {
     Console = 0x00000004,
     NukeFusion = 0x00000008,
     Json = 0x00000010,
+    PliskyFusion = 0x00000020,
     JsonConsole = Json | Console,
 }

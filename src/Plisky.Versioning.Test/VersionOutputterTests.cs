@@ -205,10 +205,12 @@ public class VersionOutputterTests {
         op.EnvWasSet.ShouldBeFalse("EnvWasSet should be false when writing to file.");
     }
 
-    [Fact]
+    [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.Style, Traits.Unit)]
-    public void Outputter_PNF_WritesPNFToConsole() {
+    [InlineData(OutputPossibilities.NukeFusion, "PN")]
+    [InlineData(OutputPossibilities.PliskyFusion, "P")]
+    public void Outputter_Fusion_WritesMarkersToConsole(OutputPossibilities output, string prefix) {
         b.Info.Flow();
         const string VERSION = "1.1.oranges.0.0";
         const string RELEASE = "Fruit";
@@ -219,22 +221,24 @@ public class VersionOutputterTests {
 
         v.ApplyPendingVersion("+...");
         var op = new MockVersioningOutputter(v, Hub.Current);
-        op.DoOutput(OutputPossibilities.NukeFusion, VersioningCommand.PassiveOutput);
-        op.OutputLines.Length.ShouldBe(8, "There should be eight lines of output for the nuke fusion output.");
-        op.OutputLines[0].ShouldBe($"PNFV]{VERSION}");
-        op.OutputLines[1].ShouldBe("PNF2]1.1");
-        op.OutputLines[2].ShouldBe("PNF3]1.1.oranges");
-        op.OutputLines[3].ShouldBe("PN3D]1.1.0");
-        op.OutputLines[4].ShouldBe("PNF4]1.1.oranges.0");
-        op.OutputLines[5].ShouldBe("PNQF]2.1.oranges.0.0");
-        op.OutputLines[6].ShouldBe("PN4D]1.1.0.0");
-        op.OutputLines[7].ShouldBe($"PNFN]{RELEASE}");
+        op.DoOutput(output, VersioningCommand.PassiveOutput);
+        op.OutputLines.Length.ShouldBe(8, "There should be eight lines of output for fusion output.");
+        op.OutputLines[0].ShouldBe($"{prefix}FV]{VERSION}");
+        op.OutputLines[1].ShouldBe($"{prefix}F2]1.1");
+        op.OutputLines[2].ShouldBe($"{prefix}F3]1.1.oranges");
+        op.OutputLines[3].ShouldBe($"{prefix}3D]1.1.0");
+        op.OutputLines[4].ShouldBe($"{prefix}F4]1.1.oranges.0");
+        op.OutputLines[5].ShouldBe($"{prefix}QF]2.1.oranges.0.0");
+        op.OutputLines[6].ShouldBe($"{prefix}4D]1.1.0.0");
+        op.OutputLines[7].ShouldBe($"{prefix}FN]{RELEASE}");
     }
 
-    [Fact]
+    [Theory]
     [Trait(Traits.Age, Traits.Fresh)]
     [Trait(Traits.LiveBug, "LFY-30")]
-    public void Version_output_information_written_after_file_update() {
+    [InlineData(OutputPossibilities.NukeFusion)]
+    [InlineData(OutputPossibilities.PliskyFusion)]
+    public void Version_output_information_written_after_file_update(OutputPossibilities output) {
         b.Info.Flow();
         const string VERSION = "1.0";
         var mvs = new MockVersionStorage(VERSION);
@@ -242,7 +246,7 @@ public class VersionOutputterTests {
         var v = sut.Version;
 
         var op = new MockVersioningOutputter(v, Hub.Current);
-        op.DoOutput(OutputPossibilities.NukeFusion, VersioningCommand.UpdateFiles);
+        op.DoOutput(output, VersioningCommand.UpdateFiles);
 
         op.OutputLines.Length.ShouldBe(8, "The versioning output should be written on file update as well as passive.");
     }

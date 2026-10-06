@@ -37,7 +37,7 @@ Command names are shown in lowercase and are case-insensitive. Uppercase and mix
 | `--min-match` | `-m` | Supplies minmatch patterns for file updates. The minmatch is a glob pattern used to identify files in the solution that should be updated with the version numbers. This is usually csproj files and text files. |
 | `--no-error` | `-z` | Forces a zero exit code on failure. |
 | `--no-override` |  | Ignores any saved pending override. |
-| `--output` | `-o` | Selects output mode. <br />Valid output modes are: <br />env - writes only the final digit to an environment variable.<br />con - writes all output to the console in plain English<br />jcon - writes all output to the console in json (aimed at AI or automation)<br />azdo[:varname] - writes to an azure pipelines variable<br />file[:filename] - writes all output to a file in plain English<br />con-nf - writes specially formatted output to the console for nuke fusion. |
+| `--output` | `-o` | Selects output mode. <br />Valid output modes are: <br />env - writes only the final digit to an environment variable.<br />con - writes all output to the console in plain English<br />jcon - writes all output to the console in json (aimed at AI or automation)<br />azdo[:varname] - writes to an azure pipelines variable<br />file[:filename] - writes all output to a file in plain English<br />con-pf - writes OSS-agnostic Plisky Fusion markers to the console<br />con-nf - retains the legacy Nuke Fusion markers for backwards compatibility. |
 | `--pre-release` | `-p` | Pre-release shortcut. For `passive`, behaves like `--digit-group=default,pre-release`. For mutation/increment flows, behaves like `--digit-group=pre-release`. Cannot be combined with `--digit-group`. |
 | `--qqpnf` |  | Returns an exit code indicating a compatibility level. This document is compatible with exit code 201. |
 | `--quick-value` | `-q` | Supplies the quick value or pattern text.  For a quick value then a standard version number is supplied with the relevant number of digits.  E.g. `1.0`  or `1.0.0` or `5.345.233.1.1.1`.  If a pattern is to be used then this will indicate actions to take on existing digits and will use + or - symbols to perform the activities.  e.g.  `+.-..` will increment the first digit, decrement the second digit and leave all other digits unchanged whereas `..+.+` would leave the first and second digits unchanged and increment the third and fourth digits. |
@@ -47,9 +47,22 @@ Command names are shown in lowercase and are case-insensitive. Uppercase and mix
 | `--version` |  | Shows the application version and exits. |
 | `--version-source` | `-v` | Points to the version store. |
 
+### Fusion output markers
 
+Use `--output=con-pf` for Plisky Fusion integrations, e.g. `versonify passive -v=store.vstore -o=con-pf`. It includes normal console output followed by the following marker lines. Each marker is immediately followed by its value.
 
+| Value | Plisky Fusion (`con-pf`) | Legacy Nuke Fusion (`con-nf`) |
+| --- | --- | --- |
+| Full version (or selected passive value/release name) | `PFV]` | `PNFV]` |
+| Two-digit version | `PF2]` | `PNF2]` |
+| Three-digit version | `PF3]` | `PNF3]` |
+| Three-digit numeric version | `P3D]` | `PN3D]` |
+| Four-digit version | `PF4]` | `PNF4]` |
+| Queued full version | `PQF]` | `PNQF]` |
+| Four-digit numeric version | `P4D]` | `PN4D]` |
+| Release name | `PFN]` | `PNFN]` |
 
+The Plisky Fusion markers do not depend on the OSS project name. `con-nf` and its marker values remain unchanged; plain `con` output emits neither marker set.
 
 ### File Update Statements
 
