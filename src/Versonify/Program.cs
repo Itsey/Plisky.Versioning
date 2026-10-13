@@ -215,19 +215,32 @@ internal static class Program {
         ver.SaveUpdatedVersion();
     }
 
-    private static ExitCodes CheckPnfCompatibiliyRequest(string[] args) {
-        if (args.Length == 1 && (args[0].Equals("--QQpnf", StringComparison.OrdinalIgnoreCase) || args[0].Equals("--QQpff", StringComparison.OrdinalIgnoreCase))) {
-            // 200 is the first implemented compatibility exit code. Before this no compatibility exit codes existed  - Versonify Release 1.0.1 Austen.
-            // 201 is the new command line interface.  Versonify Release 2.0 Bronte.
-            return ExitCodes.BronteCompatibilityVersion;
+    private static bool IsPnfCompatibilityArg(string arg) {
+        return arg.Equals("--QQpnf", StringComparison.OrdinalIgnoreCase) ||
+               arg.Equals("--QQpff", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static (bool shouldExit, ExitCodes returnCode) CheckPnfCompatibilityRequest(string[] args) {
+        string? pnfArg = args.FirstOrDefault(IsPnfCompatibilityArg);
+        if (pnfArg != null) {
+            if (args.Length == 1) {
+                // 200 is the first implemented compatibility exit code. Before this no compatibility exit codes existed  - Versonify Release 1.0.1 Austen.
+                // 201 is the new command line interface.  Versonify Release 2.0 Bronte.
+                return (true, ExitCodes.BronteCompatibilityVersion);
+            }
+
+            Console.WriteLine($"Error >> {pnfArg} cannot be combined with any other command line arguments.");
+            WriteErrorConditions();
+            return (true, ExitCodes.FailedToValidateArguments);
         }
-        return ExitCodes.Ok;
+
+        return (false, ExitCodes.Ok);
     }
 
     private static (bool shouldExit, ExitCodes returnCode) CheckQuickReturns(string[] args) {
-        var pnfShortCircuit = CheckPnfCompatibiliyRequest(args);
-        if (pnfShortCircuit >= ExitCodes.VersionCheckInitialVersion) {
-            return (true, pnfShortCircuit);
+        var (shouldExit, returnCode) = CheckPnfCompatibilityRequest(args);
+        if (shouldExit) {
+            return (true, returnCode);
         }
 
         if (IsVersionRequested(args)) {

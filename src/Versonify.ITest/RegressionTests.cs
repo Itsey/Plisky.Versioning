@@ -24,6 +24,22 @@ public class RegressionTests {
         output.ReturnCode.ShouldBe(201, "Current compat version is 201.");
     }
 
+    [Theory(DisplayName = "Calling --qqpnf with other arguments returns error")]
+    [InlineData("--qqpnf --debug")]
+    [InlineData("--debug --qqpnf")]
+    [InlineData("passive --qqpnf")]
+    [InlineData("--qqpnf --version")]
+    [InlineData("--qqpnf --help")]
+    [InlineData("--qqpff --debug")]
+    public async Task Call_with_qq_and_other_args_returns_clean_error(string arguments) {
+        b.Info.Flow();
+
+        var output = await th.ExecuteVersonify(arguments, appendDebug: false);
+        output.ReturnCode.ShouldBe((int)ExitCodes.FailedToValidateArguments);
+        output.StdOut.ShouldContain("cannot be combined with any other command line arguments.");
+        output.StdOut.ShouldContain("Fatal:  Argument Validation Failed.");
+    }
+
     [Theory]
     [InlineData("-Command", "-mm", "-v")]
     [InlineData(Clargs.COMMAND_ARG, Clargs.MIN_MATCH_ARG, Clargs.VERSION_SOURCE_ARG)]
