@@ -1,6 +1,17 @@
 ## Versonify Change Log.
 
-⬆️ **XXX-VERSION3-XXX** - Internal structure and CLI improvements.
+⬆️ **XXX-VERSION3-XXX** - 
+
+  - 🔧 Maintenance - Simplified the release pipeline, updated build tooling, and modernized versioning internals.
+
+
+⬆️ **2.0.1** - Fusion integration and command-line validation improvements.
+
+  - ✅ Feature - Added OSS-agnostic Plisky Fusion console output with the `con-pf` mode, while retaining the legacy `con-nf` output.
+  - 🐞 Fix - `--QQpnf` and `--QQpff` compatibility checks now reject requests combined with other command-line arguments.
+
+
+⬆️ **2.0.0** - Internal structure and CLI improvements.
 
   - ✅ Feature - Added digit-group targeting and the `--pre-release` shortcut for passive reads, updates, and queued version changes.
   - ✅ Feature - Added the `get` command to inspect digit values, behaviours, prefixes, queued overrides, and groups in plain text or `jcon` output.
