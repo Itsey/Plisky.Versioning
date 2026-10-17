@@ -8,10 +8,6 @@
     <RunAnalyzers>false</RunAnalyzers>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="Templates\**\*.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Templates\" />
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>

@@ -1,10 +1,10 @@
-﻿using System;
-using Nuke.Common;
-using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Tools.NuGet;
+using System;
+using Fallout.Common;
+using Fallout.Common.Tools.DotNet;
+using Fallout.Solutions;
 using Serilog;
 
-public partial class Build : NukeBuild {
+public partial class Build : FalloutBuild {
     // Package Step - Well known step for bundling prior to the app release.   Arrange Construct Examine [Package] Release Test
 
     private Target PackageStep => _ => _
@@ -27,11 +27,11 @@ public partial class Build : NukeBuild {
             var nugetStructure = settings.ArtifactsDirectory + "\\nuget";
 
             DotNetTasks.DotNetPack(s => s
-              .SetProject(project)
-              .SetConfiguration(Configuration)
-              .SetOutputDirectory(nugetStructure)
-              .EnableNoBuild()
-              .EnableNoRestore()
+                .SetProject(project)
+                .SetConfiguration(Configuration)
+                .SetOutputDirectory(nugetStructure)
+                .EnableNoBuild()
+                .EnableNoRestore()
             );
         });
 }

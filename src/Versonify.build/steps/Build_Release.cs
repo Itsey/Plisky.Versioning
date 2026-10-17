@@ -1,54 +1,53 @@
-﻿using System;
+using System;
 using System.Linq;
-using Nuke.Common;
-using Nuke.Common.Tools.Git;
-using Nuke.Common.Tools.NuGet;
+using Fallout.Common;
+using Fallout.Common.Tools.Git;
+using Fallout.Common.Tools.NuGet;
 using Serilog;
 
-public partial class Build : NukeBuild {
-
+public partial class Build : FalloutBuild {
     public Target ApplyGitTag => _ => _
-            .After(ReleaseStep)
-            .DependsOn(Initialise)
-            .Before(Wrapup)
-            .Executes(() => {
-                if (!IsSucceeding) {
-                    return;
-                }
-                if (string.IsNullOrEmpty(FullVersionNumber)) {
-                    Log.Information("No version number, skipping Tag");
-                    return;
-                }
-                if (GitRepository == null) {
-                    Log.Information("No Git repository found, skipping Tag");
-                    return;
-                }
-                Log.Information("Applying Git Tag");
+        .After(ReleaseStep)
+        .DependsOn(Initialise)
+        .Before(Wrapup)
+        .Executes(() => {
+            if (!IsSucceeding) {
+                return;
+            }
+            if (string.IsNullOrEmpty(FullVersionNumber)) {
+                Log.Information("No version number, skipping Tag");
+                return;
+            }
+            if (GitRepository == null) {
+                Log.Information("No Git repository found, skipping Tag");
+                return;
+            }
+            Log.Information("Applying Git Tag");
 
-                try {
-                    var (authorName, authorEmail) = GetLastCommitAuthor();
-                    ConfigureGitIdentity(authorName, authorEmail);
-                    CreateAndPushTag(FullVersionNumber);
+            try {
+                (string authorName, string authorEmail) = GetLastCommitAuthor();
+                ConfigureGitIdentity(authorName, authorEmail);
+                CreateAndPushTag(FullVersionNumber);
 
-                    Log.Information($"Successfully created and pushed tag '{FullVersionNumber}'");
-                } catch (Exception ex) {
-                    Log.Error($"Failed to apply git tag: {ex.Message}");
-                    throw;
-                }
-            });
+                Log.Information($"Successfully created and pushed tag '{FullVersionNumber}'");
+            } catch (Exception ex) {
+                Log.Error($"Failed to apply git tag: {ex.Message}");
+                throw;
+            }
+        });
 
     // Well known step for releasing into the selected environment.  Arrange Construct Examine Package [Release] Test
     public Target ReleaseStep => _ => _
-      .DependsOn(Initialise, PackageStep)
-      .Before(TestStep, Wrapup)
-      .Triggers(ApplyGitTag)
-      .After(PackageStep)
-      .Executes(() => {
-          NuGetTasks.NuGetPush(s => s
-           .SetTargetPath(settings!.ArtifactsDirectory + "\\nuget\\Plisky.Versonify*.nupkg")
-           .SetSource("https://api.nuget.org/v3/index.json")
-           .SetApiKey(Environment.GetEnvironmentVariable("PLISKY_PUBLISH_KEY")));
-      });
+        .DependsOn(Initialise, PackageStep)
+        .Before(TestStep, Wrapup)
+        .Triggers(ApplyGitTag)
+        .After(PackageStep)
+        .Executes(() => {
+            NuGetTasks.NuGetPush(s => s
+                .SetTargetPath(settings!.ArtifactsDirectory + "\\nuget\\Plisky.Versonify*.nupkg")
+                .SetSource("https://api.nuget.org/v3/index.json")
+                .SetApiKey(Environment.GetEnvironmentVariable("PLISKY_PUBLISH_KEY")));
+        });
 
     private void ConfigureGitIdentity(string name, string email) {
         GitTasks.Git($"config user.name \"{name}\"");
